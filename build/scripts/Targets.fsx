@@ -65,7 +65,7 @@ Target "Version" <| fun _ ->
 Target "Release" <| fun _ -> 
     Release.NugetPack()   
     Versioning.ValidateArtifacts()
-    
+
 Target "Canary" <| fun _ -> 
     trace "Running canary build" 
     let apiKey = (getBuildParam "apikey");
