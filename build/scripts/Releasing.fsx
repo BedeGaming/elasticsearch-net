@@ -26,7 +26,7 @@ module Release =
         |> Seq.iter(fun p ->
             CreateDir Paths.NugetOutput
 
-            let name = p.Name.Replace("Nest", "Best");
+            let name = p.Name
             let nuspec = (sprintf @"build\%s.nuspec" name)
             let nugetOutFile =  Paths.Output(sprintf "%s.%s.nupkg" name (Versioning.CurrentVersion.ToString()))
 
