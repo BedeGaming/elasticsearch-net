@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
 	<metadata>
-		<id>NEST</id>
+		<id>BEST</id>
 		<version>$version$</version>
-		<title>NEST - Elasticsearch .NET high level client</title>
+		<title>Bede NEST - NEST with no upper limit on Newtonsoft.Json</title>
 		<authors>Elastic and contributors</authors>
 		<owners>Elastic</owners>
 		<licenseUrl>https://github.com/elastic/elasticsearch-net/blob/master/license.txt</licenseUrl>
