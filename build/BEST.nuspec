@@ -35,13 +35,13 @@
 		</dependencies>
 	</metadata>
 	<files>
-		<file src="output\Nest\net45\Best.dll" target="lib\net45"/>
-		<file src="output\Nest\net45\Best.XML" target="lib\net45"/>
+		<file src="output\Best\net45\Best.dll" target="lib\net45"/>
+		<file src="output\Best\net45\Best.XML" target="lib\net45"/>
 
-		<file src="output\Nest\net46\Best.dll" target="lib\net46"/>
-		<file src="output\Nest\net46\Best.XML" target="lib\net46"/>
+		<file src="output\Best\net46\Best.dll" target="lib\net46"/>
+		<file src="output\Best\net46\Best.XML" target="lib\net46"/>
 
-		<file src="output\Nest\netstandard1.3\Best.dll" target="lib\netstandard1.3"/>
-		<file src="output\Nest\netstandard1.3\Best.xml" target="lib\netstandard1.3"/>
+		<file src="output\Best\netstandard1.3\Best.dll" target="lib\netstandard1.3"/>
+		<file src="output\Best\netstandard1.3\Best.xml" target="lib\netstandard1.3"/>
 	</files>
 </package>
