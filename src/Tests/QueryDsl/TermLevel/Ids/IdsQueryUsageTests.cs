@@ -4,7 +4,7 @@ using Best;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
-using static Nest.Infer;
+using static Best.Infer;
 
 namespace Tests.QueryDsl.TermLevel.Ids
 {

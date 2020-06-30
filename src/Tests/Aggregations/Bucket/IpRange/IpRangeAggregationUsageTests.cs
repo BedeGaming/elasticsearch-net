@@ -6,7 +6,7 @@ using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
-using static Nest.Infer;
+using static Best.Infer;
 
 namespace Tests.Aggregations.Bucket.IpRange
 {
@@ -50,10 +50,10 @@ namespace Tests.Aggregations.Bucket.IpRange
 				Aggregations = new IpRangeAggregation("ip_ranges")
 				{
 					Field = Field((Project p) => p.LeadDeveloper.IPAddress),
-					Ranges = new List<Nest.IpRange>
+					Ranges = new List<Best.IpRange>
 					{
-						new Nest.IpRange { To = "10.0.0.5" },
-						new Nest.IpRange { From = "10.0.0.5" }
+						new Best.IpRange { To = "10.0.0.5" },
+						new Best.IpRange { From = "10.0.0.5" }
 					}
 				}
 			};

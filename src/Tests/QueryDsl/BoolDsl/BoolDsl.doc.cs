@@ -6,7 +6,7 @@ using Best;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using Tests.QueryDsl.BoolDsl.Operators;
-using static Nest.Infer;
+using static Best.Infer;
 using static Tests.Framework.RoundTripper;
 
 namespace Tests.QueryDsl.BoolDsl

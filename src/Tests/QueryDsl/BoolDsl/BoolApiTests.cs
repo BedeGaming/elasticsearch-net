@@ -15,7 +15,7 @@ using Tests.Framework.ManagedElasticsearch.Clusters;
 using Xunit;
 using A = Tests.QueryDsl.BoolDsl.BoolCluster.A;
 using E = Tests.QueryDsl.BoolDsl.BoolCluster.E;
-using static Nest.Infer;
+using static Best.Infer;
 
 
 namespace Tests.QueryDsl.BoolDsl

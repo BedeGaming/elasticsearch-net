@@ -12,7 +12,7 @@ using FluentAssertions;
 using System.Threading;
 using System.Reactive.Linq;
 using Tests.Framework.ManagedElasticsearch.Clusters;
-using static Nest.Infer;
+using static Best.Infer;
 
 namespace Tests.Reproduce
 {

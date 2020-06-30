@@ -6,7 +6,7 @@ using Best;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
-using static Nest.Infer;
+using static Best.Infer;
 
 namespace Tests.Aggregations.Bucket.GeoDistance
 {
@@ -59,11 +59,11 @@ namespace Tests.Aggregations.Bucket.GeoDistance
 				{
 					Field = Field((Project p) => p.Location),
 					Origin = "52.376, 4.894",
-					Ranges = new List<Nest.Range>
+					Ranges = new List<Best.Range>
 					{
-						new Nest.Range { To = 100 },
-						new Nest.Range { From = 100, To = 300 },
-						new Nest.Range { From = 300 }
+						new Best.Range { To = 100 },
+						new Best.Range { From = 100, To = 300 },
+						new Best.Range { From = 300 }
 					}
 				}
 			};

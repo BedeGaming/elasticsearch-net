@@ -24,7 +24,7 @@ namespace Tests.CommonOptions.TimeUnit
 		[U] public void Constructor()
 		{
 			var unitString = new Time("2d");
-			var unitComposed = new Time(2, Nest.TimeUnit.Day);
+			var unitComposed = new Time(2, Best.TimeUnit.Day);
 			var unitTimeSpan = new Time(TimeSpan.FromDays(2));
 			var unitMilliseconds = new Time(1000 * 60 * 60 * 24 * 2);
 
@@ -201,55 +201,55 @@ namespace Tests.CommonOptions.TimeUnit
 			Expect("-1").WhenSerializing(new Time("-1"));
 
 			Assert(
-				1, Nest.TimeUnit.Year, -1, "1y",
-				new Time(1, Nest.TimeUnit.Year),
+				1, Best.TimeUnit.Year, -1, "1y",
+				new Time(1, Best.TimeUnit.Year),
 				new Time("1y")
 			);
 
 			Assert(
-				1, Nest.TimeUnit.Month, -1, "1M",
-				new Time(1, Nest.TimeUnit.Month),
+				1, Best.TimeUnit.Month, -1, "1M",
+				new Time(1, Best.TimeUnit.Month),
 				new Time("1M")
 			);
 
 			Assert(
-				1, Nest.TimeUnit.Week, TimeSpan.FromDays(7).TotalMilliseconds, "1w",
-				new Time(1, Nest.TimeUnit.Week),
+				1, Best.TimeUnit.Week, TimeSpan.FromDays(7).TotalMilliseconds, "1w",
+				new Time(1, Best.TimeUnit.Week),
 				new Time("1w"),
 				new Time(TimeSpan.FromDays(7).TotalMilliseconds)
 			);
 
 			Assert(
-				1, Nest.TimeUnit.Day, TimeSpan.FromDays(1).TotalMilliseconds, "1d",
-				new Time(1, Nest.TimeUnit.Day),
+				1, Best.TimeUnit.Day, TimeSpan.FromDays(1).TotalMilliseconds, "1d",
+				new Time(1, Best.TimeUnit.Day),
 				new Time("1d"),
 				new Time(TimeSpan.FromDays(1).TotalMilliseconds)
 			);
 
 			Assert(
-				1, Nest.TimeUnit.Hour, TimeSpan.FromHours(1).TotalMilliseconds, "1h",
-				new Time(1, Nest.TimeUnit.Hour),
+				1, Best.TimeUnit.Hour, TimeSpan.FromHours(1).TotalMilliseconds, "1h",
+				new Time(1, Best.TimeUnit.Hour),
 				new Time("1h"),
 				new Time(TimeSpan.FromHours(1).TotalMilliseconds)
 			);
 
 			Assert(
-				1, Nest.TimeUnit.Minute, TimeSpan.FromMinutes(1).TotalMilliseconds, "1m",
-				new Time(1, Nest.TimeUnit.Minute),
+				1, Best.TimeUnit.Minute, TimeSpan.FromMinutes(1).TotalMilliseconds, "1m",
+				new Time(1, Best.TimeUnit.Minute),
 				new Time("1m"),
 				new Time(TimeSpan.FromMinutes(1).TotalMilliseconds)
 			);
 
 			Assert(
-				1, Nest.TimeUnit.Second, TimeSpan.FromSeconds(1).TotalMilliseconds, "1s",
-				new Time(1, Nest.TimeUnit.Second),
+				1, Best.TimeUnit.Second, TimeSpan.FromSeconds(1).TotalMilliseconds, "1s",
+				new Time(1, Best.TimeUnit.Second),
 				new Time("1s"),
 				new Time(TimeSpan.FromSeconds(1).TotalMilliseconds)
 			);
 		}
 
 		//hide
-		private void Assert(double expectedFactor, Nest.TimeUnit expectedInterval, double expectedMilliseconds, string expectedSerialized, params Time[] times)
+		private void Assert(double expectedFactor, Best.TimeUnit expectedInterval, double expectedMilliseconds, string expectedSerialized, params Time[] times)
 		{
 			foreach (var time in times)
 			{

@@ -35,17 +35,17 @@ namespace Tests.CommonOptions.DateMath
 			* ==== Simple expressions
 			* You can create simple expressions using any of the static methods on `DateMath`
 			*/
-			Expect("now").WhenSerializing(Nest.DateMath.Now);
-			Expect("2015-05-05T00:00:00").WhenSerializing(Nest.DateMath.Anchored(new DateTime(2015,05, 05)));
+			Expect("now").WhenSerializing(Best.DateMath.Now);
+			Expect("2015-05-05T00:00:00").WhenSerializing(Best.DateMath.Anchored(new DateTime(2015,05, 05)));
 
 			/** strings implicitly convert to `DateMath` */
-			Expect("now").WhenSerializing<Nest.DateMath>("now");
+			Expect("now").WhenSerializing<Best.DateMath>("now");
 
 			/** but are lenient to bad math expressions */
 			var nonsense = "now||*asdaqwe";
 
             /** the resulting date math will assume the whole string is the anchor */
-            Expect(nonsense).WhenSerializing<Nest.DateMath>(nonsense)
+            Expect(nonsense).WhenSerializing<Best.DateMath>(nonsense)
 				.Result(dateMath => ((IDateMath)dateMath)
 					.Anchor.Match(
 						d => d.Should().NotBe(default(DateTime)),
@@ -57,7 +57,7 @@ namespace Tests.CommonOptions.DateMath
              * anchor will be an actual `DateTime`, even after a serialization/deserialization round trip
              */
             var date = new DateTime(2015, 05, 05);
-			Expect("2015-05-05T00:00:00").WhenSerializing<Nest.DateMath>(date)
+			Expect("2015-05-05T00:00:00").WhenSerializing<Best.DateMath>(date)
 				.Result(dateMath => ((IDateMath)dateMath)
 				    .Anchor.Match(
 						d => d.Should().Be(date),
@@ -73,23 +73,23 @@ namespace Tests.CommonOptions.DateMath
 			* Ranges can be chained on to simple expressions
 			*/
 			Expect("now+1d").WhenSerializing(
-				Nest.DateMath.Now.Add("1d"));
+				Best.DateMath.Now.Add("1d"));
 
 			/** Including multiple operations */
 			Expect("now+1d-1m").WhenSerializing(
-				Nest.DateMath.Now.Add("1d").Subtract(TimeSpan.FromMinutes(1)));
+				Best.DateMath.Now.Add("1d").Subtract(TimeSpan.FromMinutes(1)));
 
 			/** A rounding value can be chained to the end of the expression, after which no more ranges can be appended */
 			Expect("now+1d-1m/d").WhenSerializing(
-				Nest.DateMath.Now.Add("1d")
+				Best.DateMath.Now.Add("1d")
 					.Subtract(TimeSpan.FromMinutes(1))
-					.RoundTo(Nest.TimeUnit.Day));
+					.RoundTo(Best.TimeUnit.Day));
 
 			/** When anchoring dates, a `||` needs to be appended as clear separator between the anchor and ranges.
 			* Again, multiple ranges can be chained
 			*/
 			Expect("2015-05-05T00:00:00||+1d-1m").WhenSerializing(
-				Nest.DateMath.Anchored(new DateTime(2015,05,05))
+				Best.DateMath.Anchored(new DateTime(2015,05,05))
 					.Add("1d")
 					.Subtract(TimeSpan.FromMinutes(1)));
 		}
@@ -102,22 +102,22 @@ namespace Tests.CommonOptions.DateMath
 			* pick the biggest integer unit it can represent
 			*/
 			Expect("now+25h").WhenSerializing(
-				Nest.DateMath.Now.Add(TimeSpan.FromHours(25)));
+				Best.DateMath.Now.Add(TimeSpan.FromHours(25)));
 
 			/** where as `Time` on its own serializes like this */
 			Expect("1.04166666666667d").WhenSerializing(new Time(TimeSpan.FromHours(25)));
 
 			Expect("now+90001s").WhenSerializing(
-				Nest.DateMath.Now.Add(TimeSpan.FromHours(25).Add(TimeSpan.FromSeconds(1))));
+				Best.DateMath.Now.Add(TimeSpan.FromHours(25).Add(TimeSpan.FromSeconds(1))));
 
 			Expect("now+90000001ms").WhenSerializing(
-				Nest.DateMath.Now.Add(TimeSpan.FromHours(25).Add(TimeSpan.FromMilliseconds(1))));
+				Best.DateMath.Now.Add(TimeSpan.FromHours(25).Add(TimeSpan.FromMilliseconds(1))));
 
 			Expect("now+1y").WhenSerializing(
-				Nest.DateMath.Now.Add("1y"));
+				Best.DateMath.Now.Add("1y"));
 
 			Expect("now+52w").WhenSerializing(
-				Nest.DateMath.Now.Add(TimeSpan.FromDays(7 * 52)));
+				Best.DateMath.Now.Add(TimeSpan.FromDays(7 * 52)));
 		}
 	}
 }

@@ -228,7 +228,7 @@ namespace Tests.ClientConcepts.HighLevel.Mapping
          *
          * - `Nest.GeoLocation` maps to `"geo_point"`
          * - `Nest.CompletionField<TPayload>` maps to `"completion"`
-         * - `Nest.Attachment` maps to `"attachment"`
+         * - `Best.Attachment` maps to `"attachment"`
 		 *
          * All other types map to `"object"` by default.
          *

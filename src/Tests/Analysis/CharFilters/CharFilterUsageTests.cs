@@ -64,9 +64,9 @@ namespace Tests.Analysis.CharFilters
 		public static IndexSettings InitializerExample =>
 			new IndexSettings
 			{
-				Analysis = new Nest.Analysis
+				Analysis = new Best.Analysis
 				{
-					CharFilters = new Nest.CharFilters
+					CharFilters = new Best.CharFilters
 					{
 							{ "stripMe", new HtmlStripCharFilter { } },
 							{ "patterned", new PatternReplaceCharFilter { Pattern = "x", Replacement = "y" } },

@@ -111,9 +111,9 @@ namespace Tests.Analysis.Analyzers
 		public static IndexSettings InitializerExample =>
 			new IndexSettings
 			{
-				Analysis = new Nest.Analysis
+				Analysis = new Best.Analysis
 				{
-					Analyzers = new Nest.Analyzers
+					Analyzers = new Best.Analyzers
 					{
 						{"default", new KeywordAnalyzer()},
 						{

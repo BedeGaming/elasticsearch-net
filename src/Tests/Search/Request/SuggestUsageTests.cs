@@ -4,7 +4,7 @@ using Elasticsearch.Net;
 using Best;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
-using static Nest.Infer;
+using static Best.Infer;
 using FluentAssertions;
 using System.Linq;
 using Tests.Framework.ManagedElasticsearch.Clusters;

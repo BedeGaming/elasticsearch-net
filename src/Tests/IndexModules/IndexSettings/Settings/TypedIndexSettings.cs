@@ -11,7 +11,7 @@ namespace Tests.IndexModules.IndexSettings.Settings
 		/**
 		 */
 
-		public class Usage : PromiseUsageTestBase<IIndexSettings, IndexSettingsDescriptor, Nest.IndexSettings>
+		public class Usage : PromiseUsageTestBase<IIndexSettings, IndexSettingsDescriptor, Best.IndexSettings>
 		{
 			protected override object ExpectJson => new Dictionary<string, object>
 			{
@@ -58,8 +58,8 @@ namespace Tests.IndexModules.IndexSettings.Settings
 
 			/**
 			 */
-			protected override Nest.IndexSettings Initializer =>
-				new Nest.IndexSettings(new Dictionary<string, object>
+			protected override Best.IndexSettings Initializer =>
+				new Best.IndexSettings(new Dictionary<string, object>
 				{
 					{ "any.setting", "can be set" },
 					{ "doubles", 1.1 },
@@ -88,12 +88,12 @@ namespace Tests.IndexModules.IndexSettings.Settings
 		{
 			[U] public void CamelCasedTypedSettings()
 			{
-				var indexSettings = new Nest.IndexSettings
+				var indexSettings = new Best.IndexSettings
 				{
 					{ "index.numberOfShards", 2 }
 				};
 				var settings = this.Serialize(indexSettings);
-				var deserizalized = this.Deserialize<Nest.IndexSettings>(settings);
+				var deserizalized = this.Deserialize<Best.IndexSettings>(settings);
 
 				deserizalized.NumberOfShards.Should().Be(2);
 

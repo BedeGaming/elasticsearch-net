@@ -9,7 +9,7 @@ using System.Text;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using Xunit.Abstractions;
-using static Nest.Infer;
+using static Best.Infer;
 
 namespace Tests.ClientConcepts.HighLevel.Caching
 {

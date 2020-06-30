@@ -4,7 +4,7 @@ using FluentAssertions;
 using Best;
 using Tests.Framework.ManagedElasticsearch.Nodes;
 using Tests.Framework.MockData;
-using static Nest.Infer;
+using static Best.Infer;
 
 namespace Tests.Framework.ManagedElasticsearch.NodeSeeders
 {

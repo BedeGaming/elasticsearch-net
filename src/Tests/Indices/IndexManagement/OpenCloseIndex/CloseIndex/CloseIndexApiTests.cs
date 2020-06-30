@@ -6,7 +6,7 @@ using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Xunit;
-using static Nest.Infer;
+using static Best.Infer;
 
 namespace Tests.Indices.IndexManagement.OpenCloseIndex.CloseIndex
 {
