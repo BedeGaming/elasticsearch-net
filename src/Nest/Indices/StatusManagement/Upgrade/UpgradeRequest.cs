@@ -1,6 +1,6 @@
 ﻿using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	public partial interface IUpgradeRequest : IRequest<UpgradeRequestParameters> { }
 

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonObject]
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<HttpInputProxy>))]

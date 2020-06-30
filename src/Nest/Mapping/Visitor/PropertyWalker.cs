@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Nest
+namespace Best
 {
 	public class PropertyWalker
 	{

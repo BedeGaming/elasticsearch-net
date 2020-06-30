@@ -1,7 +1,7 @@
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonConverter(typeof(EnumMemberValueCasingJsonConverter<TimeUnit>))]
 	public enum TimeUnit

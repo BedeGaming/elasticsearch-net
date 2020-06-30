@@ -4,7 +4,7 @@ using System.Linq;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonConverter(typeof(IndicesMultiSyntaxJsonConverter))]
 	public class Indices : Union<Indices.AllIndicesMarker, Indices.ManyIndices>, IUrlParameter

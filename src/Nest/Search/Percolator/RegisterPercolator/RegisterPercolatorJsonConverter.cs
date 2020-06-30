@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Reflection;
 
-namespace Nest
+namespace Best
 {
 	internal class RegisterPercolatorJsonConverter : JsonConverter
 	{

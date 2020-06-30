@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// Filter terms returned based on their TF-IDF scores.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	public class ReindexObservable<T> : IDisposable, IObservable<IReindexResponse<T>> where T : class
 	{

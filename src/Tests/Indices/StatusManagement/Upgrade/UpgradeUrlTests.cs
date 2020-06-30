@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Nest;
+using Best;
 using Tests.Framework;
 using static Tests.Framework.UrlTester;
-using static Nest.Indices;
+using static Best.Indices;
 
 namespace Tests.Indices.StatusManagement.Upgrade
 {

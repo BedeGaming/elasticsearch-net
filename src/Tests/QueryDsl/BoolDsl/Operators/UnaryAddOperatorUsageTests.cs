@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 
 namespace Tests.QueryDsl.BoolDsl.Operators

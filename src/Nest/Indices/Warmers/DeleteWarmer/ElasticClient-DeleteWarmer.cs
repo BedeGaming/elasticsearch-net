@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	using GetWarmerConverter = Func<IApiCallDetails, Stream, GetWarmerResponse>;
 	using CrazyWarmerResponse = Dictionary<string, Dictionary<string, IWarmers>>;

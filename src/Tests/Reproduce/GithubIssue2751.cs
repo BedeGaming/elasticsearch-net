@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Nest;
+using Best;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
 using Xunit;

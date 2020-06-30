@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace Nest
+namespace Best
 {
 	public abstract class CoordinatedRequestObserverBase<T> : IObserver<T>
 	{

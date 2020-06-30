@@ -1,4 +1,4 @@
-﻿namespace Nest
+﻿namespace Best
 {
 	/// <summary>
 	/// An analyzer of type whitespace that is built using a Whitespace Tokenizer.

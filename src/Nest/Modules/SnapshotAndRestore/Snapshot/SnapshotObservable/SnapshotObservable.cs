@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
-namespace Nest
+namespace Best
 {
 	public class SnapshotObservable : IDisposable, IObservable<ISnapshotStatusResponse>
 	{

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using Tests.QueryDsl.BoolDsl.Operators;

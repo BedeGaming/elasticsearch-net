@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonConverter(typeof(KeyValueJsonConverter<HistogramOrder, SortOrder>))]
 	public class HistogramOrder

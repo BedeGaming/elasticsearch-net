@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
@@ -170,7 +170,7 @@ namespace Tests.Aggregations.Metric.TopHits
 						Fields = new[] { "lastActivity" },
 						Highlight = new Highlight
 						{
-							Fields = new Dictionary<Nest.Field, IHighlightField>
+							Fields = new Dictionary<Best.Field, IHighlightField>
 							{
 								{ Field<Project>(p => p.Tags), new HighlightField() },
 								{ Field<Project>(p => p.Description), new HighlightField() }

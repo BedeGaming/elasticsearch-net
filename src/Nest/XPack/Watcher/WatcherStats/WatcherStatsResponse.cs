@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Nest
+namespace Best
 {
 	[JsonObject]
 	public interface IWatcherStatsResponse : IResponse

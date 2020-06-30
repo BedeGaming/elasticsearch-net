@@ -1,5 +1,5 @@
 ﻿using System;
-using Nest;
+using Best;
 #pragma warning disable 618
 
 namespace Tests.Mapping.Types.Specialized.Ip

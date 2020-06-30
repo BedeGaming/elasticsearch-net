@@ -1,5 +1,5 @@
 ﻿using System;
-using Nest;
+using Best;
 using Tests.Framework;
 
 namespace Tests.Analysis.Tokenizers

@@ -8,7 +8,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Nest
+namespace Best
 {
 	internal static class TypeExtensions
 	{

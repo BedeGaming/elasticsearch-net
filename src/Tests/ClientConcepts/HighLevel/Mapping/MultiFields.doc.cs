@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using FluentAssertions;
-using Nest;
+using Best;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Tests.Framework;

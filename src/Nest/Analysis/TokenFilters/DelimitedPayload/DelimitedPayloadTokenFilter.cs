@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// Splits tokens into tokens and payload whenever a delimiter character is found.

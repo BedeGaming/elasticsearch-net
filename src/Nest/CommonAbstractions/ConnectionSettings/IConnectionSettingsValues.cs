@@ -4,7 +4,7 @@ using System.Reflection;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	public interface IConnectionSettingsValues : IConnectionConfigurationValues
 	{

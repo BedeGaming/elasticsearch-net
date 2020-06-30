@@ -1,6 +1,6 @@
 using System;
 
-namespace Nest
+namespace Best
 {
 	internal static class Fluent
 	{

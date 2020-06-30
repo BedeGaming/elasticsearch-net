@@ -2,7 +2,7 @@
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<CountRequest>))]
 	public partial interface ICountRequest

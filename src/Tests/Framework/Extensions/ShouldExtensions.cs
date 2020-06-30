@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Nest;
+using Best;
 
 namespace Tests.Framework
 {

@@ -5,7 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Newtonsoft.Json;
 using Tests.Framework;
 using Tests.Framework.MockData;

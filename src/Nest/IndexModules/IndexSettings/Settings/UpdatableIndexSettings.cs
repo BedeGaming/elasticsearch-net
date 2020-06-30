@@ -1,4 +1,4 @@
-namespace Nest
+namespace Best
 {
 	public static class UpdatableIndexSettings
 	{

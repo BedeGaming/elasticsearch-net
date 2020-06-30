@@ -2,7 +2,7 @@ using System;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonObject(MemberSerialization.OptIn)]
 	public interface INumberProperty : IProperty

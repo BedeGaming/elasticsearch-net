@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Tests.Framework;

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// The phonetic token filter is provided as a plugin.

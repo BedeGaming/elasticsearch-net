@@ -1,4 +1,4 @@
-namespace Nest
+namespace Best
 {
 	///<inheritdoc/>
 	public class GatewaySettings 

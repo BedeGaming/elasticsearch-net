@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// Resolves member infos in an expression, instance may NOT be shared.

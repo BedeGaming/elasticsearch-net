@@ -2,7 +2,7 @@
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	public partial interface IExplainRequest<TDocument> where TDocument : class
 	{

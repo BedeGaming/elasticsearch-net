@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Nest
+namespace Best
 {
 	[JsonConverter(typeof(StringEnumConverter))]
 	public enum DateInterval

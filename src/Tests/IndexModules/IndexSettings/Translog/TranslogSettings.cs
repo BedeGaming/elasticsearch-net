@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Nest;
+using Best;
 using Tests.Framework;
 
 namespace Tests.IndexModules.IndexSettings.Translog

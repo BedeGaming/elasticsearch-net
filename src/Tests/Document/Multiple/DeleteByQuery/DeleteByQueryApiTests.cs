@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
@@ -34,7 +34,7 @@ namespace Tests.Document.Multiple.DeleteByQuery
 		protected override void OnAfterCall(IElasticClient client) => client.Refresh(CallIsolatedValue);
 
 		private string SecondIndex => $"{CallIsolatedValue}-clone";
-		private Nest.Indices Indices => Index(CallIsolatedValue).And(SecondIndex);
+		private Best.Indices Indices => Index(CallIsolatedValue).And(SecondIndex);
 
 		protected override bool ExpectIsValid => true;
 		protected override int ExpectStatusCode => 200;

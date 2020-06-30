@@ -2,7 +2,7 @@
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// A custom similarity

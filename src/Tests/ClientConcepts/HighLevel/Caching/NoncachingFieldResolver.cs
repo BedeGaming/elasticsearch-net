@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Elasticsearch.Net;
-using Nest;
+using Best;
 
 namespace Tests.ClientConcepts.HighLevel.Caching
 {

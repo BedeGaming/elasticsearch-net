@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Nest
+namespace Best
 {
 	public abstract class IsADictionaryBase<TKey, TValue> : IIsADictionary<TKey, TValue>
 	{

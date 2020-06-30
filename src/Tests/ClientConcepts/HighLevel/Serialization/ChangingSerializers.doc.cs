@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Nest;
+using Best;
 using Newtonsoft.Json;
 
 namespace Tests.ClientConcepts.HighLevel.Serialization

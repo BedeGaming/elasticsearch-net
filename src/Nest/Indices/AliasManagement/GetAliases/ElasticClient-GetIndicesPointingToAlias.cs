@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// Implements several handy alias extensions.

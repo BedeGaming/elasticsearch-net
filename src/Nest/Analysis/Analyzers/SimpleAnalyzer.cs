@@ -1,4 +1,4 @@
-﻿namespace Nest
+﻿namespace Best
 {
 	/// <summary>
 	/// An analyzer of type simple that is built using a Lower Case Tokenizer.

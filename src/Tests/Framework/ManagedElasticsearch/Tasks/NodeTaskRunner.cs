@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Nest;
+using Best;
 using Tests.Framework.Configuration;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Nodes;

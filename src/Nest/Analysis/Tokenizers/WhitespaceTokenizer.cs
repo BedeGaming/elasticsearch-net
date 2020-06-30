@@ -1,4 +1,4 @@
-﻿namespace Nest
+﻿namespace Best
 {
 	/// <summary>
 	/// A tokenizer of type whitespace that divides text at whitespace.

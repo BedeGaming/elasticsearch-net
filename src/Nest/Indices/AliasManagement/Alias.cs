@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<Alias>))]
 	public interface IAlias

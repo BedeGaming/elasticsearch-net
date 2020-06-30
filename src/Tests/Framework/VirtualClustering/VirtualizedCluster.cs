@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Nest;
+using Best;
 using Tests.Framework.MockData;
 
 namespace Tests.Framework

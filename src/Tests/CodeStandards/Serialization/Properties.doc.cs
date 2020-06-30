@@ -1,7 +1,7 @@
 ﻿using System;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 
 namespace Tests.CodeStandards.Serialization

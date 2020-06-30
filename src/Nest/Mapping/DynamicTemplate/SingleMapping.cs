@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nest
+namespace Best
 {
 	public class SingleMappingDescriptor<T> :
 		DescriptorBase<SingleMappingDescriptor<T>, IPropertiesDescriptor<T, IProperty>>, IPropertiesDescriptor<T, IProperty>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;

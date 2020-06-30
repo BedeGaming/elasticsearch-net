@@ -1,4 +1,4 @@
-﻿namespace Nest
+﻿namespace Best
 {
 	public class Murmur3HashAttribute : ElasticsearchPropertyAttributeBase, IMurmur3HashProperty
 	{

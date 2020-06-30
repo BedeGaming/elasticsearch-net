@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Nest
+namespace Best
 {
 	public partial interface IClearScrollRequest
 	{

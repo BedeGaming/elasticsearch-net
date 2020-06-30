@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework.ManagedElasticsearch.Nodes;
 using Tests.Framework.MockData;
 using static Nest.Infer;
@@ -73,7 +73,7 @@ namespace Tests.Framework.ManagedElasticsearch.NodeSeeders
 					(d, c) => d.Document(c).Parent(c.ProjectName)
 				)
 			);
-			this.Client.Refresh(Nest.Indices.Index(typeof(Project), typeof(Developer)));
+			this.Client.Refresh(Best.Indices.Index(typeof(Project), typeof(Developer)));
 		}
 		private void WaitForIndexCreation(IndexName index)
 		{

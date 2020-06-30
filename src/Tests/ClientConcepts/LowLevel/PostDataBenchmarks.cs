@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using Elasticsearch.Net;
-using Nest;
+using Best;
 using Newtonsoft.Json.Linq;
 using Tests.Framework.Benchmarks;
 

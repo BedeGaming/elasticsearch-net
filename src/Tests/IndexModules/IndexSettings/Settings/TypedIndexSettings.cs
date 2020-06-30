@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 
 namespace Tests.IndexModules.IndexSettings.Settings

@@ -1,7 +1,7 @@
 using System;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
-using Nest;
+using Best;
 using FluentAssertions;
 using Tests.Framework;
 using Newtonsoft.Json;

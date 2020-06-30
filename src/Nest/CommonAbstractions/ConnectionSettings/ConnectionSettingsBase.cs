@@ -8,7 +8,7 @@ using System.Reflection;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// Provides the connection settings for NEST's <see cref="ElasticClient"/>

@@ -1,5 +1,5 @@
 ﻿using System;
-using Nest;
+using Best;
 
 namespace Tests.Mapping.Types.Specialized.Completion
 {

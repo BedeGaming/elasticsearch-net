@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	[ContractJsonConverter(typeof(FieldsJsonConverter))]
 	public class Fields : IUrlParameter, IEnumerable<Field>

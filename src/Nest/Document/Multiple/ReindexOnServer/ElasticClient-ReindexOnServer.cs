@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Elasticsearch.Net;
 using System.IO;
 
-namespace Nest
+namespace Best
 {
 	public partial interface IElasticClient
 	{

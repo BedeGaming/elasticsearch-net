@@ -1,6 +1,6 @@
 using System;
 using Elasticsearch.Net;
-using Nest;
+using Best;
 using Tests.Framework.Configuration;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Nodes;

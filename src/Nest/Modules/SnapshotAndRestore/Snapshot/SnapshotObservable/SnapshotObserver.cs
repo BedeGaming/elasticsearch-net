@@ -1,6 +1,6 @@
 using System;
 
-namespace Nest
+namespace Best
 {
 	public class SnapshotObserver : CoordinatedRequestObserverBase<ISnapshotStatusResponse>
 	{

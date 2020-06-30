@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// Represents an aggregation on the request

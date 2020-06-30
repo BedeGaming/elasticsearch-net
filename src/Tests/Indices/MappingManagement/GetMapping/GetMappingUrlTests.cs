@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.MockData;
-using static Nest.Types;
+using static Best.Types;
 using static Tests.Framework.UrlTester;
 
 namespace Tests.Indices.MappingManagement.GetMapping

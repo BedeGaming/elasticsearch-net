@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nest
+namespace Best
 {
 	public abstract class QueryDescriptorBase<TDescriptor, TInterface>
 		: DescriptorBase<TDescriptor, TInterface>, IQuery

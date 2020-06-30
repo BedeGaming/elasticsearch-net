@@ -1,4 +1,4 @@
-namespace Nest
+namespace Best
 {
 	public abstract class LinearDecayFunctionBase<TOrigin, TScale> : DecayFunctionBase<TOrigin, TScale>
 	{

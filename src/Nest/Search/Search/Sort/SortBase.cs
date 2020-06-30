@@ -2,7 +2,7 @@ using System;
 using System.Linq.Expressions;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// Allows to add one or more sort on specific fields.

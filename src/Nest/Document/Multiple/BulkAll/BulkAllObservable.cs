@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	public class BulkAllObservable<T> : IDisposable, IObservable<IBulkAllResponse> where T : class
 	{

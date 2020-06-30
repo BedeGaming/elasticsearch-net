@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// A JSON serializer that uses Json.NET for serialization

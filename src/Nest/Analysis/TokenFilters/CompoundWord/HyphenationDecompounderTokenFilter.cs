@@ -1,4 +1,4 @@
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// Token filters that allow to decompose compound words.

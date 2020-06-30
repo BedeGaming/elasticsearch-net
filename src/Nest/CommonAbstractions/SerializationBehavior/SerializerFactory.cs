@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	public interface ISerializerFactory
 	{

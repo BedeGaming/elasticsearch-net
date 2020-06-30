@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.MockData;
-using static Nest.Indices;
+using static Best.Indices;
 using static Tests.Framework.UrlTester;
 
 namespace Tests.Indices.IndexManagement.OpenCloseIndex.CloseIndex

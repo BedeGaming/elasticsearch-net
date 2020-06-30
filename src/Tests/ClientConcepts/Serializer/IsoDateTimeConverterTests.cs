@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Tests.Framework;

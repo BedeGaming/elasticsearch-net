@@ -1,4 +1,4 @@
-﻿namespace Nest
+﻿namespace Best
 {
 	public partial interface ITasksCancelRequest { }
 

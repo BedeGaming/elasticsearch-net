@@ -2,7 +2,7 @@
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[ContractJsonConverter(typeof(DefaultHitJsonConverter))]
 	public interface IHit<out T> where T : class

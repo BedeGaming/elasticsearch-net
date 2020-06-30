@@ -1,7 +1,7 @@
 ﻿using System;
 using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	public class NumberAttribute : ElasticsearchPropertyAttributeBase, INumberProperty
 	{

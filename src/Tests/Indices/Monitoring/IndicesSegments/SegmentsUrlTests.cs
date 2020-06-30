@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Nest;
+using Best;
 using Tests.Framework;
 
 namespace Tests.Indices.Monitoring.IndicesSegments
@@ -9,9 +9,9 @@ namespace Tests.Indices.Monitoring.IndicesSegments
 		[U] public async Task Urls()
 		{
 			await UrlTester.GET($"/_segments")
-				.Fluent(c => c.Segments(Nest.Indices.All))
+				.Fluent(c => c.Segments(Best.Indices.All))
 				.Request(c => c.Segments(new SegmentsRequest()))
-				.FluentAsync(c => c.SegmentsAsync(Nest.Indices.All))
+				.FluentAsync(c => c.SegmentsAsync(Best.Indices.All))
 				.RequestAsync(c => c.SegmentsAsync(new SegmentsRequest()))
 				;
 

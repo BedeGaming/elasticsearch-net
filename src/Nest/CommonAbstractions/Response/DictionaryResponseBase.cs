@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	public interface IDictionaryResponse<TKey, TValue> : IResponse
 	{

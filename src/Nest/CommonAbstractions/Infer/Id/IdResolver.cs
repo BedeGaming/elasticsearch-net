@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace Nest
+namespace Best
 {
 	public class IdResolver
 	{

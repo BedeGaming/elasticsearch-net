@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Text;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[ContractJsonConverter(typeof(AnalyzerJsonConverter))]
 	public interface IAnalyzer

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nest.Aggregations.Visitor
+namespace Best.Aggregations.Visitor
 {
 
 	public interface IAggregationVisitor

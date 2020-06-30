@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<GlobalInnerHit>))]
 	public interface IGlobalInnerHit : IInnerHits

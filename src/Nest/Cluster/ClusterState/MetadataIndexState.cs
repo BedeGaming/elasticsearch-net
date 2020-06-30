@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	public class MetadataIndexState
 	{

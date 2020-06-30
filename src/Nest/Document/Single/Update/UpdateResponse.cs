@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	public interface IUpdateResponse<T> : IResponse
 		where T : class

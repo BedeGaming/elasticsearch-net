@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// The pattern_replace char filter allows the use of a regex to manipulate the characters in a string before analysis. 

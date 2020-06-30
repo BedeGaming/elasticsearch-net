@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	using RecoveryStatusConverter = Func<IApiCallDetails, Stream, RecoveryStatusResponse>;
 

@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// A watch action that creates events in PagerDuty.

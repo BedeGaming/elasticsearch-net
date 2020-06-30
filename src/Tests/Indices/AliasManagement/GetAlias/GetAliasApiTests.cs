@@ -2,7 +2,7 @@
 using System.Linq;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
@@ -40,7 +40,7 @@ namespace Tests.Indices.AliasManagement.GetAlias
 			.AllIndices()
 			.Name(Names)
 		;
-		protected override GetAliasRequest Initializer => new GetAliasRequest(Nest.Indices.All, Names);
+		protected override GetAliasRequest Initializer => new GetAliasRequest(Best.Indices.All, Names);
 	}
 
 	public class GetAliasNotFoundApiTests : ApiIntegrationTestBase<ReadOnlyCluster, IGetAliasesResponse, IGetAliasRequest, GetAliasDescriptor, GetAliasRequest>

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework.MockResponses;
 
 namespace Tests.Framework

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Nest
+namespace Best
 {
 	public interface IBucketAggregation : IAggregation
 	{

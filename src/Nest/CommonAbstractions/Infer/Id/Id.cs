@@ -2,7 +2,7 @@
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonConverter(typeof(IdJsonConverter))]
 	public class Id : IEquatable<Id>, IUrlParameter

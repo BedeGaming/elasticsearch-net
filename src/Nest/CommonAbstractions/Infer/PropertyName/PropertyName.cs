@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	[ContractJsonConverter(typeof(PropertyNameJsonConverter))]
 	public class PropertyName : IEquatable<PropertyName>, IUrlParameter

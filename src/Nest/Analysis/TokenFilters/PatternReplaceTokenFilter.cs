@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// The pattern_replace token filter allows to easily handle string replacements based on a regular expression. 

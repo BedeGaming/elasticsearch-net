@@ -1,5 +1,5 @@
 using Elasticsearch.Net;
-using Nest;
+using Best;
 
 namespace Tests.Framework
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	public interface IActions : IIsADictionary<string, IAction> {}
 

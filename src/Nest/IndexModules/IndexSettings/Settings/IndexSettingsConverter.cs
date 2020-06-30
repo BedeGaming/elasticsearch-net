@@ -5,7 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Nest
+namespace Best
 {
 	internal class IndexSettingsConverter : VerbatimDictionaryKeysJsonConverter
 	{

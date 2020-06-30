@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// <see cref="IDFISimilarity"/> independence measure

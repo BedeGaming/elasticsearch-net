@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Nest
+namespace Best
 {
 	internal static class QueryContainerExtensions
 	{

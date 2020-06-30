@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	/// <summary>
 	/// The unique token filter can be used to only index unique tokens during analysis. By default it is applied on all the token stream

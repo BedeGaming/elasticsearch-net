@@ -1,4 +1,4 @@
-namespace Nest
+namespace Best
 {
 	public interface IMergePolicySettings
 	{

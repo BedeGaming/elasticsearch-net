@@ -3,7 +3,7 @@ using System.IO;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	internal class DistanceJsonConverter : JsonConverter
 	{

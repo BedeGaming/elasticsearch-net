@@ -2,7 +2,7 @@
 using System.Linq;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 
 namespace Tests.ClientConcepts.ConnectionPooling.BuildingBlocks

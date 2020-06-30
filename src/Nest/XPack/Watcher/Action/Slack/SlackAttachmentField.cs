@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Nest
+namespace Best
 {
 	[JsonObject]
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<SlackAttachmentField>))]

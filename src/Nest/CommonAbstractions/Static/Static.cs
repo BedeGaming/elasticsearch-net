@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Nest
+namespace Best
 {
 	public static class Infer
 	{
@@ -13,18 +13,18 @@ namespace Nest
 		public static Indices Indices<T>() => typeof(T);
 		public static Indices Indices(params IndexName[] indices) => indices;
 		public static Indices Indices(IEnumerable<IndexName> indices) => indices.ToArray();
-		public static Indices AllIndices = Nest.Indices.All;
+		public static Indices AllIndices = Best.Indices.All;
 
 		public static TypeName Type(TypeName type) => type;
 		public static TypeName Type<T>() => typeof(T);
 		public static Types Type(IEnumerable<TypeName> types) => new Types.ManyTypes(types);
 		public static Types Type(params TypeName[] types) => new Types.ManyTypes(types);
-		public static Types AllTypes = Nest.Types.All;
+		public static Types AllTypes = Best.Types.All;
 
 		public static Names Names(params string[] names) => string.Join(",", names);
 		public static Names Names(IEnumerable<string> names) => string.Join(",", names);
 
-		public static Id Id<T>(T document) where T : class => Nest.Id.From(document);
+		public static Id Id<T>(T document) where T : class => Best.Id.From(document);
 
 		public static Fields Fields<T>(params Expression<Func<T, object>>[] fields) where T : class =>
 			new Fields(fields.Select(f=>(Field)f));
@@ -41,9 +41,9 @@ namespace Nest
 		/// <param name="boost">An optional ^boost postfix, only make sense with certain queries</param>
 		public static Field Field<T>(Expression<Func<T, object>> path, double? boost = null)
 			where T : class =>
-			Nest.Field.Create(path, boost);
+			Best.Field.Create(path, boost);
 
-		public static Field Field(string field, double? boost = null) => Nest.Field.Create(field, boost);
+		public static Field Field(string field, double? boost = null) => Best.Field.Create(field, boost);
 
 		public static PropertyName Property(string property) => property;
 

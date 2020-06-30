@@ -1,6 +1,6 @@
 ﻿using System;
 using Elasticsearch.Net;
-using Nest;
+using Best;
 using Tests.Framework.MockData;
 
 #if DOTNETCORE

@@ -4,7 +4,7 @@ using Elasticsearch.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Nest
+namespace Best
 {
 	public partial interface IReindexOnServerRequest
 	{

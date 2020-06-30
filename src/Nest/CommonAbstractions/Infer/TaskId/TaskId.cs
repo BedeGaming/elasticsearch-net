@@ -2,7 +2,7 @@
 using System.Globalization;
 using Elasticsearch.Net;
 
-namespace Nest
+namespace Best
 {
 	public class TaskId : IUrlParameter, IEquatable<TaskId>
 	{

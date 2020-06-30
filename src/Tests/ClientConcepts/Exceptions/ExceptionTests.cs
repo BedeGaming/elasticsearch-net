@@ -1,6 +1,6 @@
 ﻿using Elasticsearch.Net;
 using FluentAssertions;
-using Nest;
+using Best;
 using System;
 using Tests.Framework;
 using Tests.Framework.Integration;

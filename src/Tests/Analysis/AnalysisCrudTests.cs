@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using Nest;
+using Best;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
@@ -73,7 +73,7 @@ namespace Tests.Analysis
 			requestAsync: (s, c, r) => c.GetIndexSettingsAsync(r)
 		);
 
-		protected GetIndexSettingsRequest GetInitializer(string indexName) => new GetIndexSettingsRequest(Nest.Indices.Index(indexName)) { };
+		protected GetIndexSettingsRequest GetInitializer(string indexName) => new GetIndexSettingsRequest(Best.Indices.Index(indexName)) { };
 		protected IGetIndexSettingsRequest GetFluent(string indexName, GetIndexSettingsDescriptor u) => u.Index(indexName);
 
 		/**

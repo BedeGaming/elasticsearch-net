@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Nest
+namespace Best
 {
 	[JsonObject]
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<LaplaceSmoothingModel>))]
