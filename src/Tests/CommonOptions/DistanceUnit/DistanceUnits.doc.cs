@@ -21,7 +21,7 @@ namespace Tests.CommonOptions.DistanceUnit
 		public void Constructor()
 		{
 			var unitComposed = new Distance(25);
-			var unitComposedWithUnits = new Distance(25, Best.DistanceUnit.Meters);
+			var unitComposedWithUnits = new Distance(25, Nest.DistanceUnit.Meters);
 
 			/**
 			* `Distance` serializes to a string composed of a factor and distance unit.
@@ -58,47 +58,47 @@ namespace Tests.CommonOptions.DistanceUnit
 			/** ===== Metric
 			*`mm` (Millimeters)
 			*/
-			Expect("2.0mm").WhenSerializing(new Distance(2, Best.DistanceUnit.Millimeters));
+			Expect("2.0mm").WhenSerializing(new Distance(2, Nest.DistanceUnit.Millimeters));
 
 			/**
 			*`cm` (Centimeters)
 			*/
-			Expect("123.456cm").WhenSerializing(new Distance(123.456, Best.DistanceUnit.Centimeters));
+			Expect("123.456cm").WhenSerializing(new Distance(123.456, Nest.DistanceUnit.Centimeters));
 
 			/**
 			*`m` (Meters)
 			*/
-			Expect("400.0m").WhenSerializing(new Distance(400, Best.DistanceUnit.Meters));
+			Expect("400.0m").WhenSerializing(new Distance(400, Nest.DistanceUnit.Meters));
 
 			/**
 			*`km` (Kilometers)
 			*/
-			Expect("0.1km").WhenSerializing(new Distance(0.1, Best.DistanceUnit.Kilometers));
+			Expect("0.1km").WhenSerializing(new Distance(0.1, Nest.DistanceUnit.Kilometers));
 
 			/** ===== Imperial
 			*`in` (Inches)
 			*/
-			Expect("43.23in").WhenSerializing(new Distance(43.23, Best.DistanceUnit.Inch));
+			Expect("43.23in").WhenSerializing(new Distance(43.23, Nest.DistanceUnit.Inch));
 
 			/**
 			*`ft` (Feet)
 			*/
-			Expect("3.33ft").WhenSerializing(new Distance(3.33, Best.DistanceUnit.Feet));
+			Expect("3.33ft").WhenSerializing(new Distance(3.33, Nest.DistanceUnit.Feet));
 
 			/**
 			*`yd` (Yards)
 			*/
-			Expect("9.0yd").WhenSerializing(new Distance(9, Best.DistanceUnit.Yards));
+			Expect("9.0yd").WhenSerializing(new Distance(9, Nest.DistanceUnit.Yards));
 
 			/**
 			*`mi` (Miles)
 			*/
-			Expect("0.62mi").WhenSerializing(new Distance(0.62, Best.DistanceUnit.Miles));
+			Expect("0.62mi").WhenSerializing(new Distance(0.62, Nest.DistanceUnit.Miles));
 
 			/**
 			*`nmi` or `NM` (Nautical Miles)
 			*/
-			Expect("45.5nmi").WhenSerializing(new Distance(45.5, Best.DistanceUnit.NauticalMiles));
+			Expect("45.5nmi").WhenSerializing(new Distance(45.5, Nest.DistanceUnit.NauticalMiles));
 		}
 	}
 }

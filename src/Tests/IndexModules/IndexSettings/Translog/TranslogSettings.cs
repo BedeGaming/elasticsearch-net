@@ -10,7 +10,7 @@ namespace Tests.IndexModules.IndexSettings.Translog
 		/**
 		 */
 
-		public class Usage : PromiseUsageTestBase<IIndexSettings, IndexSettingsDescriptor, Best.IndexSettings>
+		public class Usage : PromiseUsageTestBase<IIndexSettings, IndexSettingsDescriptor, Nest.IndexSettings>
 		{
 			protected override object ExpectJson => new Dictionary<string, object>
 			{
@@ -41,8 +41,8 @@ namespace Tests.IndexModules.IndexSettings.Translog
 
 			/**
 			 */
-			protected override Best.IndexSettings Initializer =>
-				new Best.IndexSettings
+			protected override Nest.IndexSettings Initializer =>
+				new Nest.IndexSettings
 				{
 					Translog = new TranslogSettings
 					{

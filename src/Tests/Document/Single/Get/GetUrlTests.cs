@@ -4,7 +4,7 @@ using Best;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using static Tests.Framework.UrlTester;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.Document.Single.Get
 {

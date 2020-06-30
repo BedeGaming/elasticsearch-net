@@ -7,7 +7,7 @@ using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.Aggregations.Bucket.Range
 {
@@ -53,11 +53,11 @@ namespace Tests.Aggregations.Bucket.Range
 				Aggregations = new RangeAggregation("commit_ranges")
 				{
 					Field = Field<Project>(p => p.NumberOfCommits),
-					Ranges = new List<Best.Range>
+					Ranges = new List<Nest.Range>
 					{
-						{ new Best.Range { To = 100 } },
-						{ new Best.Range { From = 100, To = 500 } },
-						{ new Best.Range { From = 500 } }
+						{ new Nest.Range { To = 100 } },
+						{ new Nest.Range { From = 100, To = 500 } },
+						{ new Nest.Range { From = 500 } }
 					}
 				}
 			};

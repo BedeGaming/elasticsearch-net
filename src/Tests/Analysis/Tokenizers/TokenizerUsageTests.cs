@@ -125,9 +125,9 @@ namespace Tests.Analysis.Tokenizers
 		public static IndexSettings InitializerExample =>
 			new IndexSettings
 			{
-				Analysis = new Best.Analysis
+				Analysis = new Nest.Analysis
 				{
-					Tokenizers = new Best.Tokenizers
+					Tokenizers = new Nest.Tokenizers
 					{
 						{
 							"endgen", new EdgeNGramTokenizer

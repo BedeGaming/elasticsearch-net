@@ -7,7 +7,7 @@ using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Xunit;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.Indices.AliasManagement.AliasExists
 {

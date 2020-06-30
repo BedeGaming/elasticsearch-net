@@ -40,7 +40,7 @@ namespace Tests.XPack.License.PostLicense
 			}
 		};
 
-		private Best.License FakeLicense { get; } = new Best.License
+		private Nest.License FakeLicense { get; } = new Nest.License
 		{
 			UID = "uuid",
 			ExpiryDateInMilliseconds = 1,

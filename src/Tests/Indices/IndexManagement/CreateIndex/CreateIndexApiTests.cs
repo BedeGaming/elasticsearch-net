@@ -110,7 +110,7 @@ namespace Tests.Indices.IndexManagement.CreateIndex
 
 		protected override CreateIndexRequest Initializer => new CreateIndexRequest(CallIsolatedValue)
 		{
-			Settings = new Best.IndexSettings()
+			Settings = new Nest.IndexSettings()
 			{
 				NumberOfReplicas = 1,
 				NumberOfShards = 1,
@@ -233,7 +233,7 @@ namespace Tests.Indices.IndexManagement.CreateIndex
 
 		protected override CreateIndexRequest Initializer => new CreateIndexRequest(CallIsolatedValue)
 		{
-			Settings = new Best.IndexSettings()
+			Settings = new Nest.IndexSettings()
 			{
 				NumberOfReplicas = 1,
 				NumberOfShards = 1,

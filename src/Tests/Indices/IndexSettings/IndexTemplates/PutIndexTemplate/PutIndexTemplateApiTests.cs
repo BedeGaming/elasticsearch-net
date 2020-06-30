@@ -85,7 +85,7 @@ namespace Tests.Indices.IndexSettings.IndexTemplates.PutIndexTemplate
 			Order = 1,
 			Template = "nestx-*",
 			Create = false,
-			Settings = new Best.IndexSettings
+			Settings = new Nest.IndexSettings
 			{
 				NumberOfShards = 1
 			},

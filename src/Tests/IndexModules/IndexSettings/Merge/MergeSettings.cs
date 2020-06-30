@@ -10,7 +10,7 @@ namespace Tests.IndexModules.IndexSettings.Merge
 		/**
 		 */
 
-		public class Usage : PromiseUsageTestBase<IIndexSettings, IndexSettingsDescriptor, Best.IndexSettings>
+		public class Usage : PromiseUsageTestBase<IIndexSettings, IndexSettingsDescriptor, Nest.IndexSettings>
 		{
 			protected override object ExpectJson => new Dictionary<string, object>
 			{
@@ -46,8 +46,8 @@ namespace Tests.IndexModules.IndexSettings.Merge
 
 			/**
 			 */
-			protected override Best.IndexSettings Initializer =>
-				new Best.IndexSettings
+			protected override Nest.IndexSettings Initializer =>
+				new Nest.IndexSettings
 				{
 					Merge = new MergeSettings
 					{

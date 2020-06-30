@@ -40,7 +40,7 @@ namespace Tests.Analysis
 		{
 			Settings = new IndexSettings
 			{
-				Analysis = new Best.Analysis
+				Analysis = new Nest.Analysis
 				{
 					Analyzers = Analyzers.AnalyzerUsageTests.InitializerExample.Analysis.Analyzers,
 					CharFilters = CharFilters.CharFilterUsageTests.InitializerExample.Analysis.CharFilters,
@@ -139,9 +139,9 @@ namespace Tests.Analysis
 		{
 			IndexSettings = new IndexSettings
 			{
-				Analysis = new Best.Analysis
+				Analysis = new Nest.Analysis
 				{
-					CharFilters = new Best.CharFilters {{"differentHtml", new HtmlStripCharFilter {}}}
+					CharFilters = new Nest.CharFilters {{"differentHtml", new HtmlStripCharFilter {}}}
 				}
 			}
 		};

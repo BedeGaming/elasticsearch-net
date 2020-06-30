@@ -8,7 +8,7 @@ using Tests.Framework.MockData;
 
 namespace Tests.Mapping.Types.Specialized.Attachment
 {
-	public class AttachmentMappingTests : TypeMappingTestBase<Best.Attachment>
+	public class AttachmentMappingTests : TypeMappingTestBase<Nest.Attachment>
 	{
 		protected override object ExpectJson => new
 		{
@@ -67,7 +67,7 @@ namespace Tests.Mapping.Types.Specialized.Attachment
 			// TODO: Implement
 		}
 
-		protected override Func<PropertiesDescriptor<Best.Attachment>, IPromise<IProperties>> FluentProperties => p => p
+		protected override Func<PropertiesDescriptor<Nest.Attachment>, IPromise<IProperties>> FluentProperties => p => p
 			.Attachment(a => a
 				.Name(n => n.Content)
 				.AuthorField(d => d
@@ -76,7 +76,7 @@ namespace Tests.Mapping.Types.Specialized.Attachment
 				.FileField(d => d
 					.Name(n => n.Content)
 				)
-				.ContentLengthField((NumberPropertyDescriptor<Best.Attachment> d) => d
+				.ContentLengthField((NumberPropertyDescriptor<Nest.Attachment> d) => d
 					.Name(n => n.ContentLength)
 				)
 				.ContentTypeField(d => d
@@ -88,7 +88,7 @@ namespace Tests.Mapping.Types.Specialized.Attachment
 				.KeywordsField(d => d
 					.Name(n => n.Keywords)
 				)
-				.LanguageField((StringPropertyDescriptor<Best.Attachment> d) => d
+				.LanguageField((StringPropertyDescriptor<Nest.Attachment> d) => d
 					.Name(n => n.Language)
 					.DocValues()
 					.NotAnalyzed()

@@ -108,7 +108,7 @@ namespace Tests.QueryDsl.Geo.Shape.GeometryCollection
 			Name = "named_query",
 			Boost = 1.1,
 			Field = Infer.Field<Project>(p=>p.Location),
-			Shape = new Best.GeometryCollection
+			Shape = new Nest.GeometryCollection
 			{
 				Geometries = new IGeoShape[]
 				{

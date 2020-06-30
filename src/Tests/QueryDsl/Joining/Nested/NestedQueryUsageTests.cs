@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.QueryDsl.Joining.Nested
 {

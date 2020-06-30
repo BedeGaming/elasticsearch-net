@@ -6,7 +6,7 @@ using FluentAssertions;
 using Tests.Framework;
 using Newtonsoft.Json;
 using Tests.Framework.ManagedElasticsearch.Clusters;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.Search.Request
 {

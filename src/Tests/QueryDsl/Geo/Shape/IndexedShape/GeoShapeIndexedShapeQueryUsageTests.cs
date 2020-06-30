@@ -2,7 +2,7 @@
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.QueryDsl.Geo.Shape.IndexedShape
 {

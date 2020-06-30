@@ -422,9 +422,9 @@ namespace Tests.Analysis.TokenFilters
 		public static IndexSettings InitializerExample =>
 			new IndexSettings
 			{
-				Analysis = new Best.Analysis
+				Analysis = new Nest.Analysis
 				{
-					TokenFilters = new Best.TokenFilters
+					TokenFilters = new Nest.TokenFilters
 					{
 						{"myAscii", new AsciiFoldingTokenFilter {PreserveOriginal = true}},
 						{"myCommonGrams", new CommonGramsTokenFilter {QueryMode = true, IgnoreCase = true, CommonWords = new[] {"x", "y", "z"}}},

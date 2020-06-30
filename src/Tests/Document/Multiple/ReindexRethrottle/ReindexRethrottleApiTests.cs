@@ -7,7 +7,7 @@ using Tests.Document.Multiple.Reindex;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.Document.Multiple.ReindexRethrottle
 {

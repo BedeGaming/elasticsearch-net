@@ -10,7 +10,7 @@ using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
 using Tests.XPack.Security;
 using Xunit;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.XPack.Graph.Explore
 {

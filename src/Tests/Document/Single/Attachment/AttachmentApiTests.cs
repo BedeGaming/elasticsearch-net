@@ -27,7 +27,7 @@ namespace Tests.Document.Single.Attachment
 
 		// Base 64 encoded version of Attachment_Test_Document.pdf
 		public static string TestPdfDocument { get; }
-		public Best.Attachment Attachment { get; set; }
+		public Nest.Attachment Attachment { get; set; }
 	}
 
 	[SkipVersion("<2.4.0", "This is now in maintainence mode we only test it against the latest stable because previous versions needed complex version parity lookups to install")]
@@ -35,7 +35,7 @@ namespace Tests.Document.Single.Attachment
 		ApiIntegrationTestBase<WritableCluster, IIndexResponse, IIndexRequest<Document>, IndexDescriptor<Document>, IndexRequest<Document>>
 	{
 		protected virtual Document Document =>
-			new Document { Attachment = new Best.Attachment { Content = Document.TestPdfDocument } };
+			new Document { Attachment = new Nest.Attachment { Content = Document.TestPdfDocument } };
 
 		protected virtual Document ModifyDocument(Document document) => document;
 
@@ -205,7 +205,7 @@ namespace Tests.Document.Single.Attachment
 		protected override Document Document =>
 			new Document
 			{
-				Attachment = new Best.Attachment
+				Attachment = new Nest.Attachment
 				{
 					ContentType = "application/pdf",
 					Content = Document.TestPdfDocument,
@@ -285,7 +285,7 @@ namespace Tests.Document.Single.Attachment
 		protected override Document Document =>
 			new Document
 			{
-				Attachment = new Best.Attachment
+				Attachment = new Nest.Attachment
 				{
 					Content = Document.TestPdfDocument,
 					DetectLanguage = true
@@ -331,7 +331,7 @@ namespace Tests.Document.Single.Attachment
 		protected override Document Document =>
 			new Document
 			{
-				Attachment = new Best.Attachment
+				Attachment = new Nest.Attachment
 				{
 					Content = Document.TestPdfDocument,
 					DetectLanguage = true
@@ -379,7 +379,7 @@ namespace Tests.Document.Single.Attachment
 			// try to set all the metadata
 			foreach (var hit in searchResponse.Hits)
 			{
-				var document = new Document { Attachment = new Best.Attachment() };
+				var document = new Document { Attachment = new Nest.Attachment() };
 				document.Attachment.Name = hit.Fields.ValueOf<Document, string>(d => d.Attachment.Name);
 				document.Attachment.Author = hit.Fields.ValueOf<Document, string>(d => d.Attachment.Author);
 				document.Attachment.Content = hit.Fields.ValueOf<Document, string>(d => d.Attachment.Content);

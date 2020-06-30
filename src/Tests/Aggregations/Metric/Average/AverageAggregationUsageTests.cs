@@ -3,7 +3,7 @@ using FluentAssertions;
 using Best;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
-using static Best.Infer;
+using static Nest.Infer;
 using System.Collections.Generic;
 using Tests.Framework;
 using Tests.Framework.ManagedElasticsearch.Clusters;

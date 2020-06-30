@@ -6,7 +6,7 @@ using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Xunit;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.Indices.IndexSettings.UpdateIndicesSettings
 {
@@ -53,7 +53,7 @@ namespace Tests.Indices.IndexSettings.UpdateIndicesSettings
 
 		protected override UpdateIndexSettingsRequest Initializer => new UpdateIndexSettingsRequest(CallIsolatedValue)
 		{
-			IndexSettings = new Best.IndexSettings
+			IndexSettings = new Nest.IndexSettings
 			{
 				BlocksWrite = false,
 				NumberOfReplicas = 2

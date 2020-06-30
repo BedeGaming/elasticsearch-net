@@ -11,7 +11,7 @@ using Tests.Framework;
 using Tests.Framework.MockData;
 using Xunit;
 using static Tests.Framework.RoundTripper;
-using static Best.Infer;
+using static Nest.Infer;
 using Field = Best.Field;
 
 namespace Tests.ClientConcepts.HighLevel.Inference
@@ -167,7 +167,7 @@ namespace Tests.ClientConcepts.HighLevel.Inference
 		*
 		* [TIP]
 		* ====
-		* This example uses the https://msdn.microsoft.com/en-us/library/sf0df423.aspx#Anchor_0[static import] `using static Best.Infer;` in the using directives to shorthand `Nest.Infer.Field<T>()`
+		* This example uses the https://msdn.microsoft.com/en-us/library/sf0df423.aspx#Anchor_0[static import] `using static Nest.Infer;` in the using directives to shorthand `Nest.Infer.Field<T>()`
 		* to simply `Field<T>()`. Be sure to include this static import if copying any of these examples.
 		* ====
 		*

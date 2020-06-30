@@ -2,7 +2,7 @@
 using Best;
 using Tests.Framework;
 using Tests.Framework.MockData;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.XPack.Graph.Explore
 {

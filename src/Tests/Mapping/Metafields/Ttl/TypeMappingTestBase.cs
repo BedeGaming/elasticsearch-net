@@ -7,7 +7,7 @@ using Tests.Framework.Integration;
 using System.Collections.Generic;
 using Elasticsearch.Net;
 using Tests.Framework.ManagedElasticsearch.Clusters;
-using static Best.Infer;
+using static Nest.Infer;
 
 #pragma warning disable 618
 

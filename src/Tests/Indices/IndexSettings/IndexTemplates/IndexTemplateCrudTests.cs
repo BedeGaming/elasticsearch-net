@@ -26,7 +26,7 @@ namespace Tests.Indices.IndexSettings.IndexTemplates
 		protected PutIndexTemplateRequest CreateInitializer(string name) => new PutIndexTemplateRequest(name)
 		{
 			Template = "startingwiththis-*",
-			Settings = new Best.IndexSettings
+			Settings = new Nest.IndexSettings
 			{
 				NumberOfShards = 2
 			}
@@ -70,7 +70,7 @@ namespace Tests.Indices.IndexSettings.IndexTemplates
 		protected PutIndexTemplateRequest PutInitializer(string name) => new PutIndexTemplateRequest(name)
 		{
 			Template = "startingwiththis-*",
-			Settings = new Best.IndexSettings
+			Settings = new Nest.IndexSettings
 			{
 				NumberOfShards = 1
 			}

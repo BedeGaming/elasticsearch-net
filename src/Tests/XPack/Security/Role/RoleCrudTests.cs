@@ -7,7 +7,7 @@ using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;
 using Xunit;
-using static Best.Infer;
+using static Nest.Infer;
 
 namespace Tests.XPack.Security.Role
 {

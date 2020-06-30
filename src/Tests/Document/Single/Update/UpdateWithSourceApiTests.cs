@@ -6,7 +6,7 @@ using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
 using Xunit;
-using static Best.Infer;
+using static Nest.Infer;
 using System.Threading.Tasks;
 using FluentAssertions;
 using System.Linq;

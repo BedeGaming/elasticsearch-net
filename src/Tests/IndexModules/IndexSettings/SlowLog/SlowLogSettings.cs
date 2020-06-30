@@ -10,7 +10,7 @@ namespace Tests.IndexModules.IndexSettings.SlowLog
 		/**
 		 */
 
-		public class Usage : PromiseUsageTestBase<IIndexSettings, IndexSettingsDescriptor, Best.IndexSettings>
+		public class Usage : PromiseUsageTestBase<IIndexSettings, IndexSettingsDescriptor, Nest.IndexSettings>
 		{
 			protected override object ExpectJson => new Dictionary<string, object>
 			{
@@ -62,10 +62,10 @@ namespace Tests.IndexModules.IndexSettings.SlowLog
 
 			/**
 			 */
-			protected override Best.IndexSettings Initializer =>
-				new Best.IndexSettings
+			protected override Nest.IndexSettings Initializer =>
+				new Nest.IndexSettings
 				{
-					SlowLog = new Best.SlowLog
+					SlowLog = new Nest.SlowLog
 					{
 						Indexing = new SlowLogIndexing
 						{

@@ -19,7 +19,7 @@ namespace Tests.CodeStandards.Serialization
 			var c = new ElasticClient(settings);
 
 
-			var serialized = c.Serializer.SerializeToString(new Best.Analysis { CharFilters = new CharFilters() });
+			var serialized = c.Serializer.SerializeToString(new Nest.Analysis { CharFilters = new CharFilters() });
 			serialized.Should().NotContain("char_filters").And.NotContain("charFilters");
 			serialized.Should().Contain("char_filter");
 
