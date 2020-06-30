@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FluentAssertions;
-using Best;
+using Nest;
 using Tests.Framework;
 using static Tests.Framework.RoundTripper;
 

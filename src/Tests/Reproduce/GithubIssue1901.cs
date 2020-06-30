@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Xunit;

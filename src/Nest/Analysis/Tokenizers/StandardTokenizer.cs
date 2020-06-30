@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// A tokenizer of type standard providing grammar based tokenizer that is a good tokenizer for most European language documents. 

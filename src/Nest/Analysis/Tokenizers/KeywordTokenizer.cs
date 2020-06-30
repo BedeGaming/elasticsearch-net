@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// A tokenizer of type keyword that emits the entire input as a single input.

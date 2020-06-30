@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public interface IUnregisterPercolatorResponse : IResponse
 	{

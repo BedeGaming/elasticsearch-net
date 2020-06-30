@@ -7,7 +7,7 @@ using Elasticsearch.Net;
 using FluentAssertions;
 using FluentAssertions.Collections;
 using FluentAssertions.Execution;
-using Best;
+using Nest;
 
 namespace Tests.Framework
 {

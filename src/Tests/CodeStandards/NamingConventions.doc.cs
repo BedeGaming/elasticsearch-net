@@ -6,8 +6,8 @@ using System.Linq;
 using System.Reflection;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Best;
-using Best.Aggregations.Visitor;
+using Nest;
+using Nest.Aggregations.Visitor;
 using Tests.Framework;
 
 namespace Tests.CodeStandards

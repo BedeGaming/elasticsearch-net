@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// A watch action that sends email notifications.

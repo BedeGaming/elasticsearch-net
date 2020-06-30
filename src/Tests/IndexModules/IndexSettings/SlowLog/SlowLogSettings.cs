@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Best;
+using Nest;
 using Tests.Framework;
 
 namespace Tests.IndexModules.IndexSettings.SlowLog

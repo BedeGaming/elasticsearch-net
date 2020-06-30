@@ -4,7 +4,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System;
 
-namespace Best
+namespace Nest
 {
 	public interface IBulkResponse : IResponse
 	{

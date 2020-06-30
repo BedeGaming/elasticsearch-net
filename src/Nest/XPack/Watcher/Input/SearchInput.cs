@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// An input to load the results of an Elasticsearch search request into the execution

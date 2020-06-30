@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
-namespace Best
+namespace Nest
 {
 	public class ElasticContractResolver : DefaultContractResolver
 	{

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Similarity that implements the divergence from independence model

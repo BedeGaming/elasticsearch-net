@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// A generic property to map properties that may be of different types.

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
  * Taken from SolrNet https://github.com/mausch/SolrNet/blob/master/SolrNet/Location.cs
  */
 
-namespace Best
+namespace Nest
 {
 
 	/// <summary>

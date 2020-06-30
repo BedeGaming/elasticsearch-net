@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Tests.Framework;
@@ -43,7 +43,7 @@ namespace Tests.Reproduce
 			var date = "2013-06-24T00:00:00.000";
 			var indexResult = client.Index(new SearchResult { DateAsString = date, Date = DateTime.Parse(date) }, i => i.Id(1).Index(index));
 			indexResult.IsValid.Should().BeTrue();
-			client.Refresh(Best.Indices.All);
+			client.Refresh(Nest.Indices.All);
 			var response = client.Search<ISearchResult>(new SearchRequest<ISearchResult>(index, typeof(SearchResult)));
 			response.IsValid.Should().BeTrue();
 			response.Documents.Count().Should().Be(1);

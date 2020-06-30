@@ -1,4 +1,4 @@
-﻿namespace Best
+﻿namespace Nest
 {
 	public partial interface ISearchShardsRequest { }
 	public partial interface ISearchShardsRequest<T> : ISearchShardsRequest { }

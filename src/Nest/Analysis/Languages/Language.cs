@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Language types used for language analyzers

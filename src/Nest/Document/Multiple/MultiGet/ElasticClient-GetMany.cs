@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Provides GetMany extensions that make it easier to get many documents given a list of ids

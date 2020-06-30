@@ -3,7 +3,7 @@ using System;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public partial interface IFieldStatsRequest
 	{

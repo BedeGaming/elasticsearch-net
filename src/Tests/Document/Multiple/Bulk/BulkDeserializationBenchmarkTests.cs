@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using Newtonsoft.Json;
 using Tests.Framework;
 using System.Text;

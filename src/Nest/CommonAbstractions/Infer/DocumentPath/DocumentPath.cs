@@ -1,6 +1,6 @@
 using System;
 
-namespace Best
+namespace Nest
 {
 	public interface IDocumentPath
 	{
@@ -18,7 +18,7 @@ namespace Best
 		TypeName IDocumentPath.Type { get; set; }
 
 
-		public DocumentPath(T document) : this(Best.Id.From(document)) { this.Document = document; }
+		public DocumentPath(T document) : this(Nest.Id.From(document)) { this.Document = document; }
 		public DocumentPath(Id id)
 		{
 			Self.Id = id;

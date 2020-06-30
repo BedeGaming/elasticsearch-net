@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public interface IGetUserResponse : IResponse
 	{

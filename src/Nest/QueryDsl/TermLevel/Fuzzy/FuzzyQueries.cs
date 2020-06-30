@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Best
+namespace Nest
 {
 	public interface IFuzzyStringQuery : IFuzzyQuery<string, Fuzziness> { }
 	public class FuzzyQuery : FuzzyQueryBase<string, Fuzziness>, IFuzzyStringQuery { }

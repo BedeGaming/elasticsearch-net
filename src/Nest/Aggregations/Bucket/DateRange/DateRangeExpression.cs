@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<DateRangeExpression>))]
 	public interface IDateRangeExpression 

@@ -1,7 +1,7 @@
 ﻿using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public interface IExistsResponse : IResponse
 	{

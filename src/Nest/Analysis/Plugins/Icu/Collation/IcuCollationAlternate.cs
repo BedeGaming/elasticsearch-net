@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Sets the alternate handling for strength quaternary to be either shifted or non-ignorable.

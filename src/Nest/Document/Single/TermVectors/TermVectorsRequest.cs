@@ -3,7 +3,7 @@ using Elasticsearch.Net;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
 
-namespace Best
+namespace Nest
 {
 	public partial interface ITermVectorsRequest<TDocument>
 		where TDocument : class

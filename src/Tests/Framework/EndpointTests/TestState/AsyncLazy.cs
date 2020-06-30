@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Best;
+using Nest;
 using Tests.Framework.Integration;
 
 namespace Tests.Framework

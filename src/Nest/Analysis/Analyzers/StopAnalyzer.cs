@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// An analyzer of type stop that is built using a Lower Case Tokenizer, with Stop Token Filter.

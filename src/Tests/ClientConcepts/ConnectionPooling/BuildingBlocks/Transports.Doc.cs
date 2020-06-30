@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using Tests.Framework.MockData;
 
 namespace Tests.ClientConcepts.ConnectionPooling.BuildingBlocks

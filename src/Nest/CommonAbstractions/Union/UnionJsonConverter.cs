@@ -5,7 +5,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Best
+namespace Nest
 {
 	internal class UnionJsonConverter : JsonConverter
 	{

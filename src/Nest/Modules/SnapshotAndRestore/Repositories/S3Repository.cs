@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public interface IS3Repository : IRepository<IS3RepositorySettings> { }
 

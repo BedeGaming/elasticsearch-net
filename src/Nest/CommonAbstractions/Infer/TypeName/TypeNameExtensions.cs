@@ -1,4 +1,4 @@
-﻿namespace Best
+﻿namespace Nest
 {
 	public static class TypeNameExtensions
 	{

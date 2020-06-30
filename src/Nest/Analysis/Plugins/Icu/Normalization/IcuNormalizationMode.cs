@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Normalization mode https://en.wikipedia.org/wiki/Unicode_equivalence#Normal_forms

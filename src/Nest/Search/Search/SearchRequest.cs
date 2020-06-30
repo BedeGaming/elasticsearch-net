@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<SearchRequest>))]

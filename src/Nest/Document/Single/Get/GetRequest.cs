@@ -1,4 +1,4 @@
-﻿namespace Best
+﻿namespace Nest
 {
 	public partial interface IGetRequest { }
 	public interface IGetRequest<T> : IGetRequest where T : class { }

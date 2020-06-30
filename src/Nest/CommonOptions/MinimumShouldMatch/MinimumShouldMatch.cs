@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(MinimumShouldMatchJsonConverter))]
 	public class MinimumShouldMatch : Union<int?, string>

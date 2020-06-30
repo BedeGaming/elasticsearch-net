@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Best
+namespace Nest
 {
 	public interface IIsADictionary { }
 

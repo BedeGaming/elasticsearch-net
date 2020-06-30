@@ -3,7 +3,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Best
+namespace Nest
 {
 	public class TopHitsAggregate : MetricAggregateBase
 	{

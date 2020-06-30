@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject(MemberSerialization.OptIn)]
 	public interface IAttachmentProperty : IProperty

@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 #pragma warning disable 618 // IMappingTransform
 
-namespace Best
+namespace Nest
 {
 	internal class MappingTransformCollectionJsonConverter : JsonConverter
 	{

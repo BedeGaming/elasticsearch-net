@@ -3,7 +3,7 @@ using System.Reflection;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject(MemberSerialization.OptIn)]
 	[ContractJsonConverter(typeof(PropertyJsonConverter))]

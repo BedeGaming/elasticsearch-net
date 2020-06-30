@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using static Tests.Framework.UrlTester;
@@ -12,9 +12,9 @@ namespace Tests.Indices.Monitoring.IndicesStats
 		[U] public async Task Urls()
 		{
 			await GET($"/_stats")
-				.Fluent(c => c.IndicesStats(Best.Indices.All))
+				.Fluent(c => c.IndicesStats(Nest.Indices.All))
 				.Request(c => c.IndicesStats(new IndicesStatsRequest()))
-				.FluentAsync(c => c.IndicesStatsAsync(Best.Indices.All))
+				.FluentAsync(c => c.IndicesStatsAsync(Nest.Indices.All))
 				.RequestAsync(c => c.IndicesStatsAsync(new IndicesStatsRequest()))
 				;
 

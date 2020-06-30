@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<MoreLikeThisQueryDescriptor<object>>))]
@@ -74,7 +74,7 @@ namespace Best
 		public IEnumerable<Like> Unlike { get; set; }
 
 		internal override void InternalWrapInContainer(IQueryContainer c) => c.MoreLikeThis = this;
-		internal static bool IsConditionless(IMoreLikeThisQuery q) => q.Fields.IsConditionless() || (!q.Like.HasAny() || q.Like.All(Best.Like.IsConditionless));
+		internal static bool IsConditionless(IMoreLikeThisQuery q) => q.Fields.IsConditionless() || (!q.Like.HasAny() || q.Like.All(Nest.Like.IsConditionless));
 	}
 
 	public class MoreLikeThisQueryDescriptor<T>

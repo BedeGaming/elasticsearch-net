@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Represents the result of an aggregation on the response

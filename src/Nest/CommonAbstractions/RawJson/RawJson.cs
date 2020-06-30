@@ -1,4 +1,4 @@
-﻿namespace Best
+﻿namespace Nest
 {
 	/// <summary>
 	/// Marker class that signals to the CustomJsonConverter to write the string verbatim

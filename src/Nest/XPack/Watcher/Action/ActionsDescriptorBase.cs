@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Best
+namespace Nest
 {
 	public abstract class ActionsDescriptorBase<TDescriptor, TInterface>
 		: DescriptorBase<TDescriptor, TInterface>, IAction

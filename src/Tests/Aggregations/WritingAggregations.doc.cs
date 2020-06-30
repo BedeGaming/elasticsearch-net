@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using Best;
+using Nest;
 using Tests.Aggregations.Bucket.Children;
 using Tests.Framework;
 using Tests.Framework.Integration;

@@ -1,5 +1,5 @@
 ﻿using System;
-using Best;
+using Nest;
 #pragma warning disable 618 // Usage of IndexName
 
 namespace Tests.Mapping.Types.Core.Boolean

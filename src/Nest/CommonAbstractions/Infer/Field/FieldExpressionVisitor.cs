@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Best
+namespace Nest
 {
 	internal class HasVariableExpressionVisitor : ExpressionVisitor
 	{

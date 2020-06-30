@@ -1,6 +1,6 @@
 ﻿using System;
 using FluentAssertions;
-using Best;
+using Nest;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
 using static Nest.Infer;

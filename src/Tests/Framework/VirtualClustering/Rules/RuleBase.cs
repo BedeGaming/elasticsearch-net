@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 
 namespace Tests.Framework
 {

@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// The strength property determines the minimum level of

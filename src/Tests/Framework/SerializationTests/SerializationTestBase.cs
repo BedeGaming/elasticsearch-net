@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Best;
+using Nest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Tests.Framework.Integration;

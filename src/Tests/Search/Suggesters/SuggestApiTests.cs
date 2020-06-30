@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
 using static Nest.Infer;

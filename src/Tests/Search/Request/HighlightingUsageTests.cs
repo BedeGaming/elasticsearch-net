@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bogus;
-using Best;
+using Nest;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
 using FluentAssertions;

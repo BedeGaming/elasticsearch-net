@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Best
+namespace Nest
 {
 	public interface IBulkDeleteOperation<T> : IBulkOperation
 		where T : class

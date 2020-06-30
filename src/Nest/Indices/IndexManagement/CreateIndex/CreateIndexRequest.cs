@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<CreateIndexRequest>))]
 	public partial interface ICreateIndexRequest : IIndexState

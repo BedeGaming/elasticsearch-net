@@ -5,14 +5,14 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Best;
+using Nest;
 using Newtonsoft.Json;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using Xunit;
 using static Tests.Framework.RoundTripper;
 using static Nest.Infer;
-using Field = Best.Field;
+using Field = Nest.Field;
 
 namespace Tests.ClientConcepts.HighLevel.Inference
 {
@@ -162,7 +162,7 @@ namespace Tests.ClientConcepts.HighLevel.Inference
 
 		/**
 		* [[nest-infer]]
-		* ==== using Best.Infer methods
+		* ==== Using Nest.Infer methods
 		* To ease creating a `Field` instance from expressions, there is a static `Infer` class you can use
 		*
 		* [TIP]
@@ -332,7 +332,7 @@ namespace Tests.ClientConcepts.HighLevel.Inference
 		/**
 		* ==== Attribute based naming
 		*
-		* using Best's property attributes you can specify a new name for the properties
+		* Using NEST's property attributes you can specify a new name for the properties
 		*/
 		public class BuiltIn
 		{

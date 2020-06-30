@@ -1,4 +1,4 @@
-﻿using Best;
+﻿using Nest;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using Tests.Framework.Integration;

@@ -4,7 +4,7 @@ using System.Text;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject(MemberSerialization.OptIn)]
 	public interface IMultiPercolateResponse : IResponse

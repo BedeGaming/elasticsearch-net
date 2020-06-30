@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 
-namespace Best
+namespace Nest
 {
 	[AttributeUsage(System.AttributeTargets.Class, AllowMultiple = false)]
 	public class ElasticsearchTypeAttribute : Attribute

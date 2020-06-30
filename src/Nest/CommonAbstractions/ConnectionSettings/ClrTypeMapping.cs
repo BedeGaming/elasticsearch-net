@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public interface IClrTypeMapping<T> where T : class
 	{

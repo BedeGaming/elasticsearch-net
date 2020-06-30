@@ -4,7 +4,7 @@ using System.Linq;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public interface ISearchResponse<T> : IResponse where T : class
 	{

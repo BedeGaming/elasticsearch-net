@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// ElasticClient is NEST's strongly typed client which exposes fully mapped Elasticsearch endpoints

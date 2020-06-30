@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public abstract class PropertyDescriptorBase<TDescriptor, TInterface, T>
 		: DescriptorBase<TDescriptor, TInterface>, IProperty

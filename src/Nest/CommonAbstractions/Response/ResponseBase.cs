@@ -3,7 +3,7 @@ using System.Text;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public interface IResponse : IBodyWithApiCallDetails
 	{

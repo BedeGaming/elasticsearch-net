@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public interface IBulkAllRequest<T> where T : class
 	{

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using Tests.Framework;
 using static Tests.Framework.UrlTester;
 

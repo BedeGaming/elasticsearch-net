@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	internal class PutWarmerRequestJsonConverter : JsonConverter
 	{

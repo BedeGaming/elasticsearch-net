@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<MappingTransform>))]
 	[Obsolete("Deprecated in 2.0.0 Removed in 5.0.0")]

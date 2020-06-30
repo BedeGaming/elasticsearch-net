@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Best;
+using Nest;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;

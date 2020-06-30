@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Best;
+using Nest;
 using Tests.Framework;
 
 namespace Tests.XPack.Security.User.PutUser

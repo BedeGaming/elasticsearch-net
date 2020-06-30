@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Best;
+using Nest;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch;
 using Tests.Framework.ManagedElasticsearch.Clusters;

@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Converters;
 using System.Runtime.Serialization;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(StringEnumConverter))]
 	public enum ConditionType

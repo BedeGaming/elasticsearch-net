@@ -1,4 +1,4 @@
-﻿namespace Best
+﻿namespace Nest
 {
 	/// <summary>
 	/// A token filter of type reverse that simply reverses the tokens.

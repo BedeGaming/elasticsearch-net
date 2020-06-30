@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Best;
+using Nest;
 using Tests.Framework;
 using static Tests.Framework.UrlTester;
 
@@ -10,9 +10,9 @@ namespace Tests.Indices.StatusManagement.ClearCache
 		[U] public async Task Urls()
 		{
 			await POST($"/_cache/clear")
-				.Fluent(c => c.ClearCache(Best.Indices.All))
+				.Fluent(c => c.ClearCache(Nest.Indices.All))
 				.Request(c => c.ClearCache(new ClearCacheRequest()))
-				.FluentAsync(c => c.ClearCacheAsync(Best.Indices.All))
+				.FluentAsync(c => c.ClearCacheAsync(Nest.Indices.All))
 				.RequestAsync(c => c.ClearCacheAsync(new ClearCacheRequest()))
 				;
 

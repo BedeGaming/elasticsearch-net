@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Best
+namespace Nest
 {
 	public interface IAllocationAttributes : IIsADictionary<string, IList<string>>
 	{

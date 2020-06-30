@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Best
+namespace Nest
 {
 	internal class AggregateJsonConverter : JsonConverter
 	{

@@ -4,7 +4,7 @@ using System.Linq;
 using Elasticsearch.Net;
 using FluentAssertions;
 using FluentAssertions.Common;
-using Best;
+using Nest;
 using Tests.Framework;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;

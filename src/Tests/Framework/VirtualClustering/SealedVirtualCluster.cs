@@ -1,6 +1,6 @@
 using System;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 
 namespace Tests.Framework
 {

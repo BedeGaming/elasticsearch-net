@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	internal class TimeSpanConverter : JsonConverter
 	{

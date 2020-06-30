@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	internal class NoMatchQueryJsonConverter : ReserializeJsonConverter<QueryContainer, IQueryContainer>
 	{

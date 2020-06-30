@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(MultiPercolateJsonConverter))]
 	public partial interface IMultiPercolateRequest 

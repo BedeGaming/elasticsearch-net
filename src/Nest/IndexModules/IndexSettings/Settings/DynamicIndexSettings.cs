@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Best
+namespace Nest
 {
 	[ContractJsonConverter(typeof(IndexSettingsConverter))]
 	public interface IDynamicIndexSettings : IIsADictionary<string, object>

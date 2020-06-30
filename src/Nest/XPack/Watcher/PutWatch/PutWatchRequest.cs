@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
-	/// A <see cref="IElasticClient.PutWatch(Best.Id,Func{Best.PutWatchDescriptor,Best.IPutWatchRequest})" /> request
+	/// A <see cref="IElasticClient.PutWatch(Nest.Id,Func{Nest.PutWatchDescriptor,Nest.IPutWatchRequest})" /> request
 	/// </summary>
 	public partial interface IPutWatchRequest
 	{

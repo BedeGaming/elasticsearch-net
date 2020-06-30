@@ -3,7 +3,7 @@ using System.Linq;
 using Elasticsearch.Net;
 using FluentAssertions;
 using FluentAssertions.Common;
-using Best;
+using Nest;
 using Tests.Framework;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Xunit;

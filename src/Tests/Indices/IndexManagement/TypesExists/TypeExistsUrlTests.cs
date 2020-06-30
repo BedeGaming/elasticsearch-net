@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Best;
+using Nest;
 using Tests.Framework;
 using Tests.Framework.MockData;
-using static Best.Indices;
-using static Best.Types;
+using static Nest.Indices;
+using static Nest.Types;
 using static Tests.Framework.UrlTester;
 
 namespace Tests.Indices.IndexManagement.TypeExists

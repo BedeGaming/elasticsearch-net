@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Conditions for a watch

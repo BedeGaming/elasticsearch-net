@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(StringEnumConverter))]
 	public enum GeoDistanceType

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter<IndexConstraints, Field, IIndexConstraint>))]
 	public interface IIndexConstraints : IIsADictionary<Field, IIndexConstraint> { }

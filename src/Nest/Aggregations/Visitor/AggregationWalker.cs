@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Best.Aggregations.Visitor
+namespace Nest.Aggregations.Visitor
 {
 	public class AggregationWalker
 	{

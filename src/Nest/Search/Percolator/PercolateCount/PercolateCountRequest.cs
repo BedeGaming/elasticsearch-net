@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public partial interface IPercolateCountRequest<TDocument> : IPercolateOperation
 		where TDocument : class

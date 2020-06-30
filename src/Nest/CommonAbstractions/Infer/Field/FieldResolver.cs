@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public class FieldResolver
 	{

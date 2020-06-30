@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public class FieldMappingProperties : Dictionary<string, FieldMapping> { }
 

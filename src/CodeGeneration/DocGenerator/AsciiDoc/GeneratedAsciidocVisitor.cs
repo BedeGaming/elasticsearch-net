@@ -15,7 +15,7 @@ using DocGenerator.XmlDocs;
 using Elasticsearch.Net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Best;
+using Nest;
 using NuDoq;
 using Container = AsciiDocNet.Container;
 using Document = AsciiDocNet.Document;

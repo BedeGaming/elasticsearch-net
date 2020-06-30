@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// The tokenization mode determines how the tokenizer handles compound and unknown words.

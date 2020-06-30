@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Best;
+using Nest;
 using Tests.Framework;
 
 namespace Tests.ClientConcepts.LowLevel

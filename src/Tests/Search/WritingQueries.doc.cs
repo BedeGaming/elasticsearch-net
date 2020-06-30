@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Best;
+using Nest;
 using Newtonsoft.Json.Linq;
 using Tests.Framework;
 using Tests.Framework.ManagedElasticsearch.Clusters;

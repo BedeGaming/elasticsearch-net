@@ -1,5 +1,5 @@
 using System;
-using Best;
+using Nest;
 using System.Net;
 
 namespace Tests.Framework

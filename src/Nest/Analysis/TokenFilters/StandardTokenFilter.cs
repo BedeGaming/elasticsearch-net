@@ -1,4 +1,4 @@
-﻿namespace Best
+﻿namespace Nest
 {
 	/// <summary>
 	/// A token filter of type standard that normalizes tokens extracted with the Standard Tokenizer.

@@ -5,7 +5,7 @@ using Elasticsearch.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Best
+namespace Nest
 {
 	internal class PropertiesJsonConverter : JsonConverter
 	{

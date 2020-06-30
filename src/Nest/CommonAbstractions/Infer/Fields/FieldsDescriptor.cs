@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Best
+namespace Nest
 {
 	public class FieldsDescriptor<T> : DescriptorPromiseBase<FieldsDescriptor<T>, Fields> 
 		where T : class

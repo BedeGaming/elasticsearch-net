@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	using IndexTemplateExistConverter = Func<IApiCallDetails, Stream, ExistsResponse>;
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using Best;
+using Nest;
 using Tests.Framework;
 
 namespace Tests.Analysis.TokenFilters

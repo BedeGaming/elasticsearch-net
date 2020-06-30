@@ -10,7 +10,7 @@ using static Elasticsearch.Net.HttpMethod;
 //Generated File Please Do Not Edit Manually
 
 
-namespace Best
+namespace Nest
 {
 	///<summary>This dispatches highlevel requests into the proper lowlevel client overload method</summary>
 	internal partial class LowLevelDispatch

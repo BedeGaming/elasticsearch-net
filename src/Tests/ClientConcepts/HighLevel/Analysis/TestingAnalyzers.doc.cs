@@ -1,6 +1,6 @@
 ﻿using System;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using Tests.Framework;
 using Tests.Framework.ManagedElasticsearch.Clusters;
 using Tests.Framework.MockData;

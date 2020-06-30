@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Common;
-using Best;
+using Nest;
 using Tests.Framework;
 using System.Reflection;
 

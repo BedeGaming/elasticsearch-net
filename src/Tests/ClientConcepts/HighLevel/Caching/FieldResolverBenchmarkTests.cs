@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using BenchmarkDotNet.Attributes;
-using Best;
+using Nest;
 using Tests.Framework.Benchmarks;
 using Tests.Framework.MockData;
 

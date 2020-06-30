@@ -4,7 +4,7 @@ using System.Linq;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(TypesJsonConverter))]
 	public class Types : Union<Types.AllTypesMarker, Types.ManyTypes>, IUrlParameter

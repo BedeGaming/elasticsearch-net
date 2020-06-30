@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject]
 	public interface IStartWatcherResponse : IAcknowledgedResponse {}

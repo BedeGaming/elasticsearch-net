@@ -3,7 +3,7 @@ using Elasticsearch.Net;
 using Newtonsoft.Json;
 using System;
 
-namespace Best
+namespace Nest
 {
 	public interface IPercolateCountResponse : IResponse
 	{

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Registerering global jsonconverters is very costly,

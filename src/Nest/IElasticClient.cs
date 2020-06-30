@@ -1,7 +1,7 @@
 ﻿using System;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public partial interface IElasticClient 
 	{

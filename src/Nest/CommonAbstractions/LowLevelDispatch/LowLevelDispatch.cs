@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	internal partial class LowLevelDispatch
 	{

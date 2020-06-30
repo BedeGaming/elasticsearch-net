@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// An analyzer of type custom that allows to combine a Tokenizer with zero or more Token Filters, 

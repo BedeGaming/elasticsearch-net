@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Best;
+using Nest;
 using System;
 using Tests.Framework;
 using Tests.Framework.MockData;

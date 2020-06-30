@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject]
 	public interface ISlackAction : IAction

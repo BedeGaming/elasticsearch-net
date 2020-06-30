@@ -1,4 +1,4 @@
-namespace Best
+namespace Nest
 {
 	///<inheritdoc/>
 	public class FielddataSettings 

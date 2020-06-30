@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter<TypeInnerHit, TypeName, IGlobalInnerHit>))]
 	public interface ITypeInnerHit : IIsADictionary<TypeName, IGlobalInnerHit> { }

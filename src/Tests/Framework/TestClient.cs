@@ -8,7 +8,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using Elasticsearch.Net;
-using Best;
+using Nest;
 using Tests.Framework.Configuration;
 using Tests.Framework.MockData;
 using Tests.Framework.Versions;

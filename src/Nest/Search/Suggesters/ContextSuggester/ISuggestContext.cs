@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject]
 	[JsonConverter(typeof(SuggestContextJsonConverter))]

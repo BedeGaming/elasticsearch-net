@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// A tokenizer of type pattern that can flexibly separate text into terms via a regular expression.

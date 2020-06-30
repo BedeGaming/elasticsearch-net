@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Best
+namespace Nest
 {
 	using Containers = System.Collections.Generic.List<QueryContainer>;
 	internal static class BoolQueryOrExtensions

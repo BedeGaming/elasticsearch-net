@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	/// <summary>
 	/// Case folding of Unicode characters based on UTR#30, like the ASCII-folding token filter on steroids.

@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Best;
+using Nest;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using static Tests.Framework.UrlTester;

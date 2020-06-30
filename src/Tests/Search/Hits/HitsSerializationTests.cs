@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Best;
+using Nest;
 using Tests.Framework;
 using Name = Bogus.DataSets.Name;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public class Names : IUrlParameter
 	{

@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Best;
+using Nest;
 using Newtonsoft.Json.Linq;
 using Tests.Framework.Integration;
 using Tests.Framework.ManagedElasticsearch.Clusters;

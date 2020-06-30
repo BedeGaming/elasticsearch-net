@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject(MemberSerialization.OptIn)]
 	public interface IGeoPointProperty : IProperty

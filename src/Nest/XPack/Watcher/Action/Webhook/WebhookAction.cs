@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Best
+namespace Nest
 {
 	[JsonObject]
 	public interface IWebhookAction : IAction, IHttpInputRequest

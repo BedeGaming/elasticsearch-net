@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Best
+namespace Nest
 {
 	internal class FieldValuesJsonConverter : JsonConverter
 	{

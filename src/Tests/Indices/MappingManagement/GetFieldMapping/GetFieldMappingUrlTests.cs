@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Best;
+using Nest;
 using Tests.Framework;
 using Tests.Framework.MockData;
 using static Nest.Infer;
@@ -13,7 +13,7 @@ namespace Tests.Indices.MappingManagement.GetFieldMapping
 		public async Task Urls()
 		{
 			var index = "index1,index2";
-			Best.Indices indices = index;
+			Nest.Indices indices = index;
 			var types = Type<Project>().And<CommitActivity>();
 			var fields = Field<Project>(p => p.Name).And("field");
 			await GET($"/_mapping/field/name%2Cfield")

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Best
+namespace Nest
 {
 	internal class AggregationJsonConverter<TReadAs> : ReadAsTypeJsonConverter<TReadAs>
 		where TReadAs : class

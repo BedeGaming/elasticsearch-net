@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Best;
+using Nest;
 using Newtonsoft.Json.Linq;
 
 namespace Tests.Framework

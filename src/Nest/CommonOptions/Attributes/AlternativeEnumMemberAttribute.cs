@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Best
+namespace Nest
 {
 	[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
 	public class AlternativeEnumMemberAttribute : Attribute

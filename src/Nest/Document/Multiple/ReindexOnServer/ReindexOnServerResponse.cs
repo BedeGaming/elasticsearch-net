@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System.Linq;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public interface IReindexOnServerResponse : IResponse
 	{

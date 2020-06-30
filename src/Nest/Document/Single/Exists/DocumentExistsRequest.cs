@@ -1,6 +1,6 @@
 ﻿using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public partial interface IDocumentExistsRequest { }
 

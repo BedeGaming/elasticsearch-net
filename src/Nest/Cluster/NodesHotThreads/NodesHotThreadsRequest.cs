@@ -1,5 +1,5 @@
 ﻿
-namespace Best
+namespace Nest
 {
 	public partial interface INodesHotThreadsRequest { }
 	 

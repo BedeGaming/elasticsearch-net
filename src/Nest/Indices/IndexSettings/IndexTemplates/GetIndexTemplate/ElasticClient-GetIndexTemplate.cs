@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	using GetIndexTemplateConverter = Func<IApiCallDetails, Stream, GetIndexTemplateResponse>;
 

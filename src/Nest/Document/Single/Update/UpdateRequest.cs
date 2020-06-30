@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public partial interface IUpdateRequest<TDocument, TPartialDocument>
 		where TDocument : class

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	public interface IDateMath
 	{

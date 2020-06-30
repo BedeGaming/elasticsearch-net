@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	using MultiGetConverter = Func<IApiCallDetails, Stream, MultiGetResponse>;
 

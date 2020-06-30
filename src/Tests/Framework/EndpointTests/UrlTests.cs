@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using FluentAssertions;
-using Best;
+using Nest;
 
 namespace Tests.Framework
 {

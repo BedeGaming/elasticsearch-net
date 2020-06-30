@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Best;
+using Nest;
 using Tests.Framework.Integration;
 using Tests.Framework.MockData;
 using System;

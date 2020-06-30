@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 	[JsonConverter(typeof(ReadAsTypeJsonConverter<TtlField>))]
 	[Obsolete("will be replaced with a different implementation in a future version of Elasticsearch")]

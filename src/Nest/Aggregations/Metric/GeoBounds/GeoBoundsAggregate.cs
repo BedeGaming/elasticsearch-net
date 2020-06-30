@@ -1,4 +1,4 @@
-﻿namespace Best
+﻿namespace Nest
 {
 	public class GeoBoundsAggregate : MetricAggregateBase
 	{

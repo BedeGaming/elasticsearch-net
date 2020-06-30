@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using Best;
+using Nest;
 using Tests.Framework;
 using System.Reflection;
 

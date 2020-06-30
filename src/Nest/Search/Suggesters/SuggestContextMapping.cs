@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Best
+namespace Nest
 {
 
 	[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter<SuggestContextMapping, string, ISuggestContext>))]

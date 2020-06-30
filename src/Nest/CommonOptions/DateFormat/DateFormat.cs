@@ -1,4 +1,4 @@
-﻿namespace Best
+﻿namespace Nest
 {
 	// ReSharper disable InconsistentNaming
 	//these const reflect their output on purpose

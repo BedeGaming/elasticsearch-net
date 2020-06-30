@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using Elasticsearch.Net;
 
-namespace Best
+namespace Nest
 {
 	public class RestoreObservable : IDisposable, IObservable<IRecoveryStatusResponse>
 	{
