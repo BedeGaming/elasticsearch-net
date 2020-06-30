@@ -90,6 +90,7 @@ module Tooling =
             trace (sprintf "Nuget not found at %s. Downloading now" targetLocation)
             let url = "http://dist.nuget.org/win-x86-commandline/latest/nuget.exe" 
             Directory.CreateDirectory("build/tools/nuget") |> ignore
+            System.Net.ServicePointManager.SecurityProtocol <- System.Net.SecurityProtocolType.Tls12
             use webClient = new WebClient()
             webClient.DownloadFile(url, targetLocation)
             trace "nuget downloaded"
