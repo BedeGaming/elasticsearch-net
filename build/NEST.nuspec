@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
 	<metadata>
-		<id>BEST</id>
+		<id>NEST</id>
 		<version>$version$</version>
 		<title>Bede NEST - NEST with no upper limit on Newtonsoft.Json</title>
 		<authors>Elastic and contributors</authors>
@@ -35,13 +35,13 @@
 		</dependencies>
 	</metadata>
 	<files>
-		<file src="output\Best\net45\Best.dll" target="lib\net45"/>
-		<file src="output\Best\net45\Best.XML" target="lib\net45"/>
+		<file src="output\Nest\net45\Nest.dll" target="lib\net45"/>
+		<file src="output\Nest\net45\Nest.XML" target="lib\net45"/>
 
-		<file src="output\Best\net46\Best.dll" target="lib\net46"/>
-		<file src="output\Best\net46\Best.XML" target="lib\net46"/>
+		<file src="output\Nest\net46\Nest.dll" target="lib\net46"/>
+		<file src="output\Nest\net46\Nest.XML" target="lib\net46"/>
 
-		<file src="output\Best\netstandard1.3\Best.dll" target="lib\netstandard1.3"/>
-		<file src="output\Best\netstandard1.3\Best.xml" target="lib\netstandard1.3"/>
+		<file src="output\Nest\netstandard1.3\NEST.dll" target="lib\netstandard1.3"/>
+		<file src="output\Nest\netstandard1.3\NEST.xml" target="lib\netstandard1.3"/>
 	</files>
 </package>
