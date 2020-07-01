@@ -1,34 +1,28 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
 	/// <summary>
-	/// A field mapped as an <see cref="ICompletionProperty" />. Convenience class to use when indexing completion
-	/// fields.
+	/// Convenience class for use when indexing completion fields.
 	/// </summary>
-	public class CompletionField
+	[JsonObject]
+	public class CompletionField<TPayload>
+		where TPayload : class
 	{
-		/// <summary>
-		/// The contexts to associate with the input which can be used at query time to filter and boost suggestions
-		/// </summary>
-		[DataMember(Name = "contexts")]
-		public IDictionary<string, IEnumerable<string>> Contexts { get; set; }
-
-		/// <summary>
-		/// The input to store. Can be a single or multiple inputs
-		/// </summary>
-		[DataMember(Name = "input")]
+		[JsonProperty("input")]
 		public IEnumerable<string> Input { get; set; }
 
-		/// <summary>
-		/// A positive integer which defines a weight and allows you to rank your suggestions. This field is optional.
-		/// </summary>
-		[DataMember(Name = "weight")]
+		[JsonProperty("output")]
+		public string Output { get; set; }
+
+		[JsonProperty("payload")]
+		public TPayload Payload { get; set; }
+
+		[JsonProperty("weight")]
 		public int? Weight { get; set; }
+
+		[JsonProperty("context")]
+		public IDictionary<string, IEnumerable<string>> Context { get; set; }
 	}
 }

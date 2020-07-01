@@ -1,17 +1,22 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿#pragma warning disable 612, 618
+﻿using System;
+#pragma warning disable 612, 618
 
 namespace Nest
 {
-	[MapsApi("cat.nodeattrs.json")]
-	public partial interface ICatNodeAttributesRequest { }
+	[Obsolete("Scheduled to be removed in 5.0.0.  Use ICatNodeAttributesRequest instead.")]
+	public partial interface ICatNodeattrsRequest { }
 
-	public partial class CatNodeAttributesRequest { }
+	[Obsolete("Scheduled to be removed in 5.0.0.  Use CatNodeAttributesRequest instead.")]
+	public partial class CatNodeattrsRequest { }
 
-	public partial class CatNodeAttributesDescriptor { }
+	[Obsolete("Scheduled to be removed in 5.0.0.  Use CatNodeAttributesDescriptor instead.")]
+	public partial class CatNodeattrsDescriptor { }
+
+	// TODO add the following as attribute when we remove the obsolete version
+	//DescriptorFor "CatNodeattrs"
+	public interface ICatNodeAttributesRequest : ICatNodeattrsRequest { }
+	public class CatNodeAttributesRequest : CatNodeattrsRequest, ICatNodeAttributesRequest { }
+	public class CatNodeAttributesDescriptor : CatNodeattrsDescriptor, ICatNodeAttributesRequest { }
 }
 
 #pragma warning restore 612, 618

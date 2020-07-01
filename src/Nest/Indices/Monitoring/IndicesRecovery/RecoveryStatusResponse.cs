@@ -1,17 +1,18 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(ResolvableDictionaryResponseFormatter<RecoveryStatusResponse, IndexName, RecoveryStatus>))]
-	public class RecoveryStatusResponse : DictionaryResponseBase<IndexName, RecoveryStatus>
+	public interface IRecoveryStatusResponse : IResponse
 	{
-		[IgnoreDataMember]
-		public IReadOnlyDictionary<IndexName, RecoveryStatus> Indices => Self.BackingDictionary;
+		Dictionary<string, RecoveryStatus> Indices { get; set; }
+	}
+
+	[JsonObject]
+	public class RecoveryStatusResponse : ResponseBase, IRecoveryStatusResponse
+	{
+
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		public Dictionary<string, RecoveryStatus> Indices { get; set; } 
 	}
 }

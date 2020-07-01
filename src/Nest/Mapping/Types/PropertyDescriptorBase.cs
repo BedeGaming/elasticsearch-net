@@ -1,54 +1,49 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq.Expressions;
 using Elasticsearch.Net;
 
 namespace Nest
 {
-	/// <inheritdoc cref="IProperty" />
 	public abstract class PropertyDescriptorBase<TDescriptor, TInterface, T>
 		: DescriptorBase<TDescriptor, TInterface>, IProperty
 		where TDescriptor : PropertyDescriptorBase<TDescriptor, TInterface, T>, TInterface
 		where TInterface : class, IProperty
 		where T : class
 	{
-		private string _type;
-
-		protected PropertyDescriptorBase(FieldType type) => Self.Type = type.GetStringValue();
-
-		protected string DebugDisplay => $"Type: {Self.Type ?? "<empty>"}, Name: {Self.Name.DebugDisplay} ";
-
-		protected string TypeOverride
-		{
-			set => _type = value;
-		}
-
-		IDictionary<string, object> IProperty.LocalMetadata { get; set; }
 		PropertyName IProperty.Name { get; set; }
-		IDictionary<string, string> IProperty.Meta { get; set; }
+		TypeName IProperty.Type { get; set; }
+		string IProperty.IndexName { get; set; }
+		bool? IProperty.Store { get; set; }
+		bool? IProperty.DocValues { get; set; }
 
-		string IProperty.Type
-		{
-			get => _type;
-			set => _type = value;
-		}
+#pragma warning disable CS0618 // Type or member is obsolete
+		SimilarityOption? IProperty.Similarity { get { return Self.CustomSimilarity?.ToEnum<SimilarityOption>(); } set { Self.CustomSimilarity = value.GetStringValue(); } }
+#pragma warning restore CS0618 // Type or member is obsolete
+		string IProperty.CustomSimilarity { get; set; }
 
-		/// <inheritdoc cref="IProperty.Name" />
-		public TDescriptor Name(PropertyName name) => Assign(name, (a, v) => a.Name = v);
+		Fields IProperty.CopyTo { get; set; }
+		IProperties IProperty.Fields { get; set; }
 
-		/// <inheritdoc cref="IProperty.Name" />
-		public TDescriptor Name<TValue>(Expression<Func<T, TValue>> objectPath) => Assign(objectPath, (a, v) => a.Name = v);
+		protected PropertyDescriptorBase(string type) { Self.Type = type; }
 
-		/// <inheritdoc cref="IProperty.LocalMetadata" />
-		public TDescriptor LocalMetadata(Func<FluentDictionary<string, object>, FluentDictionary<string, object>> selector) =>
-			Assign(selector, (a, v) => a.LocalMetadata = v?.Invoke(new FluentDictionary<string, object>()));
+		public TDescriptor Name(PropertyName name) => Assign(a => a.Name = name);
 
-		/// <inheritdoc cref="IProperty.Meta" />
-		public TDescriptor Meta(Func<FluentDictionary<string, string>, FluentDictionary<string, string>> selector) =>
-			Assign(selector, (a, v) => a.Meta = v?.Invoke(new FluentDictionary<string, string>()));
+		public TDescriptor Name(Expression<Func<T, object>> objectPath) => Assign(a => a.Name = objectPath);
+
+		[Obsolete("Removed in 2.0.0. Use CopyTo instead.")]
+		public TDescriptor IndexName(string indexName) => Assign(a => a.IndexName = indexName);
+
+		public TDescriptor Store(bool store = true) => Assign(a => a.Store = store);
+
+		public TDescriptor DocValues(bool docValues = true) => Assign(a => a.DocValues = docValues);
+
+		public TDescriptor Fields(Func<PropertiesDescriptor<T>, IPromise<IProperties>> selector) => Assign(a => a.Fields = selector?.Invoke(new PropertiesDescriptor<T>())?.Value);
+
+		public TDescriptor Similarity(SimilarityOption similarity) => Assign(a => a.Similarity = similarity);
+#pragma warning disable CS0618 // Type or member is obsolete
+		public TDescriptor Similarity(string similarity) => Assign(a => a.CustomSimilarity = similarity);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+		public TDescriptor CopyTo(Func<FieldsDescriptor<T>, IPromise<Fields>> fields) => Assign(a => a.CopyTo = fields?.Invoke(new FieldsDescriptor<T>())?.Value);
 	}
 }

@@ -1,57 +1,81 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using Newtonsoft.Json;
+using System.Linq;
 using Elasticsearch.Net;
 
 namespace Nest
 {
-	public class ReindexOnServerResponse : ResponseBase
+	public interface IReindexOnServerResponse : IResponse
 	{
-		public override bool IsValid => base.IsValid && !Failures.HasAny();
-
-		[DataMember(Name ="batches")]
-		public long Batches { get; internal set; }
-
-		[DataMember(Name ="created")]
-		public long Created { get; internal set; }
-
-		[DataMember(Name ="failures")]
-		public IReadOnlyCollection<BulkIndexByScrollFailure> Failures { get; internal set; }
-			= EmptyReadOnly<BulkIndexByScrollFailure>.Collection;
-
-		[DataMember(Name ="noops")]
-		public long Noops { get; internal set; }
-
-		[DataMember(Name ="retries")]
-		public Retries Retries { get; internal set; }
-
-		[DataMember(Name ="slice_id")]
-		public int? SliceId { get; internal set; }
+		//https://github.com/elastic/elasticsearch/commit/11f90bffda50f0acc8dc1409f3f33005e1249234
+		// 2.3 released this writing the time value's to string e.g 123.4ms instead of long as all the others took responses
+		[JsonProperty("took")]
+		Time Took { get; }
 
 		/// <summary>
 		/// Only has a value if WaitForCompletion is set to false on the request
 		/// </summary>
-		[DataMember(Name ="task")]
-		public TaskId Task { get; internal set; }
+		[JsonProperty("task")]
+		TaskId Task { get; }
 
-		[DataMember(Name ="timed_out")]
-		public bool TimedOut { get; internal set; }
+		[JsonProperty("timed_out")]
+		bool TimedOut { get; }
 
-		//https://github.com/elastic/elasticsearch/commit/11f90bffda50f0acc8dc1409f3f33005e1249234
-		// 2.3 released this writing the time value's to string e.g 123.4ms instead of long as all the others took responses
-		[DataMember(Name ="took")]
+		[JsonProperty("total")]
+		long Total { get; }
+
+		[JsonProperty("created")]
+		long Created { get; }
+
+		[JsonProperty("updated")]
+		long Updated { get; }
+
+		[JsonProperty("batches")]
+		long Batches { get; }
+
+		[JsonProperty("version_conflicts")]
+		long VersionConflicts { get; }
+
+		[JsonProperty("noops")]
+		long Noops { get; }
+
+		[JsonProperty("retries")]
+		long Retries { get; }
+
+		[JsonProperty("failures")]
+		IEnumerable<BulkIndexByScrollFailure> Failures { get; }
+	}
+
+	[JsonObject(MemberSerialization.OptIn)]
+	public class ReindexOnServerResponse : ResponseBase, IReindexOnServerResponse
+	{
+		public override bool IsValid => base.IsValid && !this.Failures.HasAny();
+
 		public Time Took { get; internal set; }
 
-		[DataMember(Name ="total")]
+		/// <summary>
+		/// Only has a value if WaitForCompletion is set to <c>false</c> on the request
+		/// </summary>
+		public TaskId Task { get; internal set; }
+
+		public bool TimedOut { get; internal set; }
+
 		public long Total { get; internal set; }
 
-		[DataMember(Name ="updated")]
+		public long Created { get; internal set; }
+
 		public long Updated { get; internal set; }
 
-		[DataMember(Name ="version_conflicts")]
+		public long Batches { get; internal set; }
+
 		public long VersionConflicts { get; internal set; }
+
+		public long Noops { get; internal set; }
+
+		public long Retries { get; internal set; }
+
+		public IEnumerable<BulkIndexByScrollFailure> Failures { get; internal set; }
 	}
 }

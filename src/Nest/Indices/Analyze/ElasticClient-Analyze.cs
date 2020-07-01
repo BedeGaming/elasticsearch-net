@@ -1,10 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
@@ -12,42 +8,44 @@ namespace Nest
 	{
 		/// <summary>
 		/// Performs the analysis process on a text and return the tokens breakdown of the text.
-		/// <para> </para>
-		/// http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-analyze.html
+		/// <para> </para>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-analyze.html
 		/// </summary>
 		/// <param name="selector">A descriptor that describes the analyze operation</param>
-		AnalyzeResponse Analyze(Func<AnalyzeDescriptor, IAnalyzeRequest> selector);
+		IAnalyzeResponse Analyze(Func<AnalyzeDescriptor, IAnalyzeRequest> selector);
 
-		/// <inheritdoc />
-		AnalyzeResponse Analyze(IAnalyzeRequest request);
+		/// <inheritdoc/>
+		IAnalyzeResponse Analyze(IAnalyzeRequest request);
 
-		/// <inheritdoc />
-		Task<AnalyzeResponse> AnalyzeAsync(Func<AnalyzeDescriptor, IAnalyzeRequest> selector,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IAnalyzeResponse> AnalyzeAsync(Func<AnalyzeDescriptor, IAnalyzeRequest> selector);
 
-		/// <inheritdoc />
-		Task<AnalyzeResponse> AnalyzeAsync(IAnalyzeRequest request, CancellationToken ct = default);
+		/// <inheritdoc/>
+		Task<IAnalyzeResponse> AnalyzeAsync(IAnalyzeRequest request);
+
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public AnalyzeResponse Analyze(Func<AnalyzeDescriptor, IAnalyzeRequest> selector) =>
-			Analyze(selector?.Invoke(new AnalyzeDescriptor()));
+		/// <inheritdoc/>
+		public IAnalyzeResponse Analyze(Func<AnalyzeDescriptor, IAnalyzeRequest> selector) =>
+			this.Analyze(selector?.Invoke(new AnalyzeDescriptor()));
 
-		/// <inheritdoc />
-		public AnalyzeResponse Analyze(IAnalyzeRequest request) =>
-			DoRequest<IAnalyzeRequest, AnalyzeResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IAnalyzeResponse Analyze(IAnalyzeRequest request) =>
+			this.Dispatcher.Dispatch<IAnalyzeRequest, AnalyzeRequestParameters, AnalyzeResponse>(
+				request,
+				this.LowLevelDispatch.IndicesAnalyzeDispatch<AnalyzeResponse>
+			);
 
-		/// <inheritdoc />
-		public Task<AnalyzeResponse> AnalyzeAsync(
-			Func<AnalyzeDescriptor, IAnalyzeRequest> selector,
-			CancellationToken ct = default
-		) => AnalyzeAsync(selector?.Invoke(new AnalyzeDescriptor()), ct);
+		/// <inheritdoc/>
+		public Task<IAnalyzeResponse> AnalyzeAsync(Func<AnalyzeDescriptor, IAnalyzeRequest> selector) =>
+			this.AnalyzeAsync(selector?.Invoke(new AnalyzeDescriptor()));
 
-		/// <inheritdoc />
-		public Task<AnalyzeResponse> AnalyzeAsync(IAnalyzeRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IAnalyzeRequest, AnalyzeResponse>(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IAnalyzeResponse> AnalyzeAsync(IAnalyzeRequest request) =>
+			this.Dispatcher.DispatchAsync<IAnalyzeRequest, AnalyzeRequestParameters, AnalyzeResponse, IAnalyzeResponse>(
+				request,
+				this.LowLevelDispatch.IndicesAnalyzeDispatchAsync<AnalyzeResponse>
+			);
 	}
 }

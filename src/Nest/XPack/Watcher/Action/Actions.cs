@@ -1,24 +1,15 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(ActionsInterfaceFormatter))]
-	public interface IActions : IIsADictionary<string, IAction> { }
+	public interface IActions : IIsADictionary<string, IAction> {}
 
-	[JsonFormatter(typeof(ActionsFormatter))]
+	[JsonConverter(typeof(ActionsJsonConverter))]
 	public class Actions : IsADictionaryBase<string, IAction>, IActions
 	{
-		public Actions() { }
-
-		public Actions(IDictionary<string, IAction> actions) : base(ReduceCombinators(actions)) { }
-
 		private static IDictionary<string, IAction> ReduceCombinators(IDictionary<string, IAction> actions)
 		{
 			if (!actions.Values.OfType<ActionCombinator>().Any())
@@ -34,7 +25,6 @@ namespace Nest
 					{
 						if (combinatorAction.Name.IsNullOrEmpty())
 							throw new ArgumentException($"{combinatorAction.GetType().Name}.Name is not set!");
-
 						reducedActions.Add(combinatorAction.Name, combinatorAction);
 					}
 				}
@@ -42,6 +32,14 @@ namespace Nest
 			}
 
 			return reducedActions;
+		}
+
+		public Actions()
+		{
+		}
+
+		public Actions(IDictionary<string, IAction> actions) : base(ReduceCombinators(actions))
+		{
 		}
 
 		public static implicit operator Actions(ActionBase action)
@@ -57,7 +55,6 @@ namespace Nest
 				{
 					if (actionBase.Name.IsNullOrEmpty())
 						throw new ArgumentException($"{actionBase.GetType().Name}.Name is not set!");
-
 					actions.Add(actionBase.Name, actionBase);
 				}
 				return new Actions(actions);
@@ -66,17 +63,26 @@ namespace Nest
 			if (action.Name.IsNullOrEmpty())
 				throw new ArgumentException($"{action.GetType().Name}.Name is not set!");
 
-			actions = new Dictionary<string, IAction> { { action.Name, action } };
+			actions = new Dictionary<string, IAction>{{ action.Name, action }};
 			return new Actions(actions);
 		}
 	}
 
 	public class ActionsDescriptor : IsADictionaryDescriptorBase<ActionsDescriptor, Actions, string, IAction>
 	{
-		public ActionsDescriptor() : base(new Actions()) { }
+		public ActionsDescriptor() : base(new Actions())
+		{
+		}
 
+		/// <summary>
+		/// A watch action that sends email notifications.
+		/// To use the email action, you must configure at least one email account.
+		/// </summary>
 		public ActionsDescriptor Email(string name, Func<EmailActionDescriptor, IEmailAction> selector) =>
 			Assign(name, selector.InvokeOrDefault(new EmailActionDescriptor(name)));
+
+		public ActionsDescriptor HipChat(string name, Func<HipChatActionDescriptor, IHipChatAction> selector) =>
+			Assign(name, selector.InvokeOrDefault(new HipChatActionDescriptor(name)));
 
 		public ActionsDescriptor Index(string name, Func<IndexActionDescriptor, IIndexAction> selector) =>
 			Assign(name, selector.InvokeOrDefault(new IndexActionDescriptor(name)));
@@ -84,6 +90,13 @@ namespace Nest
 		public ActionsDescriptor Logging(string name, Func<LoggingActionDescriptor, ILoggingAction> selector) =>
 			Assign(name, selector.InvokeOrDefault(new LoggingActionDescriptor(name)));
 
+		/// <summary>
+		/// A watch action that creates events in PagerDuty.
+		/// To use the PagerDuty action, you need to configure at least one PagerDuty account in Watcher.
+		/// </summary>
+		/// <remarks>
+		/// Only available in Watcher 2.3 and up
+		/// </remarks>
 		public ActionsDescriptor PagerDuty(string name, Func<PagerDutyActionDescriptor, IPagerDutyAction> selector) =>
 			Assign(name, selector.InvokeOrDefault(new PagerDutyActionDescriptor(name)));
 

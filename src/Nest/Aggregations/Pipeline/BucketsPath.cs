@@ -1,20 +1,21 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
-using Elasticsearch.Net.Utf8Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(BucketsPathFormatter))]
+	[JsonConverter(typeof(BucketsPathJsonConverter))]
 	public interface IBucketsPath { }
 
 	public class SingleBucketsPath : IBucketsPath
 	{
-		public SingleBucketsPath(string bucketsPath) => BucketsPath = bucketsPath;
+		public string BucketsPath { get; private set; }
 
-		public string BucketsPath { get; }
+		public SingleBucketsPath(string bucketsPath)
+		{
+			this.BucketsPath = bucketsPath;
+		}
 
 		public static implicit operator SingleBucketsPath(string bucketsPath) => new SingleBucketsPath(bucketsPath);
 	}
@@ -23,13 +24,13 @@ namespace Nest
 
 	public class MultiBucketsPath : IsADictionaryBase<string, string>, IMultiBucketsPath
 	{
-		public MultiBucketsPath() { }
-
+		public MultiBucketsPath() : base() { }
 		public MultiBucketsPath(IDictionary<string, string> container) : base(container) { }
+		public MultiBucketsPath(Dictionary<string, string> container)
+			: base(container.Select(kv => kv).ToDictionary(kv => kv.Key, kv => kv.Value))
+		{ }
 
-		public MultiBucketsPath(Dictionary<string, string> container) : base(container) { }
-
-		public void Add(string name, string bucketsPath) => BackingDictionary.Add(name, bucketsPath);
+		public void Add(string name, string bucketsPath) => this.BackingDictionary.Add(name, bucketsPath);
 
 		public static implicit operator MultiBucketsPath(Dictionary<string, string> bucketsPath) => new MultiBucketsPath(bucketsPath);
 	}
@@ -42,44 +43,55 @@ namespace Nest
 		public MultiBucketsPathDescriptor Add(string name, string bucketsPath) => Assign(name, bucketsPath);
 	}
 
-	internal class BucketsPathFormatter : IJsonFormatter<IBucketsPath>
+	public class BucketsPathJsonConverter : JsonConverter
 	{
-		public IBucketsPath Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+		public override bool CanConvert(Type objectType) =>
+			typeof(SingleBucketsPath) == objectType || typeof(MultiBucketsPath) == objectType;
+
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			var token = reader.GetCurrentJsonToken();
-			switch (token)
+			if (reader.TokenType == JsonToken.String)
+				return new SingleBucketsPath(reader.Value.ToString());
+
+			if (reader.TokenType == JsonToken.StartObject)
 			{
-				case JsonToken.String:
-					return new SingleBucketsPath(reader.ReadString());
-				case JsonToken.BeginObject:
-					var formatter = formatterResolver.GetFormatter<Dictionary<string, string>>();
-					var dict = formatter.Deserialize(ref reader, formatterResolver);
-					return new MultiBucketsPath(dict);
-				default:
-					return null;
+				var dict = new Dictionary<string, string>();
+				reader.Read();
+				while (reader.TokenType != JsonToken.EndObject)
+				{
+					var key = reader.Value.ToString();
+					reader.Read();
+					var value = reader.Value.ToString();
+					dict.Add(key, value);
+					reader.Read();
+				}
+				return new MultiBucketsPath(dict);
 			}
+
+			return null;
 		}
 
-		public void Serialize(ref JsonWriter writer, IBucketsPath value, IJsonFormatterResolver formatterResolver)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			if (value is SingleBucketsPath single)
-				writer.WriteString(single.BucketsPath);
-			else if (value is MultiBucketsPath multi)
+			var single = value as SingleBucketsPath;
+			if (single != null)
 			{
-				writer.WriteBeginObject();
-				var count = 0;
-				foreach (var kv in multi)
+				writer.WriteValue(single.BucketsPath);
+				return;
+			}
+			var multi = value as MultiBucketsPath;
+			if (multi != null)
+			{
+				writer.WriteStartObject();
+				foreach(var kv in multi)
 				{
-					if (count != 0)
-						writer.WriteValueSeparator();
 					writer.WritePropertyName(kv.Key);
-					writer.WriteString(kv.Value);
-					count++;
+					writer.WriteValue(kv.Value);
 				}
 				writer.WriteEndObject();
+				return;
 			}
-			else
-				writer.WriteNull();
+			writer.WriteNull();
 		}
 	}
 }

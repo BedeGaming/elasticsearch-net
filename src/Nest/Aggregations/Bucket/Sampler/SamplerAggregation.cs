@@ -1,41 +1,41 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using System.Linq.Expressions;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(SamplerAggregation))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<SamplerAggregation>))]
 	public interface ISamplerAggregation : IBucketAggregation
 	{
-		[DataMember(Name ="execution_hint")]
-		SamplerAggregationExecutionHint? ExecutionHint { get; set; }
+		[JsonProperty("shard_size")]
+		int? ShardSize { get; set; }
 
-		[DataMember(Name ="max_docs_per_value")]
+		[JsonProperty("field")]
+		Field Field { get; set; }
+
+		[JsonProperty("max_docs_per_value")]
 		int? MaxDocsPerValue { get; set; }
 
-		[DataMember(Name ="script")]
+		[JsonProperty("script")]
 		IScript Script { get; set; }
 
-		[DataMember(Name ="shard_size")]
-		int? ShardSize { get; set; }
+		[JsonProperty("execution_hint")]
+		SamplerAggregationExecutionHint? ExecutionHint { get; set; }
 	}
 
 	public class SamplerAggregation : BucketAggregationBase, ISamplerAggregation
 	{
-		internal SamplerAggregation() { }
-
-		public SamplerAggregation(string name) : base(name) { }
-
 		public SamplerAggregationExecutionHint? ExecutionHint { get; set; }
+		public Field Field { get; set; }
 		public int? MaxDocsPerValue { get; set; }
 		public IScript Script { get; set; }
 		public int? ShardSize { get; set; }
 
+		internal SamplerAggregation() { }
+
+		public SamplerAggregation(string name) : base(name) { }
+		
 		internal override void WrapInContainer(AggregationContainer c) => c.Sampler = this;
 	}
 
@@ -44,20 +44,25 @@ namespace Nest
 		where T : class
 	{
 		SamplerAggregationExecutionHint? ISamplerAggregation.ExecutionHint { get; set; }
+		Field ISamplerAggregation.Field { get; set; }
 		int? ISamplerAggregation.MaxDocsPerValue { get; set; }
 		IScript ISamplerAggregation.Script { get; set; }
 		int? ISamplerAggregation.ShardSize { get; set; }
 
-		public SamplerAggregationDescriptor<T> ExecutionHint(SamplerAggregationExecutionHint? executionHint) =>
-			Assign(executionHint, (a, v) => a.ExecutionHint = v);
+		public SamplerAggregationDescriptor<T> ExecutionHint(SamplerAggregationExecutionHint executionHint) =>
+			Assign(a => a.ExecutionHint = executionHint);
 
-		public SamplerAggregationDescriptor<T> MaxDocsPerValue(int? maxDocs) => Assign(maxDocs, (a, v) => a.MaxDocsPerValue = v);
+		public SamplerAggregationDescriptor<T> Field(Field field) => Assign(a => a.Field = field);
 
-		public SamplerAggregationDescriptor<T> Script(string script) => Assign((InlineScript)script, (a, v) => a.Script = v);
+		public SamplerAggregationDescriptor<T> Field(Expression<Func<T, object>> field) => Assign(a => a.Field = field);
+
+		public SamplerAggregationDescriptor<T> MaxDocsPerValue(int maxDocs) => Assign(a => a.MaxDocsPerValue = maxDocs);
+
+		public SamplerAggregationDescriptor<T> Script(string script) => Assign(a => a.Script = (InlineScript)script);
 
 		public SamplerAggregationDescriptor<T> Script(Func<ScriptDescriptor, IScript> scriptSelector) =>
-			Assign(scriptSelector, (a, v) => a.Script = v?.Invoke(new ScriptDescriptor()));
+			Assign(a => a.Script = scriptSelector?.Invoke(new ScriptDescriptor()));
 
-		public SamplerAggregationDescriptor<T> ShardSize(int? shardSize) => Assign(shardSize, (a, v) => a.ShardSize = v);
+		public SamplerAggregationDescriptor<T> ShardSize(int shardSize) => Assign(a => a.ShardSize = shardSize);
 	}
 }

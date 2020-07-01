@@ -1,49 +1,57 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public partial interface IScrollRequest : ITypedSearchRequest
+	public partial interface IScrollRequest : ICovariantSearchRequest
 	{
-		[DataMember(Name ="scroll")]
+		[JsonProperty("scroll")]
 		Time Scroll { get; set; }
 
-		[DataMember(Name ="scroll_id")]
+		[JsonProperty("scroll_id")]
 		string ScrollId { get; set; }
 	}
-
-	public partial class ScrollRequest
+	
+	public partial class ScrollRequest 
 	{
-		public ScrollRequest(string scrollId, Time scroll)
-		{
-			Scroll = scroll;
-			ScrollId = scrollId;
-		}
+		private Type _clrType { get; set; }
+		Type ICovariantSearchRequest.ClrType => this._clrType;
+		Types ICovariantSearchRequest.ElasticsearchTypes => this.CovariantTypes;
+
+		public Types CovariantTypes { get; set; }
+		public Func<dynamic, Hit<dynamic>, Type> TypeSelector { get; set; }
 
 		public Time Scroll { get; set; }
 
 		public string ScrollId { get; set; }
 
-		Type ITypedSearchRequest.ClrType => null;
+		public ScrollRequest(string scrollId, Time scroll)
+		{
+			this.Scroll = scroll;
+			this.ScrollId = scrollId;
+		}
 	}
 
-	public partial class ScrollDescriptor<TInferDocument> where TInferDocument : class
+	public partial class ScrollDescriptor<T> where T : class
 	{
-		public ScrollDescriptor(Time scroll, string scrollId) => ScrollId(scrollId).Scroll(scroll);
-
-		Type ITypedSearchRequest.ClrType => typeof(TInferDocument);
+		Type ICovariantSearchRequest.ClrType => typeof(T);
+		private Types _covariantTypes = null;
+		Types ICovariantSearchRequest.ElasticsearchTypes => this._covariantTypes;
+		Func<dynamic, Hit<dynamic>, Type> ICovariantSearchRequest.TypeSelector { get; set; }
 
 		Time IScrollRequest.Scroll { get; set; }
 
 		string IScrollRequest.ScrollId { get; set; }
 
 		///<summary>Specify how long a consistent view of the index should be maintained for scrolled search</summary>
-		public ScrollDescriptor<TInferDocument> Scroll(Time scroll) => Assign(scroll, (a, v) => a.Scroll = v);
+		public ScrollDescriptor<T> Scroll(Time scroll) => Assign(a => a.Scroll = scroll);
 
-		public ScrollDescriptor<TInferDocument> ScrollId(string scrollId) => Assign(scrollId, (a, v) => a.ScrollId = v);
+		public ScrollDescriptor<T> ScrollId(string scrollId) => Assign(a => a.ScrollId = scrollId);
+
+		public ScrollDescriptor<T> ConcreteTypeSelector(Func<dynamic, Hit<dynamic>, Type> typeSelector) => 
+			Assign(a => a.TypeSelector = typeSelector);
+
+		public ScrollDescriptor<T> CovariantTypes(Types covariantTypes) => Assign(a=> this._covariantTypes = covariantTypes);
+
 	}
 }

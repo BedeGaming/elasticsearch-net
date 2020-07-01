@@ -1,46 +1,60 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(ResolvableDictionaryResponseFormatter<GetMappingResponse, IndexName, IndexMappings>))]
-	public class GetMappingResponse : DictionaryResponseBase<IndexName, IndexMappings>
+	public interface IGetMappingResponse : IResponse
 	{
-		[IgnoreDataMember]
-		public IReadOnlyDictionary<IndexName, IndexMappings> Indices => Self.BackingDictionary;
+		Dictionary<string, IList<TypeMapping>> Mappings { get; }
+
+		Dictionary<IndexName, IDictionary<TypeName, TypeMapping>> IndexTypeMappings { get; }
+
+		TypeMapping Mapping { get; }
+
+		void Accept(IMappingVisitor visitor);
+	}
+
+	internal class GetRootObjectMappingWrapping : Dictionary<string, Dictionary<string, Dictionary<string, TypeMapping>>>
+	{
+	}
+
+	public class GetMappingResponse : ResponseBase, IGetMappingResponse
+	{
+		internal GetMappingResponse() { }
+
+		internal GetMappingResponse(GetRootObjectMappingWrapping dict)
+		{
+			foreach (var index in dict)
+			{
+				Dictionary<string, TypeMapping> mappings;
+				if (index.Value != null && index.Value.TryGetValue("mappings", out mappings))
+				{
+					this.Mappings.Add(index.Key, new List<TypeMapping>());
+					this.IndexTypeMappings.Add(index.Key, new Dictionary<TypeName, TypeMapping>());
+					foreach (var mapping in mappings)
+					{
+						if (mapping.Value == null) continue;
+						this.Mappings[index.Key].Add(mapping.Value);
+						this.IndexTypeMappings[index.Key].Add(mapping.Key, mapping.Value);
+					}
+				}
+			}
+
+			this.Mapping = this.Mappings.Where(kv => kv.Value.HasAny(v => v != null))
+				.SelectMany(kv => kv.Value)
+				.FirstOrDefault(t => t != null);
+		}
+
+		public Dictionary<string, IList<TypeMapping>> Mappings { get; internal set; } = new Dictionary<string, IList<TypeMapping>>();
+
+		public Dictionary<IndexName, IDictionary<TypeName, TypeMapping>> IndexTypeMappings { get; internal set; } = new Dictionary<IndexName, IDictionary<TypeName, TypeMapping>>();
+
+		public TypeMapping Mapping { get; internal set; }
 
 		public void Accept(IMappingVisitor visitor)
 		{
 			var walker = new MappingWalker(visitor);
 			walker.Accept(this);
-		}
-	}
-
-	public class IndexMappings
-	{
-		[Obsolete("Mapping are no longer grouped by type, this indexer is ignored and simply returns Mapppings")]
-		public TypeMapping this[string type] => Mappings;
-
-		[DataMember(Name = "mappings")]
-		public TypeMapping Mappings { get; internal set; }
-	}
-
-
-	public static class GetMappingResponseExtensions
-	{
-		public static ITypeMapping GetMappingFor<T>(this GetMappingResponse response) => response.GetMappingFor(typeof(T));
-
-		public static ITypeMapping GetMappingFor(this GetMappingResponse response, IndexName index)
-		{
-			if (index.IsNullOrEmpty()) return null;
-
-			return response.Indices.TryGetValue(index, out var indexMappings) ? indexMappings.Mappings : null;
 		}
 	}
 }

@@ -1,10 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
@@ -17,40 +13,40 @@ namespace Nest
 		/// <remarks>
 		/// Deleting a watch does not delete any watch execution records related to this watch from the watch history.
 		/// </remarks>
-		DeleteWatchResponse DeleteWatch(Id watchId, Func<DeleteWatchDescriptor, IDeleteWatchRequest> selector = null);
+		IDeleteWatchResponse DeleteWatch(Id watchId, Func<DeleteWatchDescriptor, IDeleteWatchRequest> selector = null);
 
-		/// <inheritdoc />
-		DeleteWatchResponse DeleteWatch(IDeleteWatchRequest request);
+		/// <inheritdoc/>
+		IDeleteWatchResponse DeleteWatch(IDeleteWatchRequest request);
 
-		/// <inheritdoc />
-		Task<DeleteWatchResponse> DeleteWatchAsync(Id watchId, Func<DeleteWatchDescriptor, IDeleteWatchRequest> selector = null,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IDeleteWatchResponse> DeleteWatchAsync(Id watchId, Func<DeleteWatchDescriptor, IDeleteWatchRequest> selector = null);
 
-		/// <inheritdoc />
-		Task<DeleteWatchResponse> DeleteWatchAsync(IDeleteWatchRequest request, CancellationToken ct = default);
+		/// <inheritdoc/>
+		Task<IDeleteWatchResponse> DeleteWatchAsync(IDeleteWatchRequest request);
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public DeleteWatchResponse DeleteWatch(Id watchId, Func<DeleteWatchDescriptor, IDeleteWatchRequest> selector = null) =>
-			DeleteWatch(selector.InvokeOrDefault(new DeleteWatchDescriptor(watchId)));
+		/// <inheritdoc/>
+		public IDeleteWatchResponse DeleteWatch(Id watchId, Func<DeleteWatchDescriptor, IDeleteWatchRequest> selector = null) =>
+			this.DeleteWatch(selector.InvokeOrDefault(new DeleteWatchDescriptor(watchId)));
 
-		/// <inheritdoc />
-		public DeleteWatchResponse DeleteWatch(IDeleteWatchRequest request) =>
-			DoRequest<IDeleteWatchRequest, DeleteWatchResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IDeleteWatchResponse DeleteWatch(IDeleteWatchRequest request) =>
+			this.Dispatcher.Dispatch<IDeleteWatchRequest, DeleteWatchRequestParameters, DeleteWatchResponse>(
+				request,
+				(p,d) => this.LowLevelDispatch.WatcherDeleteWatchDispatch<DeleteWatchResponse>(p)
+			);
 
-		/// <inheritdoc />
-		public Task<DeleteWatchResponse> DeleteWatchAsync(
-			Id watchId,
-			Func<DeleteWatchDescriptor, IDeleteWatchRequest> selector = null,
-			CancellationToken ct = default
-		) => DeleteWatchAsync(selector.InvokeOrDefault(new DeleteWatchDescriptor(watchId)), ct);
+		/// <inheritdoc/>
+		public Task<IDeleteWatchResponse> DeleteWatchAsync(Id watchId, Func<DeleteWatchDescriptor, IDeleteWatchRequest> selector = null) =>
+			this.DeleteWatchAsync(selector.InvokeOrDefault(new DeleteWatchDescriptor(watchId)));
 
-		/// <inheritdoc />
-		public Task<DeleteWatchResponse> DeleteWatchAsync(IDeleteWatchRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IDeleteWatchRequest, DeleteWatchResponse>
-				(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IDeleteWatchResponse> DeleteWatchAsync(IDeleteWatchRequest request) =>
+			this.Dispatcher.DispatchAsync<IDeleteWatchRequest, DeleteWatchRequestParameters, DeleteWatchResponse, IDeleteWatchResponse>(
+				request,
+				(p,d) => this.LowLevelDispatch.WatcherDeleteWatchDispatchAsync<DeleteWatchResponse>(p)
+			);
 	}
 }

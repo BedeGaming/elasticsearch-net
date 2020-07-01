@@ -1,82 +1,76 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Nest
 {
-	[DataContract]
-	public class IndicesShardStoresResponse : ResponseBase
+	public interface IIndicesShardStoresResponse : IResponse
 	{
-		[DataMember(Name = "indices")]
-		[JsonFormatter(typeof(VerbatimInterfaceReadOnlyDictionaryKeysFormatter<string, IndicesShardStores>))]
-		public IReadOnlyDictionary<string, IndicesShardStores> Indices { get; internal set; } = EmptyReadOnly<string, IndicesShardStores>.Dictionary;
+		[JsonProperty(PropertyName = "indices")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		Dictionary<string, IndicesShardStores> Indices { get; set; }
+	}
+
+	[JsonObject]
+	public class IndicesShardStoresResponse : ResponseBase, IIndicesShardStoresResponse
+	{
+		public Dictionary<string, IndicesShardStores> Indices { get; set; }
 	}
 
 	public class IndicesShardStores
 	{
-		[DataMember(Name = "shards")]
-		[JsonFormatter(typeof(VerbatimInterfaceReadOnlyDictionaryKeysFormatter<string, ShardStoreWrapper>))]
-		public IReadOnlyDictionary<string, ShardStoreWrapper> Shards { get; internal set; } = EmptyReadOnly<string, ShardStoreWrapper>.Dictionary;
+		[JsonProperty(PropertyName = "shards")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		public Dictionary<string, ShardStoreWrapper> Shards { get; set; }
 	}
 
 	public class ShardStoreWrapper
 	{
-		[DataMember(Name = "stores")]
-		public IReadOnlyCollection<ShardStore> Stores { get; internal set; } = EmptyReadOnly<ShardStore>.Collection;
+		public IEnumerable<ShardStore> Stores { get; set; }
 	}
 
-	[JsonFormatter(typeof(ShardStoreFormatter))]
+	[JsonConverter(typeof(ShardStoreJsonConverter))]
 	public class ShardStore
 	{
-		[DataMember(Name = "allocation")]
-		public ShardStoreAllocation Allocation { get; internal set; }
+		[JsonProperty("id")]
+		public string Id { get; set; }
 
-		[DataMember(Name = "allocation_id")]
-		public string AllocationId { get; internal set; }
+		[JsonProperty("name")]
+		public string Name { get; set; }
 
-		[DataMember(Name = "attributes")]
-		[JsonFormatter(typeof(VerbatimInterfaceReadOnlyDictionaryKeysFormatter<string, object>))]
-		public IReadOnlyDictionary<string, object> Attributes { get; internal set; } = EmptyReadOnly<string, object>.Dictionary;
+		[JsonProperty("transport_address")]
+		public string TransportAddress { get; set; }
 
-		[DataMember(Name = "id")]
-		public string Id { get; internal set; }
+		[JsonProperty("version")]
+		public long Version { get; set; }
 
-		[DataMember(Name = "legacy_version")]
-		public long? LegacyVersion { get; internal set; }
+		[JsonProperty("store_exeption")]
+		public ShardStoreException StoreException { get; set; }
 
-		[DataMember(Name = "name")]
-		public string Name { get; internal set; }
+		[JsonProperty("allocation")]
+		public ShardStoreAllocation Allocation { get; set; }
 
-		[DataMember(Name = "store_exception")]
-		public ShardStoreException StoreException { get; internal set; }
-
-		[DataMember(Name = "transport_address")]
-		public string TransportAddress { get; internal set; }
+		[JsonProperty("attributes")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		public Dictionary<string, object> Attributes { get; set; }
 	}
 
 	public class ShardStoreException
 	{
-		[DataMember(Name = "reason")]
-		public string Reason { get; internal set; }
-
-		[DataMember(Name = "type")]
-		public string Type { get; internal set; }
+		[JsonProperty("type")]
+		public string Type { get; set; }
+		[JsonProperty("reason")]
+		public string Reason { get; set; }
 	}
 
-	[StringEnum]
+	[JsonConverter(typeof(StringEnumConverter))]
 	public enum ShardStoreAllocation
 	{
 		[EnumMember(Value = "primary")]
 		Primary,
-
 		[EnumMember(Value = "replica")]
 		Replica,
-
 		[EnumMember(Value = "unused")]
 		Unused
 	}

@@ -1,13 +1,20 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
-﻿namespace Nest
+namespace Nest
 {
-	[MapsApi("license.delete.json")]
-	public partial interface IDeleteLicenseRequest { }
+	public partial interface IDeleteLicenseRequest
+	{
+	}
 
-	public partial class DeleteLicenseRequest { }
+	public partial class DeleteLicenseRequest
+	{
+	}
 
-	public partial class DeleteLicenseDescriptor : IDeleteLicenseRequest { }
+	[DescriptorFor("LicenseDelete")]
+	public partial class DeleteLicenseDescriptor : IDeleteLicenseRequest
+	{
+
+	}
 }

@@ -1,17 +1,18 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	public class MultiTermVectorsResponse : ResponseBase
+	public interface IMultiTermVectorsResponse : IResponse
 	{
-		[DataMember(Name ="docs")]
-		public IReadOnlyCollection<ITermVectors> Documents { get; internal set; } = EmptyReadOnly<ITermVectors>.Collection;
+		IEnumerable<TermVectorsResponse> Documents { get; }
+	}
+
+	[JsonObject]
+	public class MultiTermVectorsResponse : ResponseBase, IMultiTermVectorsResponse
+	{
+		[JsonProperty("docs")]
+		public IEnumerable<TermVectorsResponse> Documents { get; internal set; } = new List<TermVectorsResponse>();
 	}
 }

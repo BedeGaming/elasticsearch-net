@@ -1,25 +1,30 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class PostLicenseResponse : ResponseBase
+	public interface IPostLicenseResponse : IResponse
 	{
+		[JsonProperty("acknowledged")]
+		bool Acknowledged { get; }
+
+		[JsonProperty("license_status")]
+		LicenseStatus LicenseStatus { get; }
+
 		/// <summary>
-		/// If the license is valid but is older or has less capabilities this will list out the reasons why a resubmission with acknowledge=true is
-		/// required.
+		/// If the license is valid but is older or has less capabilities this will list out the reasons why a resubmission with acknowledge=true is required.
 		/// null if no acknowledge resubmission is needed
 		/// </summary>
-		[DataMember(Name ="acknowledge")]
-		public LicenseAcknowledgement Acknowledge { get; internal set; }
+		[JsonProperty("acknowledge")]
+		LicenseAcknowledgement Acknowledge { get; }
+	}
 
-		[DataMember(Name ="acknowledged")]
+	public class PostLicenseResponse : ResponseBase, IPostLicenseResponse
+	{
 		public bool Acknowledged { get; internal set; }
 
-		[DataMember(Name ="license_status")]
 		public LicenseStatus LicenseStatus { get; internal set; }
+
+		public LicenseAcknowledgement Acknowledge { get; internal set; }
 	}
 }

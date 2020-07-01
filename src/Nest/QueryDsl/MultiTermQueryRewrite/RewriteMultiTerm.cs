@@ -1,18 +1,14 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Nest
 {
 	/// <summary>
 	/// Multi term query rewrite method
 	/// </summary>
-	[StringEnum]
+	[JsonConverter(typeof(StringEnumConverter))]
 	public enum RewriteMultiTerm
 	{
 		/// <summary>
@@ -22,16 +18,14 @@ namespace Nest
 		/// </summary>
 		[EnumMember(Value = "constant_score")]
 		ConstantScore,
-
 		/// <summary>
 		/// A rewrite method that first translates each term into a should clause in a boolean query, and keeps the scores
 		///  as computed by the query. Note that typically such scores are meaningless to the user, and require non-trivial
-		///  CPU to compute. This rewrite method will hit too many
+		///  CPU to compute, so it’s almost always better to use constant_score_auto. This rewrite method will hit too many
 		///  clauses failure if it exceeds the boolean query limit (defaults to 1024).
 		/// </summary>
 		[EnumMember(Value = "scoring_boolean")]
 		ScoringBoolean,
-
 		/// <summary>
 		/// Similar to scoring_boolean except scores are not computed. Instead, each matching document receives a constant
 		///  score equal to the query’s boost. This rewrite method will hit too many clauses failure if it exceeds the
@@ -39,7 +33,6 @@ namespace Nest
 		/// </summary>
 		[EnumMember(Value = "constant_score_boolean")]
 		ConstantScoreBoolean,
-
 		/// <summary>
 		/// A rewrite method that first translates each term into should clause in boolean query, and keeps the scores
 		/// as computed by the query. This rewrite method only uses the top scoring terms so it will not overflow boolean
@@ -47,7 +40,6 @@ namespace Nest
 		/// </summary>
 		[EnumMember(Value = "top_terms_N")]
 		TopTermsN,
-
 		/// <summary>
 		/// A rewrite method that first translates each term into should clause in boolean query, but the scores are only
 		/// computed as the boost. This rewrite method only uses the top scoring terms so it will not overflow the boolean
@@ -55,7 +47,6 @@ namespace Nest
 		/// </summary>
 		[EnumMember(Value = "top_terms_boost_N")]
 		TopTermsBoostN,
-
 		/// <summary>
 		/// A rewrite method that first translates each term into should clause in boolean query, but all term queries compute
 		///  scores as if they had the same frequency. In practice the frequency which is used is the maximum frequency of all
@@ -69,12 +60,22 @@ namespace Nest
 	/// <summary>
 	/// Controls how a multi term query such as a wildcard or prefix query, is rewritten.
 	/// </summary>
-	[JsonFormatter(typeof(MultiTermQueryRewriteFormatter))]
+	[JsonConverter(typeof(MultiTermQueryRewriteConverter))]
 	public class MultiTermQueryRewrite : IEquatable<MultiTermQueryRewrite>
 	{
 		private static readonly char[] DigitCharacters = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
 		private readonly string _value;
+
+		/// <summary>
+		/// The type of multi term rewrite to perform
+		/// </summary>
+		public RewriteMultiTerm Rewrite { get; }
+
+		/// <summary>
+		/// The size of the top scoring terms to use
+		/// </summary>
+		public int? Size { get; }
 
 		internal MultiTermQueryRewrite(RewriteMultiTerm rewrite, int? size = null)
 		{
@@ -111,6 +112,14 @@ namespace Nest
 		public static MultiTermQueryRewrite ConstantScore { get; } = new MultiTermQueryRewrite(RewriteMultiTerm.ConstantScore);
 
 		/// <summary>
+		/// A rewrite method that first translates each term into a should clause in a boolean query, and keeps the scores
+		///  as computed by the query. Note that typically such scores are meaningless to the user, and require non-trivial
+		///  CPU to compute, so it’s almost always better to use constant_score_auto. This rewrite method will hit too many
+		///  clauses failure if it exceeds the boolean query limit (defaults to 1024).
+		/// </summary>
+		public static MultiTermQueryRewrite ScoringBoolean { get; } = new MultiTermQueryRewrite(RewriteMultiTerm.ScoringBoolean);
+
+		/// <summary>
 		/// Similar to scoring_boolean except scores are not computed. Instead, each matching document receives a constant
 		///  score equal to the query’s boost. This rewrite method will hit too many clauses failure if it exceeds the
 		/// boolean query limit (defaults to 1024).
@@ -118,46 +127,16 @@ namespace Nest
 		public static MultiTermQueryRewrite ConstantScoreBoolean { get; } = new MultiTermQueryRewrite(RewriteMultiTerm.ConstantScoreBoolean);
 
 		/// <summary>
-		/// The type of multi term rewrite to perform
-		/// </summary>
-		public RewriteMultiTerm Rewrite { get; }
-
-		/// <summary>
-		/// A rewrite method that first translates each term into a should clause in a boolean query, and keeps the scores
-		///  as computed by the query. Note that typically such scores are meaningless to the user, and require non-trivial
-		///  CPU to compute. This rewrite method will hit too many
-		///  clauses failure if it exceeds the boolean query limit (defaults to 1024).
-		/// </summary>
-		public static MultiTermQueryRewrite ScoringBoolean { get; } = new MultiTermQueryRewrite(RewriteMultiTerm.ScoringBoolean);
-
-		/// <summary>
-		/// The size of the top scoring terms to use
-		/// </summary>
-		public int? Size { get; }
-
-		public bool Equals(MultiTermQueryRewrite other)
-		{
-			if (ReferenceEquals(null, other)) return false;
-			if (ReferenceEquals(this, other)) return true;
-
-			return Rewrite == other.Rewrite && Size == other.Size;
-		}
-
-		/// <summary>
 		/// A rewrite method that first translates each term into should clause in boolean query, and keeps the scores
 		/// as computed by the query. This rewrite method only uses the top scoring terms so it will not overflow boolean
-		///  max clause count.
-		/// <param name="size" />
-		/// controls the size of the top scoring terms to use.
+		///  max clause count. <param name="size" /> controls the size of the top scoring terms to use.
 		/// </summary>
 		public static MultiTermQueryRewrite TopTerms(int size) => new MultiTermQueryRewrite(RewriteMultiTerm.TopTermsN, size);
 
 		/// <summary>
 		/// A rewrite method that first translates each term into should clause in boolean query, but the scores are only
 		/// computed as the boost. This rewrite method only uses the top scoring terms so it will not overflow the boolean
-		///  max clause count.
-		/// <param name="size" />
-		/// controls the size of the top scoring terms to use.
+		///  max clause count. <param name="size" /> controls the size of the top scoring terms to use.
 		/// </summary>
 		public static MultiTermQueryRewrite TopTermsBoost(int size) => new MultiTermQueryRewrite(RewriteMultiTerm.TopTermsBoostN, size);
 
@@ -165,8 +144,7 @@ namespace Nest
 		/// A rewrite method that first translates each term into should clause in boolean query, but all term queries compute
 		///  scores as if they had the same frequency. In practice the frequency which is used is the maximum frequency of all
 		///  matching terms. This rewrite method only uses the top scoring terms so it will not overflow boolean max clause count.
-		/// <param name="size" />
-		/// controls the size of the top scoring terms to use.
+		/// <param name="size" /> controls the size of the top scoring terms to use.
 		/// </summary>
 		public static MultiTermQueryRewrite TopTermsBlendedFreqs(int size) => new MultiTermQueryRewrite(RewriteMultiTerm.TopTermsBlendedFreqsN, size);
 
@@ -207,7 +185,14 @@ namespace Nest
 			}
 		}
 
-		public override string ToString() => _value;
+		public override string ToString() => this._value;
+
+		public bool Equals(MultiTermQueryRewrite other)
+		{
+			if (ReferenceEquals(null, other)) return false;
+			if (ReferenceEquals(this, other)) return true;
+			return Rewrite == other.Rewrite && Size == other.Size;
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -218,7 +203,7 @@ namespace Nest
 			if (value != null)
 				return string.Equals(value, _value);
 
-			return obj.GetType() == GetType() && Equals((MultiTermQueryRewrite)obj);
+			return obj.GetType() == this.GetType() && Equals((MultiTermQueryRewrite)obj);
 		}
 
 		public override int GetHashCode()
@@ -232,5 +217,27 @@ namespace Nest
 		public static bool operator ==(MultiTermQueryRewrite left, MultiTermQueryRewrite right) => Equals(left, right);
 
 		public static bool operator !=(MultiTermQueryRewrite left, MultiTermQueryRewrite right) => !Equals(left, right);
+	}
+
+	internal class MultiTermQueryRewriteConverter : JsonConverter
+	{
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+		{
+			var multiTerm = (MultiTermQueryRewrite)value;
+			writer.WriteValue(multiTerm?.ToString());
+		}
+
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+		{
+			if (reader.TokenType == JsonToken.Null)
+				return null;
+
+			if (reader.TokenType != JsonToken.String)
+				throw new JsonSerializationException($"Invalid token type {reader.TokenType} to deserialize {nameof(MultiTermQueryRewrite)} from");
+
+			return MultiTermQueryRewrite.Create((string)reader.Value);
+		}
+
+		public override bool CanConvert(Type objectType) => typeof(MultiTermQueryRewrite).IsAssignableFrom(objectType);
 	}
 }

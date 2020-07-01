@@ -1,39 +1,63 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
+using System;
 
 namespace Nest
 {
-	[DataContract]
-	public class TermVectorsResponse : ResponseBase
+	public interface ITermVectorsResponse : IResponse
 	{
+		string Index { get; }
+		string Type { get; }
+		string Id { get; }
+		long Version { get; }
+		bool Found { get; }
+
 		/// <summary>
-		/// TermVector API returns 200 even if <see cref="Found"/>;
+		/// Time in milliseconds for Elasticsearch to execute the search
 		/// </summary>
-		public override bool IsValid => base.IsValid && Found;
+		[Obsolete(@"returned value may be larger than int. In this case, value will be int.MaxValue and TookAsLong field can be checked. Took is long in 5.0.0")]
+		int Took { get; }
 
-		[DataMember(Name ="found")]
-		public bool Found { get; internal set; }
+		/// <summary>
+		/// Time in milliseconds for Elasticsearch to execute the search
+		/// </summary>
+		long TookAsLong { get; }
 
-		[DataMember(Name ="_id")]
-		public string Id { get; internal set; }
+		IDictionary<string, TermVector> TermVectors { get; }
+	}
 
-		[DataMember(Name ="_index")]
+	[JsonObject]
+	public class TermVectorsResponse : ResponseBase, ITermVectorsResponse
+	{
+		[JsonProperty("_index")]
 		public string Index { get; internal set; }
 
-		[DataMember(Name ="term_vectors")]
-		[JsonFormatter(typeof(ResolvableReadOnlyDictionaryFormatter<Field, TermVector>))]
-		public IReadOnlyDictionary<Field, TermVector> TermVectors { get; internal set; } = EmptyReadOnly<Field, TermVector>.Dictionary;
+		[JsonProperty("_type")]
+		public string Type { get; internal set; }
 
-		[DataMember(Name ="took")]
-		public long Took { get; internal set; }
+		[JsonProperty("_id")]
+		public string Id { get; internal set; }
 
-		[DataMember(Name ="_version")]
+		[JsonProperty("_version")]
 		public long Version { get; internal set; }
+
+		[JsonProperty("found")]
+		public bool Found { get; internal set; }
+
+		/// <summary>
+		/// Time in milliseconds for Elasticsearch to execute the search
+		/// </summary>
+		[JsonProperty("took")]
+		public long TookAsLong { get; internal set; }
+
+		/// <summary>
+		/// Time in milliseconds for Elasticsearch to execute the search
+		/// </summary>
+		[Obsolete(@"returned value may be larger than int. In this case, value will be int.MaxValue and TookAsLong field can be checked. Took is long in 5.0.0")]
+		[JsonIgnore]
+		public int Took => TookAsLong > int.MaxValue ? int.MaxValue : (int)TookAsLong;
+
+		[JsonProperty("term_vectors")]
+		public IDictionary<string, TermVector> TermVectors { get; internal set; } =  new Dictionary<string, TermVector>();
 	}
 }

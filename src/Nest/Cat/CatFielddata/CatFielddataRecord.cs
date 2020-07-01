@@ -1,21 +1,19 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	[JsonFormatter(typeof(CatFielddataRecordFormatter))]
+	[JsonObject]
+	[JsonConverter(typeof(CatFielddataRecordJsonConverter))]
 	public class CatFielddataRecord : ICatRecord
 	{
-		public string Field { get; set; }
-		public string Host { get; set; }
 		public string Id { get; set; }
+		public string Host { get; set; }
 		public string Ip { get; set; }
 		public string Node { get; set; }
-		public string Size { get; set; }
+		public string Total { get; set; }
+
+		public IDictionary<string, string> FieldSizes { get; set; }
 	}
+	
 }

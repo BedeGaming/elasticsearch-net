@@ -1,15 +1,12 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(SimpleInputFormatter))]
+	[JsonConverter(typeof(SimpleInputJsonConverter))]
 	public interface ISimpleInput : IInput
 	{
 		IDictionary<string, object> Payload { get; }
@@ -17,38 +14,54 @@ namespace Nest
 
 	public class SimpleInput : InputBase, ISimpleInput, IEnumerable<KeyValuePair<string, object>>
 	{
-		public SimpleInput() { }
+		private IDictionary<string, object> _payload;
+
+		public IDictionary<string, object> Payload => _payload;
+
+		public SimpleInput() {}
 
 		public SimpleInput(IDictionary<string, object> payload)
-			: this() => Payload = payload;
-
-		public IDictionary<string, object> Payload { get; private set; }
-
-		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public IEnumerator<KeyValuePair<string, object>> GetEnumerator() =>
-			Payload?.GetEnumerator() ?? Enumerable.Empty<KeyValuePair<string, object>>().GetEnumerator();
+			: this()
+		{
+			this._payload = payload;
+		}
 
 		public void Add(string key, object value)
 		{
-			if (Payload == null) Payload = new Dictionary<string, object>();
-			Payload.Add(key, value);
+			if (_payload == null) _payload = new Dictionary<string, object>();
+			_payload.Add(key, value);
 		}
 
-		public void Remove(string key) => Payload?.Remove(key);
+		public void Remove(string key)
+		{
+			_payload?.Remove(key);
+		}
 
 		internal override void WrapInContainer(IInputContainer container) => container.Simple = this;
+
+		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+		{
+			return _payload?.GetEnumerator() ?? Enumerable.Empty<KeyValuePair<string, object>>().GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return this.GetEnumerator();
+		}
 	}
 
 	public class SimpleInputDescriptor : ISimpleInput, IDescriptor
 	{
 		private IDictionary<string, object> _payload;
 
-		public SimpleInputDescriptor() { }
-
-		public SimpleInputDescriptor(IDictionary<string, object> payload) => _payload = payload;
-
 		IDictionary<string, object> ISimpleInput.Payload => _payload;
+
+		public SimpleInputDescriptor() {}
+
+		public SimpleInputDescriptor(IDictionary<string, object> payload)
+		{
+			this._payload = payload;
+		}
 
 		public SimpleInputDescriptor Add(string key, object value)
 		{
@@ -60,32 +73,31 @@ namespace Nest
 		public SimpleInputDescriptor Remove(string key)
 		{
 			if (_payload == null) return this;
-
 			_payload.Remove(key);
 			return this;
 		}
 	}
 
-	internal class SimpleInputFormatter : IJsonFormatter<ISimpleInput>
+	internal class SimpleInputJsonConverter : JsonConverter
 	{
-		public ISimpleInput Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+		public override bool CanConvert(Type objectType) => true;
+
+		public override bool CanRead => true;
+
+		public override bool CanWrite => true;
+
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			if (reader.GetCurrentJsonToken() != JsonToken.BeginObject)
-				return null;
-
-			var formatter = formatterResolver.GetFormatter<IDictionary<string, object>>();
-			var dictionary = formatter.Deserialize(ref reader, formatterResolver);
-
+			if (reader.TokenType != JsonToken.StartObject) return null;
+			var dictionary = serializer.Deserialize<IDictionary<string, object>>(reader);
 			return new SimpleInput(dictionary);
 		}
 
-		public void Serialize(ref JsonWriter writer, ISimpleInput value, IJsonFormatterResolver formatterResolver)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			if (value?.Payload == null)
-				return;
-
-			var formatter = formatterResolver.GetFormatter<IDictionary<string, object>>();
-			formatter.Serialize(ref writer, value.Payload, formatterResolver);
+			var s = value as ISimpleInput;
+			if (s?.Payload == null) return;
+			serializer.Serialize(writer, s.Payload);
 		}
 	}
 }

@@ -1,65 +1,99 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using System.Collections.Generic;
+using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	/// <summary>
-	/// A query allowing to define a script to execute as a query
-	/// </summary>
-	[ReadAs(typeof(ScriptQuery))]
-	[InterfaceDataContract]
+
+	[JsonConverter(typeof(ScriptQueryConverter))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 	public interface IScriptQuery : IQuery
 	{
-		/// <summary>
-		/// The script to execute
-		/// </summary>
-		[DataMember(Name = "script")]
-		IScript Script { get; set; }
+		[JsonProperty(PropertyName = "inline")]
+		string Inline { get; set; }
+
+		[JsonProperty(PropertyName = "id")]
+		Id Id { get; set; }
+
+		[JsonProperty("file")]
+		string File { get; set; }
+
+		[JsonProperty(PropertyName = "params")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		Dictionary<string, object> Params { get; set; }
+
+		[JsonProperty(PropertyName = "lang")]
+		string Lang { get; set; }
 	}
 
-	/// <inheritdoc cref="IScriptQuery"/>
 	public class ScriptQuery : QueryBase, IScriptQuery
 	{
-		/// <inheritdoc />
-		public IScript Script { get; set; }
-
 		protected override bool Conditionless => IsConditionless(this);
+		public string Inline { get; set; }
+		public Id Id { get; set; }
+		public string File { get; set; }
+		public Dictionary<string, object> Params { get; set; }
+		public string Lang { get; set; }
 
 		internal override void InternalWrapInContainer(IQueryContainer c) => c.Script = this;
+		internal static bool IsConditionless(IScriptQuery q) =>
+			q.Inline.IsNullOrEmpty() && q.Id == null && q.File.IsNullOrEmpty();
 
-		internal static bool IsConditionless(IScriptQuery q)
-		{
-			if (q.Script == null)
-				return true;
-
-			switch (q.Script)
-			{
-				case IInlineScript inlineScript:
-					return inlineScript.Source.IsNullOrEmpty();
-				case IIndexedScript indexedScript:
-					return indexedScript.Id.IsNullOrEmpty();
-			}
-
-			return false;
-		}
 	}
 
-	/// <inheritdoc cref="IScriptQuery"/>
 	public class ScriptQueryDescriptor<T>
 		: QueryDescriptorBase<ScriptQueryDescriptor<T>, IScriptQuery>
-			, IScriptQuery where T : class
+		, IScriptQuery where T : class
 	{
 		protected override bool Conditionless => ScriptQuery.IsConditionless(this);
+		string IScriptQuery.Inline { get; set; }
+		Id IScriptQuery.Id { get; set; }
+		string IScriptQuery.File { get; set; }
+		string IScriptQuery.Lang { get; set; }
+		Dictionary<string, object> IScriptQuery.Params { get; set; }
 
-		IScript IScriptQuery.Script { get; set; }
+		/// <summary>
+		/// Inline script to execute
+		/// </summary>
+		public ScriptQueryDescriptor<T> Inline(string script) => Assign(a => a.Inline = script);
 
-		/// <inheritdoc cref="IScriptQuery.Script"/>
-		public ScriptQueryDescriptor<T> Script(Func<ScriptDescriptor, IScript> selector) =>
-			Assign(selector, (a, v) => a.Script = v?.Invoke(new ScriptDescriptor()));
+		/// <summary>
+		/// Id of an indexed script to execute
+		/// </summary
+		public ScriptQueryDescriptor<T> Id(string scriptId) => Assign(a => a.Id = scriptId);
+
+		/// <summary>
+		/// File name of a script to execute
+		/// </summary>
+		public ScriptQueryDescriptor<T> File(string scriptFile) => Assign(a => a.File = scriptFile);
+
+		/// <summary>
+		/// Scripts are compiled and cached for faster execution.
+		/// If the same script can be used, just with different parameters provided,
+		/// it is preferable to use the ability to pass parameters to the script itself.
+		/// </summary>
+		/// <example>
+		///	    script: "doc['num1'].value > param1"
+		///		param: "param1" = 5
+		/// </example>
+		/// <param name="paramDictionary">param</param>
+		/// <returns>this</returns>
+		public ScriptQueryDescriptor<T> Params(Func<FluentDictionary<string, object>, FluentDictionary<string, object>> paramDictionary) =>
+			Assign(a => a.Params = paramDictionary(new FluentDictionary<string, object>()));
+
+		/// <summary>
+		/// Language of script.
+		/// </summary>
+		/// <param name="lang">language</param>
+		/// <returns>this</returns>
+		public ScriptQueryDescriptor<T> Lang(string lang) => Assign(a => a.Lang = lang);
+
+		/// <summary>
+		/// Language of script.
+		/// </summary>
+		/// <param name="lang">language</param>
+		/// <returns>this</returns>
+		public ScriptQueryDescriptor<T> Lang(ScriptLang lang) => Assign(a => a.Lang = lang.GetStringValue());
 	}
 }

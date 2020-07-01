@@ -1,16 +1,12 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(SumAggregation))]
-	public interface ISumAggregation : IFormattableMetricAggregation { }
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<SumAggregation>))]
+	public interface ISumAggregation : IMetricAggregation { }
 
-	public class SumAggregation : FormattableMetricAggregationBase, ISumAggregation
+	public class SumAggregation : MetricAggregationBase, ISumAggregation
 	{
 		internal SumAggregation() { }
 
@@ -19,8 +15,8 @@ namespace Nest
 		internal override void WrapInContainer(AggregationContainer c) => c.Sum = this;
 	}
 
-	public class SumAggregationDescriptor<T>
-		: FormattableMetricAggregationDescriptorBase<SumAggregationDescriptor<T>, ISumAggregation, T>
-			, ISumAggregation
+	public class SumAggregationDescriptor<T> 
+		: MetricAggregationDescriptorBase<SumAggregationDescriptor<T>, ISumAggregation, T>
+			, ISumAggregation 
 		where T : class { }
 }

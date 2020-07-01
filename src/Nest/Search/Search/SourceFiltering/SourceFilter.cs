@@ -1,47 +1,52 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(SourceFilterFormatter))]
+	[JsonConverter(typeof(SourceFilterJsonConverter))]
 	public interface ISourceFilter
 	{
-		[DataMember(Name = "excludes")]
-		Fields Excludes { get; set; }
+		[JsonProperty("include")]
+		Fields Include { get; set; }
 
-		[DataMember(Name = "includes")]
-		Fields Includes { get; set; }
+		[JsonProperty("exclude")]
+		Fields Exclude { get; set; }
+
+		[JsonIgnore]
+		bool Disable { get; set; }
 	}
 
 	public class SourceFilter : ISourceFilter
 	{
-		public static SourceFilter ExcludeAll { get; } = new SourceFilter { Excludes = new[] { "*" } };
-		public Fields Excludes { get; set; }
-		public static SourceFilter IncludeAll { get; } = new SourceFilter { Includes = new[] { "*" } };
+		public static SourceFilter ExcludeAll { get; } = new SourceFilter { Exclude = new [] {"*"} };
+		public static SourceFilter IncludeAll { get; } = new SourceFilter { Include = new [] {"*"} };
 
-		public Fields Includes { get; set; }
+		public Fields Include { get; set; }
+		public Fields Exclude { get; set; }
+
+		public bool Disable { get; set; }
 	}
 
 	public class SourceFilterDescriptor<T> : DescriptorBase<SourceFilterDescriptor<T>, ISourceFilter>, ISourceFilter
 		where T : class
 	{
-		Fields ISourceFilter.Excludes { get; set; }
-		Fields ISourceFilter.Includes { get; set; }
+		Fields ISourceFilter.Include { get; set; }
 
-		public SourceFilterDescriptor<T> Includes(Func<FieldsDescriptor<T>, IPromise<Fields>> fields) =>
-			Assign(fields, (a, v) => a.Includes = v?.Invoke(new FieldsDescriptor<T>())?.Value);
+		Fields ISourceFilter.Exclude { get; set; }
 
-		public SourceFilterDescriptor<T> IncludeAll() => Assign(new[] { "*" }, (a, v) => a.Includes = v);
+		bool ISourceFilter.Disable { get; set; }
 
-		public SourceFilterDescriptor<T> Excludes(Func<FieldsDescriptor<T>, IPromise<Fields>> fields) =>
-			Assign(fields, (a, v) => a.Excludes = v?.Invoke(new FieldsDescriptor<T>())?.Value);
 
-		public SourceFilterDescriptor<T> ExcludeAll() => Assign(new[] { "*" }, (a, v) => a.Excludes = v);
+		public SourceFilterDescriptor<T> Include(Func<FieldsDescriptor<T>, IPromise<Fields>> fields) =>
+			Assign(a => a.Include = fields?.Invoke(new FieldsDescriptor<T>())?.Value);
+
+		public SourceFilterDescriptor<T> IncludeAll() => Assign(a => a.Include = new[] { "*" });
+
+		public SourceFilterDescriptor<T> Exclude(Func<FieldsDescriptor<T>, IPromise<Fields>> fields) =>
+			Assign(a => a.Exclude = fields?.Invoke(new FieldsDescriptor<T>())?.Value);
+
+		public SourceFilterDescriptor<T> ExcludeAll() => Assign(a => a.Exclude = new[] { "*" });
+
+		public SourceFilterDescriptor<T> Disable(bool disable = true) => Assign(a => a.Disable = disable);
 	}
 }

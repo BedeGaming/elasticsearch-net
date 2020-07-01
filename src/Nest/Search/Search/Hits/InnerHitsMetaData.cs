@@ -1,30 +1,25 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class InnerHitsMetadata
+	public class InnerHitsMetaData
 	{
-		[DataMember(Name ="hits")]
-		public List<IHit<ILazyDocument>> Hits { get; internal set; }
+		[JsonProperty("total")]
+		public long Total { get; internal set; }
 
-		[DataMember(Name ="max_score")]
+		[JsonProperty("max_score")]
 		public double? MaxScore { get; internal set; }
 
-		[DataMember(Name = "total")]
-		public TotalHits Total { get; internal set; }
+		[JsonProperty("hits")]
+		public List<Hit<ILazyDocument>> Hits { get; internal set; }
 
 		public IEnumerable<T> Documents<T>() where T : class
 		{
-			if (Hits == null || Hits.Count == 0)
+			if (this.Hits == null || !this.Hits.HasAny())
 				return Enumerable.Empty<T>();
-
-			return Hits.Select(hit => hit.Source.As<T>()).ToList();
+			return this.Hits.Select(hit => hit.Source.As<T>()).ToList();
 		}
 	}
 }

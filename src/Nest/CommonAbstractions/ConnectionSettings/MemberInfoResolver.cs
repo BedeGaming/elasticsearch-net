@@ -1,7 +1,3 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -13,14 +9,17 @@ namespace Nest
 	/// </summary>
 	public class MemberInfoResolver : ExpressionVisitor
 	{
-		// ReSharper disable once VirtualMemberCallInConstructor
-		public MemberInfoResolver(Expression expression) => Visit(expression);
+		private readonly IList<MemberInfo> _members = new List<MemberInfo>();
+		public IList<MemberInfo> Members { get { return _members; } }
 
-		public IList<MemberInfo> Members { get; } = new List<MemberInfo>();
+		public MemberInfoResolver(Expression expression)
+		{
+			base.Visit(expression);
+		}
 
 		protected override Expression VisitMember(MemberExpression expression)
 		{
-			Members.Add(expression.Member);
+			this._members.Add(expression.Member);
 			return base.VisitMember(expression);
 		}
 	}

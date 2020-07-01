@@ -1,76 +1,23 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System;
 using System.Collections.Generic;
-using Elasticsearch.Net.Utf8Json;
+using System.Linq;
 
 namespace Nest
 {
-	/// <summary>
-	/// Dynamic index settings
-	/// </summary>
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(DynamicIndexSettingsFormatter))]
+	[ContractJsonConverter(typeof(IndexSettingsConverter))]
 	public interface IDynamicIndexSettings : IIsADictionary<string, object>
 	{
 		/// <summary>
-		/// Configure analysis
-		/// </summary>
-		IAnalysis Analysis { get; set; }
-
-		/// <summary>
-		/// Auto-expand the number of replicas based on the number of available nodes.
-		///  Set to a dash delimited lower and upper bound (e.g. 0-5) or use all for the upper bound (e.g. 0-all). Defaults to false (i.e. disabled).
-		/// </summary>
-		AutoExpandReplicas AutoExpandReplicas { get; set; }
-
-		/// <summary>
-		/// Set to true to disable index metadata reads and writes.
-		/// </summary>
-		bool? BlocksMetadata { get; set; }
-
-		/// <summary>
-		/// Set to true to disable read operations against the index.
-		/// </summary>
-		bool? BlocksRead { get; set; }
-
-		/// <summary>
-		/// Set to true to make the index and index metadata read only, false to allow writes and metadata changes.
-		/// </summary>
-		bool? BlocksReadOnly { get; set; }
-
-		/// <summary>
-		/// Set to true to disable write operations against the index.
-		/// </summary>
-		bool? BlocksWrite { get; set; }
-
-		/// <summary>
-		/// Set to true to disable read operations, but allow delete operations, against the index.
-		/// </summary>
-		bool? BlocksReadOnlyAllowDelete { get; set; }
-
-		/// <summary>
-		/// All of the settings exposed in the merge module are expert only and may be obsoleted in the future at any time!
-		/// </summary>
-		IMergeSettings Merge { get; set; }
-
-		/// <summary>
-		/// The number of replicas each primary shard has. Defaults to 1.
+		///The number of replicas each primary shard has. Defaults to 1.
 		/// </summary>
 		int? NumberOfReplicas { get; set; }
 
 		/// <summary>
-		/// Unallocated shards are recovered in order of priority when set
+		///Auto-expand the number of replicas based on the number of available nodes.
+		/// Set to a dash delimited lower and upper bound (e.g. 0-5) or use all for the upper bound (e.g. 0-all). Defaults to false (i.e. disabled).
 		/// </summary>
-		int? Priority { get; set; }
-
-		/// <summary>
-		/// A primary shard is only recovered only if there are
-		/// enough nodes available to allocate sufficient replicas to form a quorum.
-		/// </summary>
-		Union<int, RecoveryInitialShards> RecoveryInitialShards { get; set; }
+		//TODO SPECIAL TYPE FOR THIS INSTEAD OF JUST STRING
+		string AutoExpandReplicas { get; set; }
 
 		/// <summary>
 		/// How often to perform a refresh operation, which makes recent changes to the index visible to search.
@@ -79,29 +26,51 @@ namespace Nest
 		Time RefreshInterval { get; set; }
 
 		/// <summary>
-		/// Enables the shard-level request cache. Not enabled by default.
+		/// Set to true to make the index and index metadata read only, false to allow writes and metadata changes.
 		/// </summary>
-		bool? RequestsCacheEnabled { get; set; }
+		bool? BlocksReadOnly { get; set; }
 
 		/// <summary>
-		/// The maximum number of shards (replicas and primaries) that will be allocated to a single node. Defaults to unbounded.
+		/// Set to true to disable read operations against the index.
 		/// </summary>
-		int? RoutingAllocationTotalShardsPerNode { get; set; }
+		bool? BlocksRead { get; set; }
 
 		/// <summary>
-		/// Configure similarity
+		/// Set to true to disable write operations against the index.
 		/// </summary>
-		ISimilarities Similarity { get; set; }
+		bool? BlocksWrite { get; set; }
 
 		/// <summary>
-		/// Configure logging thresholds and levels in Elasticsearch for search/fetch and indexing
+		/// Set to true to disable index metadata reads and writes.
 		/// </summary>
-		ISlowLog SlowLog { get; set; }
+		bool? BlocksMetadata { get; set; }
 
 		/// <summary>
-		/// Configure translog settings. This should only be used by experts who know what they're doing
+		/// Unallocated shards are recovered in order of priority when set
 		/// </summary>
-		ITranslogSettings Translog { get; set; }
+		int? Priority { get; set; }
+
+		/// <summary>
+		/// Index warmup can be disabled by setting index.warmer.enabled to false. This can be handy when
+		/// doing initial bulk indexing: disable pre registered warmers to make indexing faster
+		/// and less expensive and then enable it.
+		/// </summary>
+		bool? WarmersEnabled { get; set; }
+
+		/// <summary>
+		/// When a search request is run against an index or against many indices, each involved shard executes the search locally and
+	   ///  returns its local results to the coordinating node, which combines these shard-level results into a “global” result set.
+		///<para>
+		/// The shard-level request cache module caches the local results on each shard.This allows frequently used
+		/// (and potentially heavy) search requests to return results almost instantly.</para>
+		/// </summary>
+		bool? RequestCacheEnabled { get; set; }
+
+		/// <summary>
+		/// A primary shard is only recovered only if there are
+		/// enough nodes available to allocate sufficient replicas to form a quorum.
+		/// </summary>
+		Union<int, RecoveryInitialShards> RecoveryInitialShards { get; set; }
 
 		/// <summary>
 		/// The allocation of replica shards which become unassigned because a node has left can be
@@ -110,205 +79,184 @@ namespace Nest
 		Time UnassignedNodeLeftDelayedTimeout { get; set; }
 
 		/// <summary>
-		/// The default ingest node pipeline for this index. Index requests will fail if the default pipeline is set and
-		/// the pipeline does not exist. The default may be overridden using the pipeline parameter.
-		/// The special pipeline name _none indicates no ingest pipeline should be run.`
+		/// The maximum number of shards (replicas and primaries) that will be allocated to a single node. Defaults to unbounded.
 		/// </summary>
-		string DefaultPipeline { get; set; }
+		int? RoutingAllocationTotalShardsPerNode { get; set; }
 
 		/// <summary>
-		/// The required ingest pipeline for this index. Index requests will fail if the required pipeline is set and the pipeline
-		/// does not exist. The required pipeline can not be overridden with the pipeline parameter. A default pipeline and a required pipeline
-		/// can not both be set. The special pipeline name _none indicates no ingest pipeline will run.
+		/// All of the settings exposed in the merge module are expert only and may be obsoleted in the future at any time!
 		/// </summary>
-		[Obsolete("Use FinalPipeline")]
-		string RequiredPipeline { get; set; }
+		IMergeSettings Merge { get; set; }
 
 		/// <summary>
-		/// The final ingest pipeline for this index. Index requests will fail if the final pipeline is set and the pipeline does not exist.
-		/// The final pipeline always runs after the request pipeline (if specified) and the default pipeline (if it exists). The special pipeline
-		/// name `_none` indicates no ingest pipeline will run.
+		/// Configure logging thresholds and levels in elasticsearch for search/fetch and indexing
 		/// </summary>
-		string FinalPipeline { get; set; }
+		ISlowLog SlowLog { get; set; }
+
+		/// <summary>
+		/// Configure translog settings, EXPERT MODE ONLY!
+		/// </summary>
+		ITranslogSettings Translog { get; set; }
+
+		IAnalysis Analysis { get; set; }
+
+		/// <summary>
+		/// Configure similarity
+		/// </summary>
+		ISimilarities Similarity { get; set; }
 	}
 
-	/// <inheritdoc />
 	public class DynamicIndexSettings : IsADictionaryBase<string, object>, IDynamicIndexSettings
 	{
-		private Time _refreshInterval;
-
-		public DynamicIndexSettings() { }
-
+		public DynamicIndexSettings() : base() { }
 		public DynamicIndexSettings(IDictionary<string, object> container) : base(container) { }
+		public DynamicIndexSettings(Dictionary<string, object> container)
+			: base(container.Select(kv => kv).ToDictionary(kv => kv.Key, kv => kv.Value))
+		{ }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.Analysis" />
-		public IAnalysis Analysis { get; set; }
+		/// <inheritdoc/>
+		public string AutoExpandReplicas { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.AutoExpandReplicas" />
-		public AutoExpandReplicas AutoExpandReplicas { get; set; }
-
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksMetadata" />
+		/// <inheritdoc/>
 		public bool? BlocksMetadata { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksRead" />
+		/// <inheritdoc/>
 		public bool? BlocksRead { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksReadOnly" />
+		/// <inheritdoc/>
 		public bool? BlocksReadOnly { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksWrite" />
+		/// <inheritdoc/>
 		public bool? BlocksWrite { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksReadOnlyAllowDelete" />
-		public bool? BlocksReadOnlyAllowDelete { get; set; }
-
-		/// <inheritdoc cref="IDynamicIndexSettings.Merge" />
-		public IMergeSettings Merge { get; set; }
-
-		/// <inheritdoc cref="IDynamicIndexSettings.NumberOfReplicas" />
-		public int? NumberOfReplicas { get; set; }
-
-		/// <inheritdoc cref="IDynamicIndexSettings.Priority" />
+		/// <inheritdoc/>
 		public int? Priority { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RecoveryInitialShards" />
+		/// <inheritdoc/>
+		public bool? WarmersEnabled { get; set; }
+
+		/// <inheritdoc/>
+		public bool? RequestCacheEnabled { get; set; }
+
+		/// <inheritdoc/>
+		public IMergeSettings Merge { get; set; }
+
+		/// <inheritdoc/>
+		public int? NumberOfReplicas { get; set; }
+
+		/// <inheritdoc/>
 		public Union<int, RecoveryInitialShards> RecoveryInitialShards { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RefreshInterval" />
-		public Time RefreshInterval
-		{
-			get => _refreshInterval;
-			set
-			{
-				BackingDictionary[UpdatableIndexSettings.RefreshInterval] = value;
-				_refreshInterval = value;
-			}
-		}
+		/// <inheritdoc/>
+		public Time RefreshInterval { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RequestsCacheEnabled" />
-		public bool? RequestsCacheEnabled { get; set; }
-
-		/// <inheritdoc cref="IDynamicIndexSettings.RoutingAllocationTotalShardsPerNode" />
+		/// <inheritdoc/>
 		public int? RoutingAllocationTotalShardsPerNode { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.Similarity" />
-		public ISimilarities Similarity { get; set; }
-
-		/// <inheritdoc cref="IDynamicIndexSettings.SlowLog" />
+		/// <inheritdoc/>
 		public ISlowLog SlowLog { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.Translog" />
+		/// <inheritdoc/>
 		public ITranslogSettings Translog { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.UnassignedNodeLeftDelayedTimeout" />
+		/// <inheritdoc/>
 		public Time UnassignedNodeLeftDelayedTimeout { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.DefaultPipeline" />
-		public string DefaultPipeline { get; set; }
+		/// <inheritdoc/>
+		public IAnalysis Analysis { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RequiredPipeline" />
-		[Obsolete("Use FinalPipeline")]
-		public string RequiredPipeline { get; set; }
+		/// <inheritdoc/>
+		public ISimilarities Similarity { get; set; }
 
-		/// <inheritdoc cref="IDynamicIndexSettings.FinalPipeline" />
-		public string FinalPipeline { get; set; }
+		/// <summary>
+		/// Add any setting to the index
+		/// </summary>
+		public void Add(string setting, object value) => this.BackingDictionary.Add(setting, value);
 
-		/// <summary> Add any setting to the index </summary>
-		public void Add(string setting, object value) => BackingDictionary[setting] = value;
 	}
 
-	/// <inheritdoc cref="IDynamicIndexSettings" />
-	public class DynamicIndexSettingsDescriptor : DynamicIndexSettingsDescriptorBase<DynamicIndexSettingsDescriptor, DynamicIndexSettings>
+	public class DynamicIndexSettingsDescriptor :
+		DynamicIndexSettingsDescriptorBase<DynamicIndexSettingsDescriptor, DynamicIndexSettings>
 	{
 		public DynamicIndexSettingsDescriptor() : base(new DynamicIndexSettings()) { }
 	}
 
-	/// <summary>Base descriptor implementation for dynamic index settings</summary>
-	public abstract class DynamicIndexSettingsDescriptorBase<TDescriptor, TIndexSettings>
-		: IsADictionaryDescriptorBase<TDescriptor, TIndexSettings, string, object>
+	public abstract class DynamicIndexSettingsDescriptorBase<TDescriptor, TIndexSettings> : IsADictionaryDescriptorBase<TDescriptor, TIndexSettings, string, object>
 		where TDescriptor : DynamicIndexSettingsDescriptorBase<TDescriptor, TIndexSettings>
 		where TIndexSettings : class, IDynamicIndexSettings
 	{
 		protected DynamicIndexSettingsDescriptorBase(TIndexSettings instance) : base(instance) { }
 
-		/// <inheritdoc cref="DynamicIndexSettings.Add" />
+		/// <summary>
+		/// Add any setting to the index
+		/// </summary>
 		public TDescriptor Setting(string setting, object value)
 		{
-			PromisedValue[setting] = value;
+			this.PromisedValue.Add(setting, value);
 			return (TDescriptor)this;
 		}
 
-		/// <inheritdoc cref="IDynamicIndexSettings.NumberOfReplicas" />
-		public TDescriptor NumberOfReplicas(int? numberOfReplicas) => Assign(numberOfReplicas, (a, v) => a.NumberOfReplicas = v);
+		/// <inheritdoc/>
+		public TDescriptor NumberOfReplicas(int? numberOfReplicas) => Assign(a => a.NumberOfReplicas = numberOfReplicas);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.AutoExpandReplicas" />
-		public TDescriptor AutoExpandReplicas(AutoExpandReplicas autoExpandReplicas) => Assign(autoExpandReplicas, (a, v) => a.AutoExpandReplicas = v);
+		/// <inheritdoc/>
+		public TDescriptor AutoExpandReplicas(string AutoExpandReplicas) => Assign(a => a.AutoExpandReplicas = AutoExpandReplicas);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.DefaultPipeline" />
-		public TDescriptor DefaultPipeline(string defaultPipeline) => Assign(defaultPipeline, (a, v) => a.DefaultPipeline = v);
+		/// <inheritdoc/>
+		public TDescriptor BlocksMetadata(bool? blocksMetadata = true) => Assign(a => a.BlocksMetadata = blocksMetadata);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RequiredPipeline" />
-		[Obsolete("Use FinalPipeline")]
-		public TDescriptor RequiredPipeline(string requiredPipeline) => Assign(requiredPipeline, (a, v) => a.RequiredPipeline = v);
+		/// <inheritdoc/>
+		public TDescriptor BlocksRead(bool? blocksRead = true) => Assign(a => a.BlocksRead = blocksRead);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RequiredPipeline" />
-		public TDescriptor FinalPipeline(string finalPipeline) => Assign(finalPipeline, (a, v) => a.FinalPipeline = v);
+		/// <inheritdoc/>
+		public TDescriptor BlocksReadOnly(bool? blocksReadOnly = true) => Assign(a => a.BlocksReadOnly = blocksReadOnly);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksMetadata" />
-		public TDescriptor BlocksMetadata(bool? blocksMetadata = true) => Assign(blocksMetadata, (a, v) => a.BlocksMetadata = v);
+		/// <inheritdoc/>
+		public TDescriptor BlocksWrite(bool? blocksWrite = true) => Assign(a => a.BlocksWrite = blocksWrite);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksRead" />
-		public TDescriptor BlocksRead(bool? blocksRead = true) => Assign(blocksRead, (a, v) => a.BlocksRead = v);
+		/// <inheritdoc/>
+		public TDescriptor Priority(int? priority) => Assign(a => a.Priority = priority);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksReadOnly" />
-		public TDescriptor BlocksReadOnly(bool? blocksReadOnly = true) => Assign(blocksReadOnly, (a, v) => a.BlocksReadOnly = v);
+		/// <inheritdoc/>
+		public TDescriptor WarmersEnabled(bool enabled = true) => Assign(a => a.WarmersEnabled = enabled);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksWrite" />
-		public TDescriptor BlocksWrite(bool? blocksWrite = true) => Assign(blocksWrite, (a, v) => a.BlocksWrite = v);
+		/// <inheritdoc/>
+		public TDescriptor RequestCacheEnabled(bool enabled = true) => Assign(a => a.RequestCacheEnabled = enabled);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.BlocksReadOnlyAllowDelete" />
-		public TDescriptor BlocksReadOnlyAllowDelete(bool? blocksReadOnlyAllowDelete = true) => Assign(blocksReadOnlyAllowDelete, (a, v) => a.BlocksReadOnlyAllowDelete = v);
-
-		/// <inheritdoc cref="IDynamicIndexSettings.Priority" />
-		public TDescriptor Priority(int? priority) => Assign(priority, (a, v) => a.Priority = v);
-
-		/// <inheritdoc cref="IDynamicIndexSettings.Merge" />
+		/// <inheritdoc/>
 		public TDescriptor Merge(Func<MergeSettingsDescriptor, IMergeSettings> merge) =>
-			Assign(merge, (a, v) => a.Merge = v?.Invoke(new MergeSettingsDescriptor()));
+			Assign(a => a.Merge = merge?.Invoke(new MergeSettingsDescriptor()));
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RecoveryInitialShards" />
+		/// <inheritdoc/>
 		public TDescriptor RecoveryInitialShards(Union<int, RecoveryInitialShards> initialShards) =>
-			Assign(initialShards, (a, v) => a.RecoveryInitialShards = v);
+			Assign(a => a.RecoveryInitialShards = initialShards);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RequestsCacheEnabled" />
-		public TDescriptor RequestsCacheEnabled(bool? enable = true) =>
-			Assign(enable, (a, v) => a.RequestsCacheEnabled = v);
+		/// <inheritdoc/>
+		public TDescriptor RefreshInterval(Time time) => Assign(a => a.RefreshInterval = time);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RefreshInterval" />
-		public TDescriptor RefreshInterval(Time time) => Assign(time, (a, v) => a.RefreshInterval = v);
+		/// <inheritdoc/>
+		public TDescriptor TotalShardsPerNode(int? totalShardsPerNode) =>
+			Assign(a => a.RoutingAllocationTotalShardsPerNode = totalShardsPerNode);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.RoutingAllocationTotalShardsPerNode" />
-		public TDescriptor RoutingAllocationTotalShardsPerNode(int? totalShardsPerNode) =>
-			Assign(totalShardsPerNode, (a, v) => a.RoutingAllocationTotalShardsPerNode = v);
-
-		/// <inheritdoc cref="IDynamicIndexSettings.SlowLog" />
+		/// <inheritdoc/>
 		public TDescriptor SlowLog(Func<SlowLogDescriptor, ISlowLog> slowLogSelector) =>
-			Assign(slowLogSelector, (a, v) => a.SlowLog = v?.Invoke(new SlowLogDescriptor()));
+			Assign(a => a.SlowLog = slowLogSelector?.Invoke(new SlowLogDescriptor()));
 
-		/// <inheritdoc cref="IDynamicIndexSettings.Translog" />
+		/// <inheritdoc/>
 		public TDescriptor Translog(Func<TranslogSettingsDescriptor, ITranslogSettings> translogSelector) =>
-			Assign(translogSelector, (a, v) => a.Translog = v?.Invoke(new TranslogSettingsDescriptor()));
+			Assign(a => a.Translog = translogSelector?.Invoke(new TranslogSettingsDescriptor()));
 
-		/// <inheritdoc cref="IDynamicIndexSettings.UnassignedNodeLeftDelayedTimeout" />
+		/// <inheritdoc/>
 		public TDescriptor UnassignedNodeLeftDelayedTimeout(Time time) =>
-			Assign(time, (a, v) => a.UnassignedNodeLeftDelayedTimeout = v);
+			Assign(a => a.UnassignedNodeLeftDelayedTimeout = time);
 
-		/// <inheritdoc cref="IDynamicIndexSettings.Analysis" />
+		/// <inheritdoc/>
 		public TDescriptor Analysis(Func<AnalysisDescriptor, IAnalysis> selector) =>
-			Assign(selector, (a, v) => a.Analysis = v?.Invoke(new AnalysisDescriptor()));
+			Assign(a => a.Analysis = selector?.Invoke(new AnalysisDescriptor()));
 
-		/// <inheritdoc cref="IDynamicIndexSettings.Similarity" />
+		/// <inheritdoc/>
 		public TDescriptor Similarity(Func<SimilaritiesDescriptor, IPromise<ISimilarities>> selector) =>
-			Assign(selector, (a, v) => a.Similarity = v?.Invoke(new SimilaritiesDescriptor())?.Value);
+			Assign(a => a.Similarity = selector?.Invoke(new SimilaritiesDescriptor())?.Value);
 	}
+
 }

@@ -1,10 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
@@ -13,39 +9,40 @@ namespace Nest
 		/// <summary>
 		/// Gets the current Watcher metrics
 		/// </summary>
-		WatcherStatsResponse WatcherStats(Func<WatcherStatsDescriptor, IWatcherStatsRequest> selector = null);
+		IWatcherStatsResponse WatcherStats(Func<WatcherStatsDescriptor, IWatcherStatsRequest> selector = null);
 
-		/// <inheritdoc />
-		WatcherStatsResponse WatcherStats(IWatcherStatsRequest request);
+		/// <inheritdoc/>
+		IWatcherStatsResponse WatcherStats(IWatcherStatsRequest request);
 
-		/// <inheritdoc />
-		Task<WatcherStatsResponse> WatcherStatsAsync(Func<WatcherStatsDescriptor, IWatcherStatsRequest> selector = null,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IWatcherStatsResponse> WatcherStatsAsync(Func<WatcherStatsDescriptor, IWatcherStatsRequest> selector = null);
 
-		/// <inheritdoc />
-		Task<WatcherStatsResponse> WatcherStatsAsync(IWatcherStatsRequest request, CancellationToken ct = default);
+		/// <inheritdoc/>
+		Task<IWatcherStatsResponse> WatcherStatsAsync(IWatcherStatsRequest request);
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public WatcherStatsResponse WatcherStats(Func<WatcherStatsDescriptor, IWatcherStatsRequest> selector = null) =>
-			WatcherStats(selector.InvokeOrDefault(new WatcherStatsDescriptor()));
+		/// <inheritdoc/>
+		public IWatcherStatsResponse WatcherStats(Func<WatcherStatsDescriptor, IWatcherStatsRequest> selector = null) =>
+			this.WatcherStats(selector.InvokeOrDefault(new WatcherStatsDescriptor()));
 
-		/// <inheritdoc />
-		public WatcherStatsResponse WatcherStats(IWatcherStatsRequest request) =>
-			DoRequest<IWatcherStatsRequest, WatcherStatsResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IWatcherStatsResponse WatcherStats(IWatcherStatsRequest request) =>
+			this.Dispatcher.Dispatch<IWatcherStatsRequest, WatcherStatsRequestParameters, WatcherStatsResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.WatcherStatsDispatch<WatcherStatsResponse>(p)
+			);
 
-		/// <inheritdoc />
-		public Task<WatcherStatsResponse> WatcherStatsAsync(
-			Func<WatcherStatsDescriptor, IWatcherStatsRequest> selector = null,
-			CancellationToken ct = default
-		) => WatcherStatsAsync(selector.InvokeOrDefault(new WatcherStatsDescriptor()), ct);
+		/// <inheritdoc/>
+		public Task<IWatcherStatsResponse> WatcherStatsAsync(Func<WatcherStatsDescriptor, IWatcherStatsRequest> selector = null) =>
+			this.WatcherStatsAsync(selector.InvokeOrDefault(new WatcherStatsDescriptor()));
 
-		/// <inheritdoc />
-		public Task<WatcherStatsResponse> WatcherStatsAsync(IWatcherStatsRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IWatcherStatsRequest, WatcherStatsResponse>
-				(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IWatcherStatsResponse> WatcherStatsAsync(IWatcherStatsRequest request) =>
+			this.Dispatcher.DispatchAsync<IWatcherStatsRequest, WatcherStatsRequestParameters, WatcherStatsResponse, IWatcherStatsResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.WatcherStatsDispatchAsync<WatcherStatsResponse>(p)
+			);
 	}
 }

@@ -1,26 +1,20 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(LikeFormatter))]
+	[JsonConverter(typeof(LikeJsonConverter))]
 	public class Like : Union<string, ILikeDocument>
 	{
 		public Like(string item) : base(item) { }
-
 		public Like(ILikeDocument item) : base(item) { }
 
 		public static implicit operator Like(string likeText) => new Like(likeText);
-
 		public static implicit operator Like(LikeDocumentBase like) => new Like(like);
 
 		internal static bool IsConditionless(Like like) =>
-			like.Item1.IsNullOrEmpty() && (like.Item2 == null || like.Item2.Id == null && like.Item2.Document == null);
+			like.Item1.IsNullOrEmpty() && (like.Item2 == null || (like.Item2.Id == null && like.Item2.Document == null));
 	}
 
 	public class LikeDescriptor<T> : DescriptorPromiseBase<LikeDescriptor<T>, List<Like>>
@@ -28,38 +22,36 @@ namespace Nest
 	{
 		public LikeDescriptor() : base(new List<Like>()) { }
 
-		public LikeDescriptor<T> Text(string likeText) => Assign(likeText, (a, v) => a.Add(v));
+		public LikeDescriptor<T> Text(string likeText) => Assign(a => a.Add(likeText));
 
 		public LikeDescriptor<T> Document(Func<LikeDocumentDescriptor<T>, ILikeDocument> selector)
 		{
 			var l = selector?.Invoke(new LikeDocumentDescriptor<T>());
-			return l == null ? this : Assign(l, (a, v) => a.Add(new Like(v)));
+			return l == null ? this : Assign(a => a.Add(new Like(l)));
 		}
-	}
 
-	internal class LikeFormatter : IJsonFormatter<Like>
+	}
+	internal class LikeJsonConverter :JsonConverter 
 	{
-		private static readonly UnionFormatter<string, ILikeDocument> UnionFormatter = new UnionFormatter<string, ILikeDocument>();
+		public override bool CanRead => true;
+		public override bool CanWrite => true;
 
-		public Like Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+		public static UnionJsonConverter<string, ILikeDocument> Unionconverter = new UnionJsonConverter<string, ILikeDocument>();
+
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			var union = UnionFormatter.Deserialize(ref reader, formatterResolver);
-
-			if (union == null)
-				return null;
-
-			switch (union.Tag)
-			{
-				case 0:
-					return new Like(union.Item1);
-				case 1:
-					return new Like(union.Item2);
-				default:
-					return null;
-			}
+			var union = Unionconverter.ReadJson(reader, objectType, existingValue, serializer) as Union<string, ILikeDocument>;
+			if (union == null) return null;
+			if (union.Item1 != null) return new Like(union.Item1);
+			return new Like(union.Item2);
 		}
 
-		public void Serialize(ref JsonWriter writer, Like value, IJsonFormatterResolver formatterResolver) =>
-			UnionFormatter.Serialize(ref writer, value, formatterResolver);
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+		{
+			Unionconverter.WriteJson(writer, value, serializer);
+		}
+
+		public override bool CanConvert(Type objectType) => true;
 	}
+
 }

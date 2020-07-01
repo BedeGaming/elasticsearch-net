@@ -1,13 +1,10 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nest
 {
-	using Containers = List<QueryContainer>;
-
+	using Containers = System.Collections.Generic.List<QueryContainer>;
 	internal static class BoolQueryOrExtensions
 	{
 		internal static QueryContainer CombineAsShould(this QueryContainer leftContainer, QueryContainer rightContainer)
@@ -30,10 +27,8 @@ namespace Nest
 			var shouldClauses = lq.EagerConcat(rq);
 			return CreateShouldContainer(shouldClauses);
 		}
-
 		private static bool TryFlattenShould(
-			QueryContainer leftContainer, QueryContainer rightContainer, IBoolQuery leftBool, IBoolQuery rightBool, out QueryContainer c
-		)
+			QueryContainer leftContainer, QueryContainer rightContainer, IBoolQuery leftBool, IBoolQuery rightBool, out QueryContainer c)
 		{
 			c = null;
 			var leftCanMerge = leftContainer.CanMergeShould();
@@ -52,6 +47,7 @@ namespace Nest
 				c = rightContainer;
 			}
 			return c != null;
+
 		}
 
 		private static bool CanMergeShould(this IQueryContainer container) => container.Bool.CanMergeShould();
@@ -60,9 +56,11 @@ namespace Nest
 			boolQuery != null && boolQuery.IsWritable && !boolQuery.Locked && boolQuery.HasOnlyShouldClauses();
 
 		private static QueryContainer CreateShouldContainer(List<QueryContainer> shouldClauses) =>
-			new BoolQuery
+			//new BoolQuery(createdByBoolDsl: true)
+			new BoolQuery()
 			{
 				Should = shouldClauses.ToListOrNullIfEmpty()
 			};
+
 	}
 }

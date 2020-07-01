@@ -1,41 +1,62 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
+using System;
 
 namespace Nest
 {
-	[DataContract]
-	public class BulkResponse : ResponseBase
+	public interface IBulkResponse : IResponse
 	{
-		[DataMember(Name ="errors")]
-		public bool Errors { get; internal set; }
+		/// <summary>
+		/// Time in milliseconds for Elasticsearch to execute the search
+		/// </summary>
+		[Obsolete(@"returned value may be larger than int. In this case, value will be int.MaxValue and TookAsLong field can be checked. Took is long in 5.0.0")]
+		int Took { get; }
 
-		public override bool IsValid => base.IsValid && !Errors && !ItemsWithErrors.HasAny();
+		/// <summary>
+		/// Time in milliseconds for Elasticsearch to execute the search
+		/// </summary>
+		long TookAsLong { get; }
 
-		[DataMember(Name ="items")]
-		public IReadOnlyList<BulkResponseItemBase> Items { get; internal set; } = EmptyReadOnly<BulkResponseItemBase>.List;
+		bool Errors { get; }
+		IEnumerable<BulkResponseItemBase> Items { get; }
+		IEnumerable<BulkResponseItemBase> ItemsWithErrors { get; }
+	}
 
-		[IgnoreDataMember]
-		public IEnumerable<BulkResponseItemBase> ItemsWithErrors => !Items.HasAny()
-			? Enumerable.Empty<BulkResponseItemBase>()
-			: Items.Where(i => !i.IsValid);
-
-		[DataMember(Name ="took")]
-		public long Took { get; internal set; }
-
+	[JsonObject]
+	public class BulkResponse : ResponseBase, IBulkResponse
+	{
+		public override bool IsValid => base.IsValid && !this.Errors && !this.ItemsWithErrors.HasAny();
 		protected override void DebugIsValid(StringBuilder sb)
 		{
-			if (Items == null) return;
-
-			sb.AppendLine($"# Invalid Bulk items:");
-			foreach (var i in Items.Select((item, i) => new { item, i }).Where(i => !i.item.IsValid))
+			if (this.Items == null) return;
+			sb.AppendLine("# Invalid Bulk items:");
+			foreach(var i in Items.Select((item, i) => new { item, i}).Where(i=>!i.item.IsValid))
 				sb.AppendLine($"  operation[{i.i}]: {i.item}");
 		}
+
+		/// <summary>
+		/// Time in milliseconds for Elasticsearch to execute the search
+		/// </summary>
+		[JsonProperty("took")]
+		public long TookAsLong { get;  internal set;}
+
+		/// <summary>
+		/// Time in milliseconds for Elasticsearch to execute the search
+		/// </summary>
+		[Obsolete(@"returned value may be larger than int. In this case, value will be int.MaxValue and TookAsLong field can be checked. Took is long in 5.0.0")]
+		[JsonIgnore]
+		public int Took => TookAsLong > int.MaxValue ? int.MaxValue : (int)TookAsLong;
+
+		[JsonProperty("errors")]
+		public bool Errors { get; internal set; }
+
+		[JsonProperty("items")]
+		public IEnumerable<BulkResponseItemBase> Items { get; internal set; }
+
+		[JsonIgnore]
+		public IEnumerable<BulkResponseItemBase> ItemsWithErrors =>
+			!this.Items.HasAny() ? Enumerable.Empty<BulkResponseItemBase>() : this.Items.Where(i => !i.IsValid);
 	}
 }

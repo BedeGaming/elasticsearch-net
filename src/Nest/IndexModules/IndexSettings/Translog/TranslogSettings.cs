@@ -1,18 +1,9 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System;
 
 namespace Nest
 {
 	public interface ITranslogSettings
 	{
-		/// <summary>
-		/// Whether or not to fsync and commit the translog after every index, delete, update, or bulk request
-		/// </summary>
-		TranslogDurability? Durability { get; set; }
-
 		/// <summary>
 		/// Dynamically updatable flush settings
 		/// </summary>
@@ -22,36 +13,52 @@ namespace Nest
 		/// How often the translog is fsynced to disk and committed, regardless of write operations. Defaults to 5s.
 		/// </summary>
 		Time SyncInterval { get; set; }
+
+		/// <summary>
+		/// Whether or not to fsync and commit the translog after every index, delete, update, or bulk request
+		/// </summary>
+		TranslogDurability? Durability { get; set; }
+
+		/// <summary>
+		///Whether to buffer writes to the transaction log in memory or not. 
+		/// </summary>
+		TranslogWriteMode? FileSystemType { get; set; }
 	}
 
 	public class TranslogSettings : ITranslogSettings
 	{
-		/// <inheritdoc />
-		public TranslogDurability? Durability { get; set; }
-
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public ITranslogFlushSettings Flush { get; set; }
-
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public Time SyncInterval { get; set; }
+		/// <inheritdoc/>
+		public TranslogDurability? Durability { get; set; }
+		/// <inheritdoc/>
+		public TranslogWriteMode? FileSystemType { get; set; }
 	}
 
-	public class TranslogSettingsDescriptor : DescriptorBase<TranslogSettingsDescriptor, ITranslogSettings>, ITranslogSettings
+	public class TranslogSettingsDescriptor: DescriptorBase<TranslogSettingsDescriptor, ITranslogSettings>, ITranslogSettings
 	{
-		TranslogDurability? ITranslogSettings.Durability { get; set; }
 		ITranslogFlushSettings ITranslogSettings.Flush { get; set; }
 		Time ITranslogSettings.SyncInterval { get; set; }
+		TranslogDurability? ITranslogSettings.Durability { get; set; }
+		TranslogWriteMode? ITranslogSettings.FileSystemType { get; set; }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public TranslogSettingsDescriptor Flush(Func<TranslogFlushSettingsDescriptor, ITranslogFlushSettings> selector) =>
-			Assign(selector, (a, v) => a.Flush = v?.Invoke(new TranslogFlushSettingsDescriptor()));
+			Assign(a => a.Flush = selector?.Invoke(new TranslogFlushSettingsDescriptor()));
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public TranslogSettingsDescriptor Durability(TranslogDurability? durability) =>
-			Assign(durability, (a, v) => a.Durability = v);
+			Assign(a => a.Durability = durability);
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public TranslogSettingsDescriptor SyncInterval(Time time) =>
-			Assign(time, (a, v) => a.SyncInterval = v);
+			Assign(a => a.SyncInterval = time);
+
+		/// <inheritdoc/>
+		public TranslogSettingsDescriptor FileSystemType(TranslogWriteMode? writeMode) =>
+			Assign(a => a.FileSystemType = writeMode);
+
 	}
 }

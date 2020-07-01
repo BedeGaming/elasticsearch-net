@@ -1,16 +1,12 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(StatsAggregation))]
-	public interface IStatsAggregation : IFormattableMetricAggregation { }
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<StatsAggregation>))]
+	public interface IStatsAggregator : IMetricAggregation { }
 
-	public class StatsAggregation : FormattableMetricAggregationBase, IStatsAggregation
+	public class StatsAggregation : MetricAggregationBase, IStatsAggregator
 	{
 		internal StatsAggregation() { }
 
@@ -20,7 +16,7 @@ namespace Nest
 	}
 
 	public class StatsAggregationDescriptor<T>
-		: FormattableMetricAggregationDescriptorBase<StatsAggregationDescriptor<T>, IStatsAggregation, T>
-			, IStatsAggregation
+		: MetricAggregationDescriptorBase<StatsAggregationDescriptor<T>, IStatsAggregator, T>
+			, IStatsAggregator 
 		where T : class { }
 }

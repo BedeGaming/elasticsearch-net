@@ -1,19 +1,14 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 namespace Nest
 {
 	public interface ISlowLogIndexing
 	{
+		Time ThresholdWarn { get; set; }
+		Time ThresholdInfo { get; set; }
+		Time ThresholdDebug { get; set; }
+		Time ThresholdTrace { get; set; }
 		LogLevel? LogLevel { get; set; }
 		int? Source { get; set; }
-		Time ThresholdDebug { get; set; }
-		Time ThresholdInfo { get; set; }
-		Time ThresholdTrace { get; set; }
-		Time ThresholdWarn { get; set; }
 	}
-
 	public class SlowLogIndexing : ISlowLogIndexing
 	{
 		public LogLevel? LogLevel { get; set; }
@@ -38,22 +33,24 @@ namespace Nest
 		Time ISlowLogIndexing.ThresholdTrace { get; set; }
 		Time ISlowLogIndexing.ThresholdWarn { get; set; }
 
-		/// <inheritdoc />
-		public SlowLogIndexingDescriptor LogLevel(LogLevel? level) => Assign(level, (a, v) => a.LogLevel = v);
+		/// <inheritdoc/>
+		public SlowLogIndexingDescriptor LogLevel(LogLevel? level) => Assign(a => a.LogLevel = level);
 
-		/// <inheritdoc />
-		public SlowLogIndexingDescriptor Source(int? source) => Assign(source, (a, v) => a.Source = v);
+		/// <inheritdoc/>
+		public SlowLogIndexingDescriptor Source(int? source) => Assign(a => a.Source = source);
 
-		/// <inheritdoc />
-		public SlowLogIndexingDescriptor ThresholdDebug(Time time) => Assign(time, (a, v) => a.ThresholdDebug = v);
+		/// <inheritdoc/>
+		public SlowLogIndexingDescriptor ThresholdDebug(Time time) => Assign(a => a.ThresholdDebug = time);
 
-		/// <inheritdoc />
-		public SlowLogIndexingDescriptor ThresholdInfo(Time time) => Assign(time, (a, v) => a.ThresholdInfo = v);
+		/// <inheritdoc/>
+		public SlowLogIndexingDescriptor ThresholdInfo(Time time) => Assign(a => a.ThresholdInfo = time);
 
-		/// <inheritdoc />
-		public SlowLogIndexingDescriptor ThresholdTrace(Time time) => Assign(time, (a, v) => a.ThresholdTrace = v);
+		/// <inheritdoc/>
+		public SlowLogIndexingDescriptor ThresholdTrace(Time time) => Assign(a => a.ThresholdTrace = time);
 
-		/// <inheritdoc />
-		public SlowLogIndexingDescriptor ThresholdWarn(Time time) => Assign(time, (a, v) => a.ThresholdWarn = v);
+		/// <inheritdoc/>
+		public SlowLogIndexingDescriptor ThresholdWarn(Time time) => Assign(a => a.ThresholdWarn = time);
+
+
 	}
 }

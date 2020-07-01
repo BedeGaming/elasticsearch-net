@@ -1,31 +1,34 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
+	[JsonObject(MemberSerialization.OptIn)]
 	public interface IInlineScriptTransform : IScriptTransform
 	{
-		[DataMember(Name ="source")]
-		string Source { get; set; }
+		[JsonProperty("inline")]
+		string Inline { get; set; }
 	}
 
 	public class InlineScriptTransform : ScriptTransformBase, IInlineScriptTransform
 	{
-		public InlineScriptTransform(string source) => Source = source;
+		public InlineScriptTransform(string script)
+		{
+			this.Inline = script;
+		}
 
-		public string Source { get; set; }
+		public string Inline { get; set; }
 	}
 
 	public class InlineScriptTransformDescriptor
 		: ScriptTransformDescriptorBase<InlineScriptTransformDescriptor, IInlineScriptTransform>, IInlineScriptTransform
 	{
-		public InlineScriptTransformDescriptor(string inline) => Self.Source = inline;
+		public InlineScriptTransformDescriptor(string inline)
+		{
+			Self.Inline = inline;
+		}
 
-		string IInlineScriptTransform.Source { get; set; }
+		public InlineScriptTransformDescriptor() {}
+
+		string IInlineScriptTransform.Inline { get; set; }
 	}
 }

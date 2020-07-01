@@ -1,16 +1,12 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(MinAggregation))]
-	public interface IMinAggregation : IFormattableMetricAggregation { }
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<MinAggregation>))]
+	public interface IMinAggregation : IMetricAggregation { }
 
-	public class MinAggregation : FormattableMetricAggregationBase, IMinAggregation
+	public class MinAggregation : MetricAggregationBase, IMinAggregation
 	{
 		internal MinAggregation() { }
 
@@ -19,8 +15,8 @@ namespace Nest
 		internal override void WrapInContainer(AggregationContainer c) => c.Min = this;
 	}
 
-	public class MinAggregationDescriptor<T>
-		: FormattableMetricAggregationDescriptorBase<MinAggregationDescriptor<T>, IMinAggregation, T>
-			, IMinAggregation
+	public class MinAggregationDescriptor<T> 
+		: MetricAggregationDescriptorBase<MinAggregationDescriptor<T>, IMinAggregation, T>
+			, IMinAggregation 
 		where T : class { }
 }

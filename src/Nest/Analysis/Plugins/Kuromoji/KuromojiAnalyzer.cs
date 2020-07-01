@@ -1,8 +1,5 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -12,33 +9,35 @@ namespace Nest
 	/// </summary>
 	public interface IKuromojiAnalyzer : IAnalyzer
 	{
-		[DataMember(Name ="mode")]
+		[JsonProperty("mode")]
 		KuromojiTokenizationMode? Mode { get; set; }
 
-		[DataMember(Name ="user_dictionary")]
+		[JsonProperty("user_dictionary")]
 		string UserDictionary { get; set; }
 	}
 
-	/// <inheritdoc />
+	/// <inheritdoc/>
 	public class KuromojiAnalyzer : AnalyzerBase, IKuromojiAnalyzer
 	{
-		public KuromojiAnalyzer() : base("kuromoji") { }
+		public KuromojiAnalyzer() { Type = "kuromoji"; }
 
 		public KuromojiTokenizationMode? Mode { get; set; }
 
 		public string UserDictionary { get; set; }
 	}
 
-	/// <inheritdoc />
-	public class KuromojiAnalyzerDescriptor : AnalyzerDescriptorBase<KuromojiAnalyzerDescriptor, IKuromojiAnalyzer>, IKuromojiAnalyzer
+	/// <inheritdoc/>
+	public class KuromojiAnalyzerDescriptor :
+		AnalyzerDescriptorBase<KuromojiAnalyzerDescriptor, IKuromojiAnalyzer>, IKuromojiAnalyzer
 	{
 		protected override string Type => "kuromoji";
 
 		KuromojiTokenizationMode? IKuromojiAnalyzer.Mode { get; set; }
 		string IKuromojiAnalyzer.UserDictionary { get; set; }
 
-		public KuromojiAnalyzerDescriptor Mode(KuromojiTokenizationMode? mode) => Assign(mode, (a, v) => a.Mode = v);
+		public KuromojiAnalyzerDescriptor Mode(KuromojiTokenizationMode? mode) => Assign(a => a.Mode = mode);
 
-		public KuromojiAnalyzerDescriptor UserDictionary(string userDictionary) => Assign(userDictionary, (a, v) => a.UserDictionary = v);
+		public KuromojiAnalyzerDescriptor UserDictionary(string userDictionary) => Assign(a => a.UserDictionary = userDictionary);
+
 	}
 }

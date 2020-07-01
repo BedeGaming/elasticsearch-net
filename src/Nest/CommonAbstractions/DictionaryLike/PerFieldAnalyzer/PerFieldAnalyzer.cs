@@ -1,31 +1,28 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(VerbatimDictionaryKeysFormatter<PerFieldAnalyzer, IPerFieldAnalyzer, Field, string>))]
+	[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter<PerFieldAnalyzer, Field, string>))]
 	public interface IPerFieldAnalyzer : IIsADictionary<Field, string> { }
 
 	public class PerFieldAnalyzer : IsADictionaryBase<Field, string>, IPerFieldAnalyzer
 	{
-		public PerFieldAnalyzer() { }
-
+		public PerFieldAnalyzer() : base() { }
 		public PerFieldAnalyzer(IDictionary<Field, string> container) : base(container) { }
-
-		public PerFieldAnalyzer(Dictionary<Field, string> container) : base(container) { }
+		public PerFieldAnalyzer(Dictionary<Field, string> container)
+			: base(container.Select(kv => kv).ToDictionary(kv => kv.Key, kv => kv.Value))
+		{ }
 
 		public void Add(Field field, string analyzer) => BackingDictionary.Add(field, analyzer);
 	}
 
 	public class PerFieldAnalyzer<T> : PerFieldAnalyzer where T : class
 	{
-		public void Add<TValue>(Expression<Func<T, TValue>> field, string analyzer) => BackingDictionary.Add(field, analyzer);
+		public void Add(Expression<Func<T, object>>  field, string analyzer) => BackingDictionary.Add(field, analyzer);
 	}
 
 	public class PerFieldAnalyzerDescriptor<T> : IsADictionaryDescriptorBase<PerFieldAnalyzerDescriptor<T>, IPerFieldAnalyzer, Field, string>
@@ -35,6 +32,6 @@ namespace Nest
 
 		public PerFieldAnalyzerDescriptor<T> Field(Field field, string analyzer) => Assign(field, analyzer);
 
-		public PerFieldAnalyzerDescriptor<T> Field<TValue>(Expression<Func<T, TValue>> field, string analyzer) => Assign(field, analyzer);
+		public PerFieldAnalyzerDescriptor<T> Field(Expression<Func<T, object>> field, string analyzer) => Assign(field, analyzer);
 	}
 }

@@ -1,13 +1,19 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
-﻿namespace Nest
+namespace Nest
 {
-	[MapsApi("security.clear_cached_roles.json")]
-	public partial interface IClearCachedRolesRequest { }
+	public partial interface IClearCachedRolesRequest
+	{
+	}
 
-	public partial class ClearCachedRolesRequest { }
+	public partial class ClearCachedRolesRequest
+	{
+	}
 
-	public partial class ClearCachedRolesDescriptor { }
+	[DescriptorFor("ShieldClearCachedRoles")]
+	public partial class ClearCachedRolesDescriptor
+	{
+	}
 }

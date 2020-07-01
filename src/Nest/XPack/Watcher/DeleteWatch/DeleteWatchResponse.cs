@@ -1,20 +1,23 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class DeleteWatchResponse : ResponseBase
+	public interface IDeleteWatchResponse : IResponse
 	{
-		[DataMember(Name ="found")]
-		public bool Found { get; internal set; }
+		[JsonProperty("_id")]
+		string Id { get; }
 
-		[DataMember(Name ="_id")]
+		[JsonProperty("_version")]
+		int Version { get; }
+
+		[JsonProperty("found")]
+		bool Found { get; }
+	}
+
+	public class DeleteWatchResponse : ResponseBase, IDeleteWatchResponse
+	{
 		public string Id { get; internal set; }
-
-		[DataMember(Name ="_version")]
 		public int Version { get; internal set; }
+		public bool Found { get; internal set; }
 	}
 }

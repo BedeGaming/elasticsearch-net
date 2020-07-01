@@ -1,148 +1,169 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(TermsAggregation))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<TermsAggregation>))]
 	public interface ITermsAggregation : IBucketAggregation
 	{
-		[DataMember(Name ="collect_mode")]
-		TermsAggregationCollectMode? CollectMode { get; set; }
-
-		[DataMember(Name ="exclude")]
-		TermsExclude Exclude { get; set; }
-
-		[DataMember(Name ="execution_hint")]
-		TermsAggregationExecutionHint? ExecutionHint { get; set; }
-
-		[DataMember(Name ="field")]
+		[JsonProperty("field")]
 		Field Field { get; set; }
 
-		[DataMember(Name ="include")]
-		TermsInclude Include { get; set; }
-
-		[DataMember(Name ="min_doc_count")]
-		int? MinimumDocumentCount { get; set; }
-
-		[DataMember(Name ="missing")]
-		object Missing { get; set; }
-
-		[DataMember(Name ="order")]
-		IList<TermsOrder> Order { get; set; }
-
-		[DataMember(Name ="script")]
+		[JsonProperty("script")]
 		IScript Script { get; set; }
 
-		[DataMember(Name ="shard_size")]
+		[JsonProperty("size")]
+		int? Size { get; set; }
+
+		[JsonProperty("shard_size")]
 		int? ShardSize { get; set; }
 
-		[DataMember(Name ="show_term_doc_count_error")]
-		bool? ShowTermDocCountError { get; set; }
+		[JsonProperty("min_doc_count")]
+		int? MinimumDocumentCount { get; set; }
 
-		[DataMember(Name ="size")]
-		int? Size { get; set; }
+		[JsonProperty("execution_hint")]
+		TermsAggregationExecutionHint? ExecutionHint { get; set; }
+
+		[JsonProperty("order")]
+		IList<TermsOrder> Order { get; set; }
+
+		[JsonProperty("include")]
+		TermsIncludeExclude Include { get; set; }
+
+		[JsonProperty("exclude")]
+		TermsIncludeExclude Exclude { get; set; }
+
+		[JsonProperty("collect_mode")]
+		TermsAggregationCollectMode? CollectMode { get; set; }
+
+		[JsonProperty("show_term_doc_error_count")]
+		bool? ShowTermDocumentCountError { get; set; }
+
+		[JsonProperty("missing")]
+		string Missing { get; set; }
 	}
 
 	public class TermsAggregation : BucketAggregationBase, ITermsAggregation
 	{
+		public Field Field { get; set; }
+		public IScript Script { get; set; }
+		public int? Size { get; set; }
+		public int? ShardSize { get; set; }
+		public int? MinimumDocumentCount { get; set; }
+		public TermsAggregationExecutionHint? ExecutionHint { get; set; }
+		public IList<TermsOrder> Order { get; set; }
+		public TermsIncludeExclude Include { get; set; }
+		public TermsIncludeExclude Exclude { get; set; }
+		public TermsAggregationCollectMode? CollectMode { get; set; }
+		public bool? ShowTermDocumentCountError { get; set; }
+		public string Missing { get; set; }
+
 		internal TermsAggregation() { }
 
 		public TermsAggregation(string name) : base(name) { }
 
-		public TermsAggregationCollectMode? CollectMode { get; set; }
-		public TermsExclude Exclude { get; set; }
-		public TermsAggregationExecutionHint? ExecutionHint { get; set; }
-		public Field Field { get; set; }
-		public TermsInclude Include { get; set; }
-		public int? MinimumDocumentCount { get; set; }
-		public object Missing { get; set; }
-		public IList<TermsOrder> Order { get; set; }
-		public IScript Script { get; set; }
-		public int? ShardSize { get; set; }
-		public bool? ShowTermDocCountError { get; set; }
-		public int? Size { get; set; }
-
 		internal override void WrapInContainer(AggregationContainer c) => c.Terms = this;
 	}
 
-	public class TermsAggregationDescriptor<T>
-		: BucketAggregationDescriptorBase<TermsAggregationDescriptor<T>, ITermsAggregation, T>, ITermsAggregation
+	public class TermsAggregationDescriptor<T> 
+		: BucketAggregationDescriptorBase<TermsAggregationDescriptor<T>, ITermsAggregation, T>
+			, ITermsAggregation 
 		where T : class
 	{
-		TermsAggregationCollectMode? ITermsAggregation.CollectMode { get; set; }
-
-		TermsExclude ITermsAggregation.Exclude { get; set; }
-
-		TermsAggregationExecutionHint? ITermsAggregation.ExecutionHint { get; set; }
 		Field ITermsAggregation.Field { get; set; }
-
-		TermsInclude ITermsAggregation.Include { get; set; }
-
-		int? ITermsAggregation.MinimumDocumentCount { get; set; }
-
-		object ITermsAggregation.Missing { get; set; }
-
-		IList<TermsOrder> ITermsAggregation.Order { get; set; }
-
+		
 		IScript ITermsAggregation.Script { get; set; }
+		
+		int? ITermsAggregation.Size { get; set; }
 
 		int? ITermsAggregation.ShardSize { get; set; }
 
-		bool? ITermsAggregation.ShowTermDocCountError { get; set; }
+		int? ITermsAggregation.MinimumDocumentCount { get; set; }
 
-		int? ITermsAggregation.Size { get; set; }
+		TermsAggregationExecutionHint? ITermsAggregation.ExecutionHint { get; set; }
 
-		public TermsAggregationDescriptor<T> Field(Field field) => Assign(field, (a, v) => a.Field = v);
+		IList<TermsOrder> ITermsAggregation.Order { get; set; }
 
-		public TermsAggregationDescriptor<T> Field<TValue>(Expression<Func<T, TValue>> field) => Assign(field, (a, v) => a.Field = v);
+		TermsIncludeExclude ITermsAggregation.Include { get; set; }
 
-		public TermsAggregationDescriptor<T> Script(string script) => Assign((InlineScript)script, (a, v) => a.Script = v);
+		TermsIncludeExclude ITermsAggregation.Exclude { get; set; }
+
+		TermsAggregationCollectMode? ITermsAggregation.CollectMode { get; set; }
+
+		bool? ITermsAggregation.ShowTermDocumentCountError { get; set; }
+
+		string ITermsAggregation.Missing { get; set; }
+
+		public TermsAggregationDescriptor<T> Field(string field) => Assign(a => a.Field = field);
+
+		public TermsAggregationDescriptor<T> Field(Expression<Func<T, object>> field) => Assign(a => a.Field = field);
+
+		public TermsAggregationDescriptor<T> Script(string script) => Assign(a => a.Script = (InlineScript)script);
 
 		public TermsAggregationDescriptor<T> Script(Func<ScriptDescriptor, IScript> scriptSelector) =>
-			Assign(scriptSelector, (a, v) => a.Script = v?.Invoke(new ScriptDescriptor()));
+			Assign(a => a.Script = scriptSelector?.Invoke(new ScriptDescriptor()));
 
-		public TermsAggregationDescriptor<T> Size(int? size) => Assign(size, (a, v) => a.Size = v);
+		public TermsAggregationDescriptor<T> Size(int size) => Assign(a => a.Size = size);
 
-		public TermsAggregationDescriptor<T> ShardSize(int? shardSize) => Assign(shardSize, (a, v) => a.ShardSize = v);
+		public TermsAggregationDescriptor<T> ShardSize(int shardSize) => Assign(a => a.ShardSize = shardSize);
 
-		public TermsAggregationDescriptor<T> MinimumDocumentCount(int? minimumDocumentCount) =>
-			Assign(minimumDocumentCount, (a, v) => a.MinimumDocumentCount = v);
+		public TermsAggregationDescriptor<T> MinimumDocumentCount(int minimumDocumentCount) =>
+			Assign(a => a.MinimumDocumentCount = minimumDocumentCount);
 
-		public TermsAggregationDescriptor<T> ExecutionHint(TermsAggregationExecutionHint? executionHint) =>
-			Assign(executionHint, (a, v) => a.ExecutionHint = v);
+		public TermsAggregationDescriptor<T> ExecutionHint(TermsAggregationExecutionHint executionHint) =>
+			Assign(a => a.ExecutionHint = executionHint);
 
-		public TermsAggregationDescriptor<T> Order(Func<TermsOrderDescriptor<T>, IPromise<IList<TermsOrder>>> selector) =>
-			Assign(selector, (a, v) => a.Order = v?.Invoke(new TermsOrderDescriptor<T>())?.Value);
+		public TermsAggregationDescriptor<T> Order(TermsOrder order) => Assign(a =>
+		{
+			a.Order = a.Order ?? new List<TermsOrder>();
+			a.Order.Add(order);
+		});
 
-		public TermsAggregationDescriptor<T> Include(long partition, long numberOfPartitions) =>
-			Assign(new TermsInclude(partition, numberOfPartitions), (a, v) => a.Include = v);
+		public TermsAggregationDescriptor<T> OrderAscending(string key) => Assign(a =>
+		{
+			a.Order = a.Order ?? new List<TermsOrder>();
+			a.Order.Add(new TermsOrder { Key = key, Order = SortOrder.Ascending });
+		});
 
-		public TermsAggregationDescriptor<T> Include(string includePattern) =>
-			Assign(new TermsInclude(includePattern), (a, v) => a.Include = v);
+		public TermsAggregationDescriptor<T> OrderDescending(string key) => Assign(a =>
+		{
+			a.Order = a.Order ?? new List<TermsOrder>();
+			a.Order.Add(new TermsOrder { Key = key, Order = SortOrder.Descending });
+		});
+
+		public TermsAggregationDescriptor<T> Include(string includePattern, string regexFlags = null) =>
+			Assign(a => a.Include = new TermsIncludeExclude
+			{
+				Pattern = includePattern,
+#pragma warning disable 618
+				Flags = regexFlags
+#pragma warning restore 618
+			});
 
 		public TermsAggregationDescriptor<T> Include(IEnumerable<string> values) =>
-			Assign(new TermsInclude(values), (a, v) => a.Include = v);
+			Assign(a => a.Include = new TermsIncludeExclude { Values = values });
 
-		public TermsAggregationDescriptor<T> Exclude(string excludePattern) =>
-			Assign(new TermsExclude(excludePattern), (a, v) => a.Exclude = v);
+		public TermsAggregationDescriptor<T> Exclude(string excludePattern, string regexFlags = null) =>
+			Assign(a => a.Exclude = new TermsIncludeExclude
+			{
+				Pattern = excludePattern,
+#pragma warning disable 618
+				Flags = regexFlags
+#pragma warning restore 618
+			});
 
 		public TermsAggregationDescriptor<T> Exclude(IEnumerable<string> values) =>
-			Assign(new TermsExclude(values), (a, v) => a.Exclude = v);
+			Assign(a => a.Exclude = new TermsIncludeExclude { Values = values });
 
-		public TermsAggregationDescriptor<T> CollectMode(TermsAggregationCollectMode? collectMode) =>
-			Assign(collectMode, (a, v) => a.CollectMode = v);
+		public TermsAggregationDescriptor<T> CollectMode(TermsAggregationCollectMode collectMode) =>
+			Assign(a => a.CollectMode = collectMode);
 
-		public TermsAggregationDescriptor<T> Missing(object missing) => Assign(missing, (a, v) => a.Missing = v);
+		public TermsAggregationDescriptor<T> ShowTermDocumentCountError(bool showTermDocCountError = true) =>
+			Assign(a => a.ShowTermDocumentCountError = showTermDocCountError);
 
-		public TermsAggregationDescriptor<T> ShowTermDocCountError(bool? showTermDocCountError = true) =>
-			Assign(showTermDocCountError, (a, v) => a.ShowTermDocCountError = v);
+		public TermsAggregationDescriptor<T> Missing(string missing) => Assign(a => a.Missing = missing);
 	}
 }

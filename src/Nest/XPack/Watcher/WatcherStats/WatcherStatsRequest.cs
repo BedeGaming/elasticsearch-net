@@ -1,13 +1,9 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿namespace Nest
 {
-	[MapsApi("watcher.stats.json")]
-	public partial interface IWatcherStatsRequest { }
+	public partial interface IWatcherStatsRequest {}
 
-	public partial class WatcherStatsRequest { }
+	public partial class WatcherStatsRequest {}
 
-	public partial class WatcherStatsDescriptor { }
+	[DescriptorFor("WatcherStats")]
+	public partial class WatcherStatsDescriptor {}
 }

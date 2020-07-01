@@ -1,42 +1,42 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(TokenFilterFormatter))]
+	[ContractJsonConverter(typeof(TokenFilterJsonConverter))]
 	public interface ITokenFilter
 	{
-		[DataMember(Name = "type")]
+		[JsonProperty("version")]
+		string Version { get; set; }
+
+		[JsonProperty("type")]
 		string Type { get; }
 
-		[DataMember(Name = "version")]
-		string Version { get; set; }
 	}
 
 	public abstract class TokenFilterBase : ITokenFilter
 	{
-		protected TokenFilterBase(string type) => Type = type;
+		protected TokenFilterBase(string type)
+		{
+			this.Type = type;
+		}
 
-		[DataMember(Name = "type")]
-		public string Type { get; protected set; }
-
-		[DataMember(Name = "version")]
+		[JsonProperty("version")]
 		public string Version { get; set; }
+
+		[JsonProperty("type")]
+		public string Type { get; protected set; }
 	}
 
-	public abstract class TokenFilterDescriptorBase<TTokenFilter, TTokenFilterInterface>
+	public abstract class TokenFilterDescriptorBase<TTokenFilter, TTokenFilterInterface> 
 		: DescriptorBase<TTokenFilter, TTokenFilterInterface>, ITokenFilter
 		where TTokenFilter : TokenFilterDescriptorBase<TTokenFilter, TTokenFilterInterface>, TTokenFilterInterface
 		where TTokenFilterInterface : class, ITokenFilter
 	{
-		protected abstract string Type { get; }
-		string ITokenFilter.Type => Type;
 		string ITokenFilter.Version { get; set; }
+		string ITokenFilter.Type => this.Type;
+		protected abstract string Type { get; }
 
-		public TTokenFilter Version(string version) => Assign(version, (a, v) => a.Version = v);
+		public TTokenFilter Version(string version) => Assign(a => a.Version = version);
 	}
+
 }

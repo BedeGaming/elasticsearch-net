@@ -1,18 +1,29 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	public class IndexResponse : WriteResponseBase
+	public interface IIndexResponse : IResponse
 	{
-		public override bool IsValid => base.IsValid && 
-			(Result == Result.Created 
-			|| Result == Result.Updated 
-			|| Result == Result.Noop) 
-		;
+		string Id { get; }
+		string Index { get; }
+		string Type { get; }
+		long Version { get; }
+		bool Created { get; }
+	}
+
+	[JsonObject]
+	public class IndexResponse : ResponseBase, IIndexResponse
+	{
+		[JsonProperty("_index")]
+		public string Index { get; internal set; }
+		[JsonProperty("_type")]
+		public string Type { get; internal set; }
+		[JsonProperty("_id")]
+		public string Id { get; internal set; }
+		[JsonProperty("_version")]
+		public long Version { get; internal set; }
+		[JsonProperty("created")]
+		public bool Created { get; internal set; }
+
 	}
 }

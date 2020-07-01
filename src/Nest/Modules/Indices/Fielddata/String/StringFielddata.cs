@@ -1,17 +1,11 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(StringFielddata))]
+	[JsonObject(MemberSerialization.OptIn)]
 	public interface IStringFielddata : IFielddata
 	{
-		[DataMember(Name ="format")]
+		[JsonProperty("format")]
 		StringFielddataFormat? Format { get; set; }
 	}
 
@@ -25,6 +19,6 @@ namespace Nest
 	{
 		StringFielddataFormat? IStringFielddata.Format { get; set; }
 
-		public StringFielddataDescriptor Format(StringFielddataFormat? format) => Assign(format, (a, v) => a.Format = v);
+		public StringFielddataDescriptor Format(StringFielddataFormat format) => Assign(a => a.Format = format);
 	}
 }

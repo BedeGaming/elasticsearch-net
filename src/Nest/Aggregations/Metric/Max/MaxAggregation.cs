@@ -1,16 +1,12 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(MaxAggregation))]
-	public interface IMaxAggregation : IFormattableMetricAggregation { }
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<MaxAggregation>))]
+	public interface IMaxAggregation : IMetricAggregation { }
 
-	public class MaxAggregation : FormattableMetricAggregationBase, IMaxAggregation
+	public class MaxAggregation : MetricAggregationBase, IMaxAggregation
 	{
 		internal MaxAggregation() { }
 
@@ -19,8 +15,8 @@ namespace Nest
 		internal override void WrapInContainer(AggregationContainer c) => c.Max = this;
 	}
 
-	public class MaxAggregationDescriptor<T>
-		: FormattableMetricAggregationDescriptorBase<MaxAggregationDescriptor<T>, IMaxAggregation, T>
-			, IMaxAggregation
+	public class MaxAggregationDescriptor<T> 
+		: MetricAggregationDescriptorBase<MaxAggregationDescriptor<T>, IMaxAggregation, T>
+			, IMaxAggregation 
 		where T : class { }
 }

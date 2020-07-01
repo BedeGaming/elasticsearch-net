@@ -1,42 +1,37 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(ScheduleContainer))]
+	[JsonObject(MemberSerialization.OptIn)]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<ScheduleContainer>))]
 	public interface IScheduleContainer
 	{
-		[DataMember(Name = "cron")]
-		CronExpression Cron { get; set; }
-
-		[DataMember(Name = "daily")]
-		IDailySchedule Daily { get; set; }
-
-		[DataMember(Name = "hourly")]
+		[JsonProperty("hourly")]
 		IHourlySchedule Hourly { get; set; }
 
-		[DataMember(Name = "interval")]
-		Interval Interval { get; set; }
+		[JsonProperty("daily")]
+		IDailySchedule Daily { get; set; }
 
-		[DataMember(Name = "monthly")]
-		IMonthlySchedule Monthly { get; set; }
-
-		[DataMember(Name = "weekly")]
+		[JsonProperty("weekly")]
 		IWeeklySchedule Weekly { get; set; }
 
-		[DataMember(Name = "yearly")]
+		[JsonProperty("monthly")]
+		IMonthlySchedule Monthly { get; set; }
+
+		[JsonProperty("yearly")]
 		IYearlySchedule Yearly { get; set; }
+
+		[JsonProperty("cron")]
+		CronExpression Cron { get; set; }
+
+		[JsonProperty("interval")]
+		Interval Interval { get; set; }
 	}
 
 	public class ScheduleContainer : TriggerBase, IScheduleContainer
 	{
-		public ScheduleContainer() { }
+		public ScheduleContainer() {}
 
 		public ScheduleContainer(ScheduleBase schedule)
 		{
@@ -44,14 +39,13 @@ namespace Nest
 			schedule.WrapInContainer(this);
 		}
 
-		public CronExpression Cron { get; set; }
-
 		public IDailySchedule Daily { get; set; }
-		public IHourlySchedule Hourly { get; set; }
-		public Interval Interval { get; set; }
 		public IMonthlySchedule Monthly { get; set; }
+		public IHourlySchedule Hourly { get; set; }
 		public IWeeklySchedule Weekly { get; set; }
 		public IYearlySchedule Yearly { get; set; }
+		public CronExpression Cron { get; set; }
+		public Interval Interval { get; set; }
 
 		internal override void WrapInContainer(ITriggerContainer container) => container.Schedule = this;
 
@@ -60,33 +54,34 @@ namespace Nest
 			: new ScheduleContainer(scheduleBase);
 	}
 
-	public class ScheduleDescriptor : DescriptorBase<ScheduleDescriptor, IScheduleContainer>, IScheduleContainer
+	public class ScheduleDescriptor :
+		DescriptorBase<ScheduleDescriptor, IScheduleContainer>, IScheduleContainer
 	{
-		CronExpression IScheduleContainer.Cron { get; set; }
 		IDailySchedule IScheduleContainer.Daily { get; set; }
-		IHourlySchedule IScheduleContainer.Hourly { get; set; }
-		Interval IScheduleContainer.Interval { get; set; }
 		IMonthlySchedule IScheduleContainer.Monthly { get; set; }
+		IHourlySchedule IScheduleContainer.Hourly { get; set; }
 		IWeeklySchedule IScheduleContainer.Weekly { get; set; }
 		IYearlySchedule IScheduleContainer.Yearly { get; set; }
+		CronExpression IScheduleContainer.Cron { get; set; }
+		Interval IScheduleContainer.Interval { get; set; }
 
 		public ScheduleDescriptor Daily(Func<DailyScheduleDescriptor, IDailySchedule> selector) =>
-			Assign(selector.Invoke(new DailyScheduleDescriptor()), (a, v) => a.Daily = v);
+			Assign(a => a.Daily = selector.Invoke(new DailyScheduleDescriptor()));
 
 		public ScheduleDescriptor Hourly(Func<HourlyScheduleDescriptor, IHourlySchedule> selector) =>
-			Assign(selector.Invoke(new HourlyScheduleDescriptor()), (a, v) => a.Hourly = v);
+			Assign(a => a.Hourly = selector.Invoke(new HourlyScheduleDescriptor()));
 
 		public ScheduleDescriptor Monthly(Func<MonthlyScheduleDescriptor, IPromise<IMonthlySchedule>> selector) =>
-			Assign(selector.Invoke(new MonthlyScheduleDescriptor())?.Value, (a, v) => a.Monthly = v);
+			Assign(a => a.Monthly = selector.Invoke(new MonthlyScheduleDescriptor())?.Value);
 
 		public ScheduleDescriptor Weekly(Func<WeeklyScheduleDescriptor, IPromise<IWeeklySchedule>> selector) =>
-			Assign(selector.Invoke(new WeeklyScheduleDescriptor())?.Value, (a, v) => a.Weekly = v);
+			Assign(a => a.Weekly = selector.Invoke(new WeeklyScheduleDescriptor())?.Value);
 
 		public ScheduleDescriptor Yearly(Func<YearlyScheduleDescriptor, IPromise<IYearlySchedule>> selector) =>
-			Assign(selector.Invoke(new YearlyScheduleDescriptor())?.Value, (a, v) => a.Yearly = v);
+			Assign(a => a.Yearly = selector.Invoke(new YearlyScheduleDescriptor())?.Value);
 
-		public ScheduleDescriptor Cron(CronExpression cron) => Assign(cron, (a, v) => a.Cron = v);
+		public ScheduleDescriptor Cron(CronExpression cron) => Assign(a => a.Cron = cron);
 
-		public ScheduleDescriptor Interval(Interval interval) => Assign(interval, (a, v) => a.Interval = v);
+		public ScheduleDescriptor Interval(Interval interval) => Assign(a => a.Interval = interval);
 	}
 }

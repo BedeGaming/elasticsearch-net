@@ -1,29 +1,35 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class ClusterStatsResponse : NodesResponseBase
+	public interface IClusterStatsResponse : IResponse
 	{
-		[DataMember(Name ="cluster_name")]
-		public string ClusterName { get; internal set; }
+		[JsonProperty("cluster_name")]
+		string ClusterName { get; set; }
 
-		[DataMember(Name ="cluster_uuid")]
-		public string ClusterUUID { get; internal set; }
+		[JsonProperty("timestamp")]
+		long Timestamp { get; set; }
 
-		[DataMember(Name ="indices")]
-		public ClusterIndicesStats Indices { get; internal set; }
+		[JsonProperty("status")]
+		ClusterStatus Status { get; set; }
 
-		[DataMember(Name ="nodes")]
-		public ClusterNodesStats Nodes { get; internal set; }
+		[JsonProperty("indices")]
+		ClusterIndicesStats Indices { get; set; }
 
-		[DataMember(Name ="status")]
-		public ClusterStatus Status { get; internal set; }
+		[JsonProperty("nodes")]
+		ClusterNodesStats Nodes { get; set; }
+	}
 
-		[DataMember(Name ="timestamp")]
-		public long Timestamp { get; internal set; }
+	public class ClusterStatsResponse : ResponseBase, IClusterStatsResponse
+	{
+		public string ClusterName { get; set; }
+
+		public long Timestamp { get; set; }
+
+		public ClusterStatus Status { get; set; }
+
+		public ClusterIndicesStats Indices { get; set; }
+
+		public ClusterNodesStats Nodes { get; set; }
 	}
 }

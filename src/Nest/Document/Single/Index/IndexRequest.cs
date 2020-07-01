@@ -1,43 +1,39 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.IO;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+﻿using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(IndexRequestFormatter<>))]
-	public partial interface IIndexRequest<TDocument> : IProxyRequest, IDocumentRequest where TDocument : class
+	[JsonConverter(typeof(IndexRequestJsonConverter))]
+	public interface IIndexRequest : IRequest<IndexRequestParameters>
+	{
+		object UntypedDocument { get; }
+	}
+
+	public partial interface IIndexRequest<TDocument> : IIndexRequest where TDocument : class
 	{
 		TDocument Document { get; set; }
 	}
 
-	public partial class IndexRequest<TDocument>
+	public partial class IndexRequest<TDocument> 
 		where TDocument : class
 	{
-		public TDocument Document { get; set; }
-
 		protected override HttpMethod HttpMethod => GetHttpMethod(this);
 
-		void IProxyRequest.WriteJson(IElasticsearchSerializer sourceSerializer, Stream stream, SerializationFormatting formatting) =>
-			sourceSerializer.Serialize(Document, stream, formatting);
+		partial void DocumentFromPath(TDocument document) => this.Document = document;
 
-		internal static HttpMethod GetHttpMethod(IIndexRequest<TDocument> request) =>
-			request.Id?.StringOrLongValue != null || (request.RouteValues.Resolved?.ContainsKey("id") ?? false) ? HttpMethod.PUT : HttpMethod.POST;
+		object IIndexRequest.UntypedDocument => this.Document;
 
-		partial void DocumentFromPath(TDocument document) => Document = document;
+		public TDocument Document { get; set; }
+
+		internal static HttpMethod GetHttpMethod(IIndexRequest<TDocument> r) => r.Id?.Value != null ? HttpMethod.PUT : HttpMethod.POST;
 	}
 
-	public partial class IndexDescriptor<TDocument> where TDocument : class
+	public partial class IndexDescriptor<TDocument>  where TDocument : class
 	{
 		protected override HttpMethod HttpMethod => IndexRequest<TDocument>.GetHttpMethod(this);
+		partial void DocumentFromPath(TDocument document) => Assign(a => a.Document = document); 
+		object IIndexRequest.UntypedDocument => Self.Document;
+
 		TDocument IIndexRequest<TDocument>.Document { get; set; }
-
-		void IProxyRequest.WriteJson(IElasticsearchSerializer sourceSerializer, Stream stream, SerializationFormatting formatting) =>
-			sourceSerializer.Serialize(Self.Document, stream, formatting);
-
-		partial void DocumentFromPath(TDocument document) => Assign(document, (a, v) => a.Document = v);
 	}
 }

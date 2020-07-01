@@ -1,76 +1,90 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(SearchInputRequest))]
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<SearchInputRequest>))]
 	public interface ISearchInputRequest
 	{
-		[DataMember(Name = "body")]
-		[ReadAs(typeof(SearchRequest))]
-		ISearchRequest Body { get; set; }
-
-		[DataMember(Name = "indices")]
+		[JsonProperty("indices")]
 		IEnumerable<IndexName> Indices { get; set; }
 
-		[DataMember(Name = "indices_options")]
-		IIndicesOptions IndicesOptions { get; set; }
+		[JsonProperty("types")]
+		IEnumerable<TypeName> Types { get; set; }
 
-		[DataMember(Name = "search_type")]
+		[JsonProperty("search_type")]
+		[JsonConverter(typeof(StringEnumConverter))]
 		SearchType? SearchType { get; set; }
 
-		[DataMember(Name = "template")]
-		[ReadAs(typeof(SearchTemplateRequest))]
+		[JsonProperty("indices_options")]
+		IIndicesOptions IndicesOptions { get; set; }
+
+		[JsonProperty("body")]
+		[JsonConverter(typeof(ReadAsTypeJsonConverter<SearchRequest>))]
+		ISearchRequest Body { get; set; }
+
+		[JsonProperty("template")]
+		[JsonConverter(typeof(ReadAsTypeJsonConverter<SearchTemplateRequest>))]
 		ISearchTemplateRequest Template { get; set; }
 	}
 
 	public class SearchInputRequest : ISearchInputRequest
 	{
-		public ISearchRequest Body { get; set; }
 		public IEnumerable<IndexName> Indices { get; set; }
+
+		public IEnumerable<TypeName> Types { get; set; }
+
+		public SearchType? SearchType { get; set; }
 
 		public IIndicesOptions IndicesOptions { get; set; }
 
-		public SearchType? SearchType { get; set; }
+		public ISearchRequest Body { get; set; }
 
 		public ISearchTemplateRequest Template { get; set; }
 	}
 
-	public class SearchInputRequestDescriptor : DescriptorBase<SearchInputRequestDescriptor, ISearchInputRequest>, ISearchInputRequest
+	public class SearchInputRequestDescriptor :
+		DescriptorBase<SearchInputRequestDescriptor, ISearchInputRequest>, ISearchInputRequest
 	{
-		ISearchRequest ISearchInputRequest.Body { get; set; }
 		IEnumerable<IndexName> ISearchInputRequest.Indices { get; set; }
-		IIndicesOptions ISearchInputRequest.IndicesOptions { get; set; }
+		IEnumerable<TypeName> ISearchInputRequest.Types { get; set; }
 		SearchType? ISearchInputRequest.SearchType { get; set; }
+		IIndicesOptions ISearchInputRequest.IndicesOptions { get; set; }
+		ISearchRequest ISearchInputRequest.Body { get; set; }
 		ISearchTemplateRequest ISearchInputRequest.Template { get; set; }
 
 		public SearchInputRequestDescriptor Indices(IEnumerable<IndexName> indices) =>
-			Assign(indices, (a, v) => a.Indices = v);
+			Assign(a => a.Indices = indices);
 
 		public SearchInputRequestDescriptor Indices(params IndexName[] indices) =>
-			Assign(indices, (a, v) => a.Indices = v);
+			Assign(a => a.Indices = indices);
 
 		public SearchInputRequestDescriptor Indices<T>() =>
-			Assign(new[] { (IndexName)typeof(T) }, (a, v) => a.Indices = v);
+			Assign(a => a.Indices = new [] { (IndexName)typeof(T) });
 
-		public SearchInputRequestDescriptor SearchType(SearchType? searchType) =>
-			Assign(searchType, (a, v) => a.SearchType = v);
+		public SearchInputRequestDescriptor Types(IEnumerable<TypeName> types) =>
+			Assign(a => a.Types = types);
+
+		public SearchInputRequestDescriptor Types(params TypeName[] types) =>
+			Assign(a => a.Types = types);
+
+		public SearchInputRequestDescriptor Types<T>() =>
+			Assign(a => a.Types = new[] { (TypeName)typeof(T) });
+
+		public SearchInputRequestDescriptor SearchType(SearchType searchType) =>
+			Assign(a => a.SearchType = searchType);
 
 		public SearchInputRequestDescriptor IndicesOptions(Func<IndicesOptionsDescriptor, IIndicesOptions> selector) =>
-			Assign(selector(new IndicesOptionsDescriptor()), (a, v) => a.IndicesOptions = v);
+			Assign(a => a.IndicesOptions = selector(new IndicesOptionsDescriptor()));
 
 		public SearchInputRequestDescriptor Body<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class =>
-			Assign(selector, (a, v) => a.Body = v?.InvokeOrDefault(new SearchDescriptor<T>()));
+			Assign(a => a.Body = selector?.InvokeOrDefault(new SearchDescriptor<T>()));
 
 		public SearchInputRequestDescriptor Template<T>(Func<SearchTemplateDescriptor<T>, ISearchTemplateRequest> selector) where T : class =>
-			Assign(selector, (a, v) => a.Template = v?.InvokeOrDefault(new SearchTemplateDescriptor<T>()));
+			Assign(a => a.Template = selector?.InvokeOrDefault(new SearchTemplateDescriptor<T>()));
 	}
 }

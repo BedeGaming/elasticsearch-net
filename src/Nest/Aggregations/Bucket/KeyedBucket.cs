@@ -1,20 +1,17 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nest
 {
-	public class KeyedBucket<TKey> : BucketBase
+	public class KeyedBucket : BucketBase
 	{
-		public KeyedBucket(IReadOnlyDictionary<string, IAggregate> dict) : base(dict) { }
+		public KeyedBucket() { }
+		public KeyedBucket(IDictionary<string, IAggregate> aggregations) : base(aggregations) { }
 
-		public long? DocCount { get; set; }
-
-		public long? DocCountErrorUpperBound { get; set; }
-
-		public TKey Key { get; set; }
+		public string Key { get; set; }
 		public string KeyAsString { get; set; }
+		public long? DocCount { get; set; }
 	}
 }

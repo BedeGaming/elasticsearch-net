@@ -1,19 +1,15 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(MaxBucketAggregation))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<MaxBucketAggregation>))]
 	public interface IMaxBucketAggregation : IPipelineAggregation { }
 
 	public class MaxBucketAggregation
 		: PipelineAggregationBase, IMaxBucketAggregation
 	{
-		internal MaxBucketAggregation() { }
+		internal MaxBucketAggregation () { }
 
 		public MaxBucketAggregation(string name, SingleBucketsPath bucketsPath)
 			: base(name, bucketsPath) { }
@@ -23,5 +19,7 @@ namespace Nest
 
 	public class MaxBucketAggregationDescriptor
 		: PipelineAggregationDescriptorBase<MaxBucketAggregationDescriptor, IMaxBucketAggregation, SingleBucketsPath>
-			, IMaxBucketAggregation { }
+		, IMaxBucketAggregation
+	{
+	}
 }

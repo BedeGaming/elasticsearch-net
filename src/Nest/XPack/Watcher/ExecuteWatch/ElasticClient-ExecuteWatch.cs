@@ -1,10 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
@@ -14,39 +10,40 @@ namespace Nest
 		/// Forces the execution of a stored watch. It can be used to force execution of the watch outside of its triggering logic,
 		/// or to simulate the watch execution for debugging purposes.
 		/// </summary>
-		ExecuteWatchResponse ExecuteWatch(Func<ExecuteWatchDescriptor, IExecuteWatchRequest> selector);
+		IExecuteWatchResponse ExecuteWatch(Func<ExecuteWatchDescriptor, IExecuteWatchRequest> selector);
 
-		/// <inheritdoc />
-		ExecuteWatchResponse ExecuteWatch(IExecuteWatchRequest request);
+		/// <inheritdoc/>
+		IExecuteWatchResponse ExecuteWatch(IExecuteWatchRequest request);
 
-		/// <inheritdoc />
-		Task<ExecuteWatchResponse> ExecuteWatchAsync(Func<ExecuteWatchDescriptor, IExecuteWatchRequest> selector,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IExecuteWatchResponse> ExecuteWatchAsync(Func<ExecuteWatchDescriptor, IExecuteWatchRequest> selector);
 
-		/// <inheritdoc />
-		Task<ExecuteWatchResponse> ExecuteWatchAsync(IExecuteWatchRequest request, CancellationToken ct = default);
+		/// <inheritdoc/>
+		Task<IExecuteWatchResponse> ExecuteWatchAsync(IExecuteWatchRequest request);
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public ExecuteWatchResponse ExecuteWatch(Func<ExecuteWatchDescriptor, IExecuteWatchRequest> selector) =>
-			ExecuteWatch(selector.InvokeOrDefault(new ExecuteWatchDescriptor()));
+		/// <inheritdoc/>
+		public IExecuteWatchResponse ExecuteWatch(Func<ExecuteWatchDescriptor, IExecuteWatchRequest> selector) =>
+			this.ExecuteWatch(selector.InvokeOrDefault(new ExecuteWatchDescriptor()));
 
-		/// <inheritdoc />
-		public ExecuteWatchResponse ExecuteWatch(IExecuteWatchRequest request) =>
-			DoRequest<IExecuteWatchRequest, ExecuteWatchResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IExecuteWatchResponse ExecuteWatch(IExecuteWatchRequest request) =>
+			this.Dispatcher.Dispatch<IExecuteWatchRequest, ExecuteWatchRequestParameters, ExecuteWatchResponse>(
+				request,
+				this.LowLevelDispatch.WatcherExecuteWatchDispatch<ExecuteWatchResponse>
+			);
 
-		/// <inheritdoc />
-		public Task<ExecuteWatchResponse> ExecuteWatchAsync(
-			Func<ExecuteWatchDescriptor, IExecuteWatchRequest> selector,
-			CancellationToken ct = default
-		) => ExecuteWatchAsync(selector?.InvokeOrDefault(new ExecuteWatchDescriptor()), ct);
+		/// <inheritdoc/>
+		public Task<IExecuteWatchResponse> ExecuteWatchAsync(Func<ExecuteWatchDescriptor, IExecuteWatchRequest> selector) =>
+			this.ExecuteWatchAsync(selector?.InvokeOrDefault(new ExecuteWatchDescriptor()));
 
-		/// <inheritdoc />
-		public Task<ExecuteWatchResponse> ExecuteWatchAsync(IExecuteWatchRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IExecuteWatchRequest, ExecuteWatchResponse>
-				(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IExecuteWatchResponse> ExecuteWatchAsync(IExecuteWatchRequest request) =>
+			this.Dispatcher.DispatchAsync<IExecuteWatchRequest, ExecuteWatchRequestParameters, ExecuteWatchResponse, IExecuteWatchResponse>(
+				request,
+				this.LowLevelDispatch.WatcherExecuteWatchDispatchAsync<ExecuteWatchResponse>
+			);
 	}
 }

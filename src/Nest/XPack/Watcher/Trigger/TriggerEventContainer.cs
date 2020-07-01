@@ -1,23 +1,19 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[ReadAs(typeof(TriggerEventContainer))]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<TriggerEventContainer>))]
 	public interface ITriggerEventContainer
 	{
-		[DataMember(Name = "schedule")]
+		[JsonProperty("schedule")]
 		IScheduleTriggerEvent Schedule { get; set; }
 	}
 
-	[DataContract]
+	[JsonObject]
 	public class TriggerEventContainer : ITriggerEventContainer, IDescriptor
 	{
-		public TriggerEventContainer() { }
+		public TriggerEventContainer() {}
 
 		public TriggerEventContainer(TriggerEventBase trigger)
 		{
@@ -30,9 +26,9 @@ namespace Nest
 
 	public class TriggerEventDescriptor : TriggerEventContainer
 	{
-		private TriggerEventDescriptor Assign<TValue>(TValue value, Action<ITriggerEventContainer, TValue> assigner) => Fluent.Assign(this, value, assigner);
+		private TriggerEventDescriptor Assign(Action<ITriggerEventContainer> assigner) => Fluent.Assign(this, assigner);
 
 		public TriggerEventDescriptor Schedule(Func<ScheduleTriggerEventDescriptor, IScheduleTriggerEvent> selector) =>
-			Assign(selector, (a, v) => a.Schedule = v?.Invoke(new ScheduleTriggerEventDescriptor()));
+			Assign(a => a.Schedule = selector(new ScheduleTriggerEventDescriptor()));
 	}
 }

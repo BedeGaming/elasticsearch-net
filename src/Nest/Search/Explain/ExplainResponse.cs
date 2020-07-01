@@ -1,28 +1,27 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public interface IExplainResponse<out TDocument> : IResponse
-		where TDocument : class
+	public interface IExplainResponse<T> : IResponse
+		where T : class
 	{
-		IInlineGet<TDocument> Get { get; }
+		bool Matched { get; }
+		ExplanationDetail Explanation { get; }
+		InstantGet<T> Get { get; }
 	}
 
-	[DataContract]
-	public class ExplainResponse<TDocument> : ResponseBase, IExplainResponse<TDocument>
-		where TDocument : class
+	[JsonObject]
+	public class ExplainResponse<T> : ResponseBase, IExplainResponse<T>
+		where T : class
 	{
-		[DataMember(Name ="explanation")]
+		[JsonProperty(PropertyName = "matched")]
+		public bool Matched { get; internal set; }
+
+		[JsonProperty(PropertyName = "explanation")]
 		public ExplanationDetail Explanation { get; internal set; }
 
-		[DataMember(Name ="get")]
-		public IInlineGet<TDocument> Get { get; internal set; }
-
-		[DataMember(Name ="matched")]
-		public bool Matched { get; internal set; }
+		[JsonProperty(PropertyName = "get")]
+		public InstantGet<T> Get { get; internal set; }
 	}
 }

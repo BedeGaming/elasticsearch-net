@@ -1,48 +1,44 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
+	[JsonObject]
 	public class CatHealthRecord : ICatRecord
 	{
-		[DataMember(Name ="cluster")]
+		[JsonProperty("cluster")]
 		public string Cluster { get; set; }
 
-		[DataMember(Name ="epoch")]
+		[JsonProperty("epoch")]
 		public string Epoch { get; set; }
 
-		[DataMember(Name ="init")]
-		public string Initializing { get; set; }
-
-		[DataMember(Name ="node.data")]
+		[JsonProperty("node.data")]
 		public string NodeData { get; set; }
 
-		[DataMember(Name ="node.total")]
+		[JsonProperty("node.total")]
 		public string NodeTotal { get; set; }
 
-		[DataMember(Name ="pending_tasks")]
-		public string PendingTasks { get; set; }
-
-		[DataMember(Name ="pri")]
+		[JsonProperty("pri")]
 		public string Primary { get; set; }
 
-		[DataMember(Name ="relo")]
+		[JsonProperty("relo")]
 		public string Relocating { get; set; }
 
-		[DataMember(Name ="shards")]
+		[JsonProperty("init")]
+		public string Initializing { get; set; }
+
+		[JsonProperty("shards")]
 		public string Shards { get; set; }
 
-		[DataMember(Name ="status")]
+		[JsonProperty("status")]
 		public string Status { get; set; }
 
-		[DataMember(Name ="timestamp")]
+		[JsonProperty("timestamp")]
 		public string Timestamp { get; set; }
 
-		[DataMember(Name ="unassign")]
+		[JsonProperty("unassign")]
 		public string Unassigned { get; set; }
+
+		[JsonProperty("pending_tasks")]
+		public string PendingTasks { get; set; }
 	}
 }

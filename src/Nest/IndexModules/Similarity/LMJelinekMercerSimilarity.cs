@@ -1,10 +1,4 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
-// ReSharper disable InconsistentNaming
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -17,28 +11,26 @@ namespace Nest
 		/// <summary>
 		/// The lambda parameter
 		/// </summary>
-		[DataMember(Name ="lambda")]
-		[JsonFormatter(typeof(NullableStringDoubleFormatter))]
+		[JsonProperty("lambda")]
 		double? Lambda { get; set; }
 	}
 
 	/// <inheritdoc />
 	public class LMJelinekMercerSimilarity : ILMJelinekMercerSimilarity
 	{
+		public string Type => "LMJelinekMercer";
+
 		/// <inheritdoc />
 		public double? Lambda { get; set; }
-
-		public string Type => "LMJelinekMercer";
 	}
 
 	/// <inheritdoc />
 	public class LMJelinekMercerSimilarityDescriptor
 		: DescriptorBase<LMJelinekMercerSimilarityDescriptor, ILMJelinekMercerSimilarity>, ILMJelinekMercerSimilarity
 	{
-		double? ILMJelinekMercerSimilarity.Lambda { get; set; }
 		string ISimilarity.Type => "LMJelinekMercer";
+		double? ILMJelinekMercerSimilarity.Lambda { get; set; }
 
-		/// <inheritdoc />
-		public LMJelinekMercerSimilarityDescriptor Lamdba(double? lamda) => Assign(lamda, (a, v) => a.Lambda = v);
+		public LMJelinekMercerSimilarityDescriptor Lamdba(double? lamda) => Assign(a => a.Lambda = lamda);
 	}
 }

@@ -1,16 +1,12 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Elasticsearch.Net.Utf8Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(ChainTransformFormatter))]
+	[JsonObject]
+	[JsonConverter(typeof(ChainTransformJsonConverter))]
 	public interface IChainTransform : ITransform
 	{
 		ICollection<TransformContainer> Transforms { get; set; }
@@ -18,9 +14,12 @@ namespace Nest
 
 	public class ChainTransform : TransformBase, IChainTransform
 	{
-		public ChainTransform() { }
+		public ChainTransform() {}
 
-		public ChainTransform(IEnumerable<TransformContainer> transforms) => Transforms = transforms?.ToList();
+		public ChainTransform(IEnumerable<TransformContainer> transforms)
+		{
+			this.Transforms = transforms?.ToList();
+		}
 
 		public ICollection<TransformContainer> Transforms { get; set; }
 
@@ -31,7 +30,10 @@ namespace Nest
 	{
 		public ChainTransformDescriptor() { }
 
-		public ChainTransformDescriptor(ICollection<TransformContainer> transforms) => Self.Transforms = transforms;
+		public ChainTransformDescriptor(ICollection<TransformContainer> transforms)
+		{
+			Self.Transforms = transforms;
+		}
 
 		ICollection<TransformContainer> IChainTransform.Transforms { get; set; }
 
@@ -44,37 +46,31 @@ namespace Nest
 		}
 	}
 
-	internal class ChainTransformFormatter : IJsonFormatter<IChainTransform>
+	internal class ChainTransformJsonConverter : JsonConverter
 	{
-		public void Serialize(ref JsonWriter writer, IChainTransform value, IJsonFormatterResolver formatterResolver)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			writer.WriteBeginArray();
+			writer.WriteStartArray();
+			var chainTransform = (IChainTransform)value;
 
-			if (value != null)
+			if (chainTransform != null)
 			{
-				var formatter = formatterResolver.GetFormatter<TransformContainer>();
-				var count = 0;
-				foreach (var transform in value.Transforms)
+				foreach (var transform in chainTransform.Transforms)
 				{
-					if (count > 0)
-						writer.WriteValueSeparator();
-
-					formatter.Serialize(ref writer, transform, formatterResolver);
-					count++;
+					serializer.Serialize(writer, transform);
 				}
 			}
 
 			writer.WriteEndArray();
 		}
 
-		public IChainTransform Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			if (reader.GetCurrentJsonToken() != JsonToken.BeginArray)
-				return null;
-
-			var formatter = formatterResolver.GetFormatter<ICollection<TransformContainer>>();
-			var transforms = formatter.Deserialize(ref reader, formatterResolver);
+			if (reader.TokenType != JsonToken.StartArray) return null;
+			var transforms = serializer.Deserialize<ICollection<TransformContainer>>(reader);
 			return new ChainTransform(transforms);
 		}
+
+		public override bool CanConvert(Type objectType) => true;
 	}
 }

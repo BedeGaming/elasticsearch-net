@@ -1,29 +1,27 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(CharFilterFormatter))]
+	[ContractJsonConverter(typeof(CharFilterJsonConverter))]
 	public interface ICharFilter
 	{
-		[DataMember(Name = "type")]
-		string Type { get; }
-
-		[DataMember(Name = "version")]
+		[JsonProperty("version")]
 		string Version { get; set; }
+
+		[JsonProperty("type")]
+		string Type { get; }
 	}
 
 
 	public abstract class CharFilterBase : ICharFilter
 	{
-		protected CharFilterBase(string type) => Type = type;
+		protected CharFilterBase(string type)
+		{
+			this.Type = type;
+		}
+		public string Version { get; set; }
 
 		public string Type { get; protected set; }
-		public string Version { get; set; }
 	}
 
 	public abstract class CharFilterDescriptorBase<TCharFilter, TCharFilterInterface>
@@ -31,10 +29,10 @@ namespace Nest
 		where TCharFilter : CharFilterDescriptorBase<TCharFilter, TCharFilterInterface>, TCharFilterInterface
 		where TCharFilterInterface : class, ICharFilter
 	{
-		protected abstract string Type { get; }
-		string ICharFilter.Type => Type;
 		string ICharFilter.Version { get; set; }
+		string ICharFilter.Type => this.Type;
+		protected abstract string Type { get; }
 
-		public TCharFilter Version(string version) => Assign(version, (a, v) => a.Version = v);
+		public TCharFilter Version(string version) => Assign(a => a.Version = version);
 	}
 }

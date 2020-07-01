@@ -1,18 +1,15 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using Elasticsearch.Net.Utf8Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(FuzzinessInterfaceFormatter))]
+	[JsonConverter(typeof(FuzzinessJsonConverter))]
 	public interface IFuzziness
 	{
-		bool Auto { get; }
-		int? Low { get; }
-		int? High { get; }
-		int? EditDistance { get; }
-		double? Ratio { get; }
+		bool Auto { get;  }
+		int? EditDistance { get;  }
+
+		[Obsolete("Deprecated. Setting this is a noop")]
+		double? Ratio { get;  }
 	}
 }

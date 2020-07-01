@@ -1,29 +1,26 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(TimeOfWeek))]
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<TimeOfWeek>))]
 	public interface ITimeOfWeek
 	{
-		[DataMember(Name ="at")]
-		[JsonFormatter(typeof(SingleOrEnumerableFormatter<string>))]
-		IEnumerable<string> At { get; set; }
-
-		[DataMember(Name ="on")]
-		[JsonFormatter(typeof(SingleOrEnumerableFormatter<Day>))]
+		[JsonProperty("on")]
+		[JsonConverter(typeof(ReadSingleOrEnumerableJsonConverter<Day>))]
 		IEnumerable<Day> On { get; set; }
+
+		[JsonProperty("at")]
+		[JsonConverter(typeof(ReadSingleOrEnumerableJsonConverter<string>))]
+		IEnumerable<string> At { get; set; }
 	}
 
 	public class TimeOfWeek : ITimeOfWeek
 	{
-		public TimeOfWeek() { }
+		public TimeOfWeek()
+		{
+		}
 
 		public TimeOfWeek(Day on, string at)
 		{
@@ -31,22 +28,22 @@ namespace Nest
 			At = new[] { at };
 		}
 
-		public IEnumerable<string> At { get; set; }
-
 		public IEnumerable<Day> On { get; set; }
+
+		public IEnumerable<string> At { get; set; }
 	}
 
 	public class TimeOfWeekDescriptor : DescriptorBase<TimeOfWeekDescriptor, ITimeOfWeek>, ITimeOfWeek
 	{
-		IEnumerable<string> ITimeOfWeek.At { get; set; }
 		IEnumerable<Day> ITimeOfWeek.On { get; set; }
+		IEnumerable<string> ITimeOfWeek.At { get; set; }
 
-		public TimeOfWeekDescriptor On(IEnumerable<Day> day) => Assign(day, (a, v) => a.On = v);
+		public TimeOfWeekDescriptor On(IEnumerable<Day> day) => Assign(a => a.On = day);
 
-		public TimeOfWeekDescriptor On(params Day[] day) => Assign(day, (a, v) => a.On = v);
+		public TimeOfWeekDescriptor On(params Day[] day) => Assign(a => a.On = day);
 
-		public TimeOfWeekDescriptor At(IEnumerable<string> time) => Assign(time, (a, v) => a.At = v);
+		public TimeOfWeekDescriptor At(IEnumerable<string> time) => Assign(a => a.At = time);
 
-		public TimeOfWeekDescriptor At(params string[] time) => Assign(time, (a, v) => a.At = v);
+		public TimeOfWeekDescriptor At(params string[] time) => Assign(a => a.At = time);
 	}
 }

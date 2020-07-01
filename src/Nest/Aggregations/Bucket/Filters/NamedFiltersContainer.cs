@@ -1,33 +1,28 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(VerbatimDictionaryKeysFormatter<NamedFiltersContainer, INamedFiltersContainer, string, IQueryContainer>))]
-	public interface INamedFiltersContainer : IIsADictionary<string, IQueryContainer> { }
-
-	public class NamedFiltersContainer : IsADictionaryBase<string, IQueryContainer>, INamedFiltersContainer
+	[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter<NamedFiltersContainer, string, IQueryContainer>))]
+	public interface INamedFiltersContainer : IIsADictionary<string, IQueryContainer>
 	{
-		public NamedFiltersContainer() { }
+	}
 
+	public class NamedFiltersContainer: IsADictionaryBase<string, IQueryContainer>, INamedFiltersContainer
+	{
+		public NamedFiltersContainer() : base() { }
 		public NamedFiltersContainer(IDictionary<string, IQueryContainer> container) : base(container) { }
-
 		public NamedFiltersContainer(Dictionary<string, QueryContainer> container)
-			: base(container.Select(kv => kv).ToDictionary(kv => kv.Key, kv => (IQueryContainer)kv.Value)) { }
+			: base(container.Select(kv => kv).ToDictionary(kv => kv.Key, kv => (IQueryContainer)kv.Value))
+		{ }
 
 		public void Add(string name, IQueryContainer filter) => BackingDictionary.Add(name, filter);
-
 		public void Add(string name, QueryContainer filter) => BackingDictionary.Add(name, filter);
 	}
 
-	public class NamedFiltersContainerDescriptor<T>
-		: IsADictionaryDescriptorBase<NamedFiltersContainerDescriptor<T>, INamedFiltersContainer, string, IQueryContainer>
+	public class NamedFiltersContainerDescriptor<T> : IsADictionaryDescriptorBase<NamedFiltersContainerDescriptor<T>, INamedFiltersContainer, string, IQueryContainer>
 		where T : class
 	{
 		public NamedFiltersContainerDescriptor() : base(new NamedFiltersContainer()) { }
@@ -40,5 +35,7 @@ namespace Nest
 		public NamedFiltersContainerDescriptor<T> Filter<TOther>(string name, Func<QueryContainerDescriptor<TOther>, QueryContainer> selector)
 			where TOther : class =>
 			Assign(name, selector?.Invoke(new QueryContainerDescriptor<TOther>()));
+
 	}
+
 }

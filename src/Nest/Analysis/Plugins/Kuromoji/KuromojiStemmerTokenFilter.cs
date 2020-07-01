@@ -1,9 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -17,21 +14,20 @@ namespace Nest
 		/// <summary>
 		/// Katakana words shorter than the minimum length are not stemmed (default is 4).
 		/// </summary>
-		[DataMember(Name ="minimum_length")]
-		[JsonFormatter(typeof(NullableStringIntFormatter))]
+		[JsonProperty("minimum_length")]
 		int? MinimumLength { get; set; }
 	}
 
-	/// <inheritdoc />
+	/// <inheritdoc/>
 	public class KuromojiStemmerTokenFilter : TokenFilterBase, IKuromojiStemmerTokenFilter
 	{
 		public KuromojiStemmerTokenFilter() : base("kuromoji_stemmer") { }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public int? MinimumLength { get; set; }
 	}
 
-	/// <inheritdoc />
+	///<inheritdoc/>
 	public class KuromojiStemmerTokenFilterDescriptor
 		: TokenFilterDescriptorBase<KuromojiStemmerTokenFilterDescriptor, IKuromojiStemmerTokenFilter>, IKuromojiStemmerTokenFilter
 	{
@@ -39,7 +35,7 @@ namespace Nest
 
 		int? IKuromojiStemmerTokenFilter.MinimumLength { get; set; }
 
-		/// <inheritdoc />
-		public KuromojiStemmerTokenFilterDescriptor MinimumLength(int? minimumLength) => Assign(minimumLength, (a, v) => a.MinimumLength = v);
+		///<inheritdoc/>
+		public KuromojiStemmerTokenFilterDescriptor MinimumLength(int? minimumLength) => Assign(a => a.MinimumLength = minimumLength);
 	}
 }

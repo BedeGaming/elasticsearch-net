@@ -1,21 +1,24 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	public class ClusterPutSettingsResponse : ResponseBase
+	public interface IClusterPutSettingsResponse : IResponse
 	{
-		[DataMember(Name ="acknowledged")]
+		[JsonProperty(PropertyName = "acknowledged")]
+		bool Acknowledged { get; }
+
+		[JsonProperty(PropertyName = "persistent")]
+		IDictionary<string, object> Persistent { get; set; }
+
+		[JsonProperty(PropertyName = "transient")]
+		IDictionary<string, object> Transient { get; set; }
+	}
+
+	public class ClusterPutSettingsResponse : ResponseBase, IClusterPutSettingsResponse
+	{
 		public bool Acknowledged { get; internal set; }
-		[DataMember(Name ="persistent")]
-		public IReadOnlyDictionary<string, object> Persistent { get; internal set; } = EmptyReadOnly<string, object>.Dictionary;
-		[DataMember(Name ="transient")]
-		public IReadOnlyDictionary<string, object> Transient { get; internal set; } = EmptyReadOnly<string, object>.Dictionary;
+		public IDictionary<string, object> Persistent { get; set; }
+		public IDictionary<string, object> Transient { get; set; }
 	}
 }

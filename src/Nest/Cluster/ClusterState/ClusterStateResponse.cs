@@ -1,33 +1,57 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(DynamicResponseFormatter<ClusterStateResponse>))]
-	public class ClusterStateResponse : DynamicResponseBase
+	public interface IClusterStateResponse : IResponse
 	{
-		public DynamicDictionary State => Self.BackingDictionary;
+		[JsonProperty("cluster_name")]
+		string ClusterName { get; }
 
-		[DataMember(Name = "cluster_name")]
-		public string ClusterName => State.Get<string>("cluster_name");
+		[JsonProperty("master_node")]
+		string MasterNode { get; }
 
-		/// <summary>The Universally Unique Identifier for the cluster.</summary>
-		/// <remarks>While the cluster is still forming, it is possible for the `cluster_uuid` to be `_na_`.</remarks>
-		[DataMember(Name = "cluster_uuid")]
-		public string ClusterUUID => State.Get<string>("cluster_uuid");
+		[JsonProperty("state_uuid")]
+		string StateUUID { get; }
 
-		[DataMember(Name = "master_node")]
-		public string MasterNode => State.Get<string>("master_node");
+		[JsonProperty("version")]
+		long Version { get; }
 
-		[DataMember(Name = "state_uuid")]
-		public string StateUUID => State.Get<string>("state_uuid");
+		[JsonProperty("nodes")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		Dictionary<string, NodeState> Nodes { get; }
 
-		[DataMember(Name = "version")]
-		public long? Version => State.Get<long?>("version");
+		[JsonProperty("metadata")]
+		MetadataState Metadata { get; }
+
+		[JsonProperty("routing_table")]
+		RoutingTableState RoutingTable { get; }
+
+		[JsonProperty("routing_nodes")]
+		RoutingNodesState RoutingNodes { get; }
+
+		[JsonProperty("blocks")]
+		BlockState Blocks { get; }
+	}
+
+	public class ClusterStateResponse : ResponseBase, IClusterStateResponse
+	{
+		public string ClusterName { get; internal set; }
+
+		public string MasterNode { get; internal set; }
+
+		public string StateUUID { get; internal set; }
+
+		public long Version { get; internal set; }
+
+		public Dictionary<string, NodeState> Nodes { get; internal set; }
+
+		public MetadataState Metadata { get; internal set; }
+
+		public RoutingTableState RoutingTable { get; internal set; }
+
+		public RoutingNodesState RoutingNodes { get; internal set; }
+
+		public BlockState Blocks { get; internal set; }
 	}
 }

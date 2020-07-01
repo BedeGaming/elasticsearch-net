@@ -1,26 +1,30 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using Elasticsearch.Net;
+using System.Linq;
 
 namespace Nest
 {
-	public class NodesHotThreadsResponse : ResponseBase
+	public class HotThreadInformation
+	{
+		public string NodeName { get; set; }
+		public string NodeId { get; set; }
+		public IEnumerable<string> Threads { get; set; } = Enumerable.Empty<string>();
+		public IEnumerable<string> Hosts { get; set; } = Enumerable.Empty<string>();
+	}
+
+	public interface INodesHotThreadsResponse : IResponse
+	{
+		IEnumerable<HotThreadInformation> HotThreads { get; }
+	}
+
+	public class NodesHotThreadsResponse : ResponseBase, INodesHotThreadsResponse
 	{
 		public NodesHotThreadsResponse() { }
 
-		internal NodesHotThreadsResponse(IReadOnlyCollection<HotThreadInformation> threadInfo) => HotThreads = threadInfo;
+		internal NodesHotThreadsResponse(IEnumerable<HotThreadInformation> threadInfo)
+		{
+			this.HotThreads = threadInfo;
+		}
 
-		public IReadOnlyCollection<HotThreadInformation> HotThreads { get; internal set; } = EmptyReadOnly<HotThreadInformation>.Collection;
-	}
-
-	public class HotThreadInformation
-	{
-		public IReadOnlyCollection<string> Hosts { get; internal set; } = EmptyReadOnly<string>.Collection;
-		public string NodeId { get; internal set; }
-		public string NodeName { get; internal set; }
-		public IReadOnlyCollection<string> Threads { get; internal set; } = EmptyReadOnly<string>.Collection;
+		public IEnumerable<HotThreadInformation> HotThreads { get; } = Enumerable.Empty<HotThreadInformation>();
 	}
 }

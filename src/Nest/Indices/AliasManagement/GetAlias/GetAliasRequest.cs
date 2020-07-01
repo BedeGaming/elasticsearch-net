@@ -1,13 +1,36 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using System;
+using Newtonsoft.Json;
 
-﻿namespace Nest
+namespace Nest
 {
-	[MapsApi("indices.get_alias.json")]
-	public partial interface IGetAliasRequest { }
+	public partial interface IGetAliasRequest 
+	{
+		[Obsolete("Deprecated. Use Name instead")]
+		[JsonIgnore]
+		string Alias { get; set; }
+	}
 
-	public partial class GetAliasRequest { }
+	public partial class GetAliasRequest 
+	{
+		[Obsolete("Deprecated. Use the GetAliasRequest(Names name) constructor instead")]
+		public string Alias
+		{
+			get { return this.RequestState.RouteValues.Get<Names>("name").GetString(null); }
+			set { this.RequestState.RouteValues.Optional("name", Names.Parse(value)); }
+		}
+	}
 
-	public partial class GetAliasDescriptor { }
+	[DescriptorFor("IndicesGetAlias")]
+	public partial class GetAliasDescriptor 
+	{
+		[Obsolete("Deprecated. Use Name instead")]
+		string IGetAliasRequest.Alias
+		{
+			get { return this.RequestState.RouteValues.Get<Names>("name").GetString(null); }
+			set { this.RequestState.RouteValues.Optional("name", Names.Parse(value)); }
+		}
+
+		[Obsolete("Deprecated. Use " + nameof(Name) + " instead")]
+		public GetAliasDescriptor Alias(string alias)=> Assign(a => a.Alias = alias.IsNullOrEmpty() ? "*" : alias);
+	}
 }

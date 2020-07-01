@@ -1,90 +1,87 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
 using Elasticsearch.Net;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
 	/// <summary>
-	/// A set of analyzers aimed at analyzing specific language text.
+	/// A set of analyzers aimed at analyzing specific language text. 
 	/// </summary>
 	public interface ILanguageAnalyzer : IAnalyzer
 	{
 		/// <summary>
-		/// The stem_exclusion parameter allows you to specify an array of lowercase words that should not be stemmed.
-		/// </summary>
-		[DataMember(Name ="stem_exclusion")]
-		IEnumerable<string> StemExclusionList { get; set; }
-
-		/// <summary>
 		/// A list of stopword to initialize the stop filter with. Defaults to the english stop words.
 		/// </summary>
-		[DataMember(Name ="stopwords")]
+		[JsonProperty("stopwords")]
 		StopWords StopWords { get; set; }
+
+		/// <summary>
+		/// The stem_exclusion parameter allows you to specify an array of lowercase words that should not be stemmed. 
+		/// </summary>
+		[JsonProperty("stem_exclusion")]
+		IEnumerable<string> StemExclusionList { get; set; }
 
 		/// <summary>
 		/// A path (either relative to config location, or absolute) to a stopwords file configuration.
 		/// </summary>
-		[DataMember(Name ="stopwords_path")]
+		[JsonProperty("stopwords_path")]
 		string StopwordsPath { get; set; }
-	}
+	} 
 
-	/// <inheritdoc />
+	/// <inheritdoc/>
 	public class LanguageAnalyzer : AnalyzerBase, ILanguageAnalyzer
 	{
 		private string _type = "language";
-
-		/// <inheritdoc />
-		[IgnoreDataMember]
-		public Language? Language
-		{
-			get => _type.ToEnum<Language>();
-			set => _type = value.GetStringValue().ToLowerInvariant();
-		}
-
-		/// <inheritdoc />
-		public IEnumerable<string> StemExclusionList { get; set; }
-
-		/// <inheritdoc />
-		public StopWords StopWords { get; set; }
-
-		/// <inheritdoc />
-		public string StopwordsPath { get; set; }
-
 		public override string Type
 		{
-			get => _type;
-			protected set
-			{
-				_type = value;
-				Language = value.ToEnum<Language>();
-			}
+			get { return _type; }
+			protected set { this._type = value; this.Language = value.ToEnum<Language>(); }
 		}
+
+		/// <inheritdoc/>
+		public StopWords StopWords { get; set; }
+
+		/// <inheritdoc/>
+		public IEnumerable<string> StemExclusionList { get; set; }
+
+		[JsonIgnore]
+		/// <inheritdoc/>
+		public Language? Language {
+			get { return _type.ToEnum<Language>(); }
+			set { _type = value.GetStringValue().ToLowerInvariant(); }
+		}
+
+		/// <inheritdoc/>
+		public string StopwordsPath { get; set; }
 	}
 
-	/// <inheritdoc />
-	public class LanguageAnalyzerDescriptor : AnalyzerDescriptorBase<LanguageAnalyzerDescriptor, ILanguageAnalyzer>, ILanguageAnalyzer
+	/// <inheritdoc/>
+	public class LanguageAnalyzerDescriptor :
+		AnalyzerDescriptorBase<LanguageAnalyzerDescriptor, ILanguageAnalyzer>, ILanguageAnalyzer
 	{
 		private string _type = "language";
 		protected override string Type => _type;
-		IEnumerable<string> ILanguageAnalyzer.StemExclusionList { get; set; }
 
 		StopWords ILanguageAnalyzer.StopWords { get; set; }
+		IEnumerable<string> ILanguageAnalyzer.StemExclusionList { get; set; }
 		string ILanguageAnalyzer.StopwordsPath { get; set; }
 
-		public LanguageAnalyzerDescriptor Language(Language? language)
+		public LanguageAnalyzerDescriptor Language(Language language)
 		{
-			_type = language?.GetStringValue().ToLowerInvariant();
+			language.ThrowIfNull(nameof(language));
+			var langName = language.GetStringValue().ToLowerInvariant();
+			_type = langName;
 			return this;
 		}
 
-		public LanguageAnalyzerDescriptor StopWords(StopWords stopWords) => Assign(stopWords, (a, v) => a.StopWords = v);
+		public LanguageAnalyzerDescriptor StopWords(StopWords stopWords) =>
+			Assign(a => a.StopWords = stopWords);
 
-		public LanguageAnalyzerDescriptor StopWords(params string[] stopWords) => Assign(stopWords, (a, v) => a.StopWords = v);
+		public LanguageAnalyzerDescriptor StopWords(params string[] stopWords) =>
+			Assign(a => a.StopWords = stopWords);
 
-		public LanguageAnalyzerDescriptor StopWords(IEnumerable<string> stopWords) => Assign(stopWords.ToListOrNullIfEmpty(), (a, v) => a.StopWords = v);
+		public LanguageAnalyzerDescriptor StopWords(IEnumerable<string> stopWords) =>
+			Assign(a => a.StopWords = stopWords.ToListOrNullIfEmpty());
+
 	}
 }

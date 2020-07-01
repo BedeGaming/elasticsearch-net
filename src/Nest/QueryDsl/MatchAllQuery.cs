@@ -1,14 +1,9 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(MatchAllQuery))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<MatchAllQuery>))]
 	public interface IMatchAllQuery : IQuery
 	{
 		/// <summary>
@@ -17,29 +12,32 @@ namespace Nest
 		/// boosting into account, the norms_field needs to be provided in order to explicitly specify which
 		/// field the boosting will be done on (Note, this will result in slower execution time).
 		/// </summary>
-		[DataMember(Name ="norm_field")]
+		[JsonProperty(PropertyName = "norm_field")]
 		string NormField { get; set; }
 	}
 
 	public class MatchAllQuery : QueryBase, IMatchAllQuery
 	{
 		/// <inheritdoc />
-		public string NormField { get; set; }
+		public string NormField { get;  set; }
 
 		protected override bool Conditionless => false;
 
-		internal override void InternalWrapInContainer(IQueryContainer container) => container.MatchAll = this;
+		internal override void InternalWrapInContainer(IQueryContainer container)
+		{
+			container.MatchAll = this;
+		}
 	}
 
 	public class MatchAllQueryDescriptor
 		: QueryDescriptorBase<MatchAllQueryDescriptor, IMatchAllQuery>
-			, IMatchAllQuery
+		, IMatchAllQuery 
 	{
 		protected override bool Conditionless => false;
 
 		string IMatchAllQuery.NormField { get; set; }
 
 		/// <inheritdoc />
-		public MatchAllQueryDescriptor NormField(string normField) => Assign(normField, (a, v) => a.NormField = v);
+		public MatchAllQueryDescriptor NormField(string normField) => Assign(a => a.NormField = normField);
 	}
 }

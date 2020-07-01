@@ -1,28 +1,25 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	public class RootNodeInfoResponse : ResponseBase
+	public interface IRootNodeInfoResponse : IResponse
 	{
-		[DataMember(Name ="name")]
+		string Name { get; }
+		string Tagline { get;  }
+		ElasticsearchVersionInfo Version { get;  }
+	}
+
+	[JsonObject]
+	public class RootNodeInfoResponse : ResponseBase, IRootNodeInfoResponse
+	{
+		[JsonProperty(PropertyName = "name")]
 		public string Name { get; internal set; }
-		
-		[DataMember(Name ="cluster_name")]
-		public string ClusterName { get; internal set; }
 
-		[DataMember(Name ="cluster_uuid")]
-		public string ClusterUUID { get; internal set; }
-
-		[DataMember(Name ="version")]
-		public ElasticsearchVersionInfo Version { get; internal set; }
-		
-		[DataMember(Name ="tagline")]
+		[JsonProperty(PropertyName = "tagline")]
 		public string Tagline { get; internal set; }
+		
+		[JsonProperty(PropertyName = "version")]
+		public ElasticsearchVersionInfo Version { get; internal set; }
 
 	}
 }

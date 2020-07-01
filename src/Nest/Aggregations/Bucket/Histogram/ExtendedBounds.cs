@@ -1,17 +1,13 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
 	public class ExtendedBounds<T>
 	{
-		[DataMember(Name ="max")]
-		public T Maximum { get; set; }
-
-		[DataMember(Name ="min")]
+		[JsonProperty("min")]
 		public T Minimum { get; set; }
+
+		[JsonProperty("max")]
+		public T Maximum { get; set; }
 	}
 }

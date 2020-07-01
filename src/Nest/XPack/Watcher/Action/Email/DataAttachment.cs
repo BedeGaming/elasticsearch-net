@@ -1,18 +1,14 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(DataAttachment))]
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<DataAttachment>))]
 	public interface IDataAttachment : IEmailAttachment
 	{
-		[DataMember(Name = "format")]
+		[JsonProperty("format")]
 		DataAttachmentFormat? Format { get; set; }
 	}
 
@@ -25,15 +21,14 @@ namespace Nest
 	{
 		DataAttachmentFormat? IDataAttachment.Format { get; set; }
 
-		public DataAttachmentDescriptor Format(DataAttachmentFormat? format) => Assign(format, (a, v) => a.Format = v);
+		public DataAttachmentDescriptor Format(DataAttachmentFormat format) => Assign(a => a.Format = format);
 	}
 
-	[StringEnum]
+	[JsonConverter(typeof(StringEnumConverter))]
 	public enum DataAttachmentFormat
 	{
 		[EnumMember(Value = "json")]
 		Json,
-
 		[EnumMember(Value = "yaml")]
 		Yaml
 	}

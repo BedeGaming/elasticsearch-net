@@ -1,28 +1,42 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
+	// ReindexOnServer and UpdateByQuery aggregate failures under a single failures property
+	// So the shape is a bit odd
+	// https://github.com/elastic/elasticsearch/issues/17539
+	// We could come up with abstractions and normalization here but we should fix this at the root for 5.0
+
+	[JsonObject]
 	public class BulkIndexByScrollFailure
 	{
-		[DataMember(Name = "cause")]
-		public Error Cause { get; set; }
+		[JsonProperty("index")]
+		public string Index { get; internal set; }
 
-		[DataMember(Name = "id")]
+		[JsonProperty("type")]
+		public string Type { get; internal set; }
+
+		[JsonProperty("id")]
 		public string Id { get; internal set; }
 
-		[DataMember(Name = "index")]
-		public string Index { get; set; }
+		[JsonProperty("node")]
+		public string Node { get; internal set; }
 
-		[DataMember(Name = "status")]
-		public int Status { get; set; }
+		[JsonProperty("shard")]
+		public int Shard { get; internal set; }
 
-		[DataMember(Name = "type")]
-		public string Type { get; internal set; }
+		[JsonProperty("status")]
+		public int Status { get; internal set; }
+
+		[JsonProperty("cause")]
+		public Throwable Cause { get; internal set; }
+
+		[JsonProperty("reason")]
+		public Throwable Reason { get; internal set; }
+
+
+
+		[JsonProperty("caused_by")]
+		public CausedBy CausedBy { get; internal set; }
 	}
 }

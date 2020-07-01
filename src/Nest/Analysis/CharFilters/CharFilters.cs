@@ -1,23 +1,20 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using Elasticsearch.Net.Utf8Json;
+using System.Linq;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(VerbatimDictionaryKeysFormatter<CharFilters, ICharFilters, string, ICharFilter>))]
+	[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter<CharFilters, string, ICharFilter>))]
 	public interface ICharFilters : IIsADictionary<string, ICharFilter> { }
 
 	public class CharFilters : IsADictionaryBase<string, ICharFilter>, ICharFilters
 	{
-		public CharFilters() { }
-
+		public CharFilters() : base() { }
 		public CharFilters(IDictionary<string, ICharFilter> container) : base(container) { }
-
-		public CharFilters(Dictionary<string, ICharFilter> container) : base(container) { }
+		public CharFilters(Dictionary<string, ICharFilter> container)
+			: base(container.Select(kv => kv).ToDictionary(kv => kv.Key, kv => kv.Value))
+		{ }
 
 		public void Add(string name, ICharFilter analyzer) => BackingDictionary.Add(name, analyzer);
 	}
@@ -48,20 +45,16 @@ namespace Nest
 
 		/// <summary>
 		/// The kuromoji_iteration_mark normalizes Japanese horizontal iteration marks (odoriji) to their expanded form.
-		/// Part of the `analysis-kuromoji` plugin:
-		/// https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-kuromoji.html
+		/// Part of the `analysis-kuromoji` plugin: https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-kuromoji.html
 		/// </summary>
-		public CharFiltersDescriptor KuromojiIterationMark(string name,
-			Func<KuromojiIterationMarkCharFilterDescriptor, IKuromojiIterationMarkCharFilter> selector = null
-		) =>
+		public CharFiltersDescriptor KuromojiIterationMark(string name, Func<KuromojiIterationMarkCharFilterDescriptor, IKuromojiIterationMarkCharFilter> selector = null) =>
 			Assign(name, selector?.InvokeOrDefault(new KuromojiIterationMarkCharFilterDescriptor()));
 
 		/// <summary>
 		/// Normalizes as defined here: http://userguide.icu-project.org/transforms/normalization
 		/// Part of the `analysis-icu` plugin: https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-icu.html
 		/// </summary>
-		public CharFiltersDescriptor IcuNormalization(string name, Func<IcuNormalizationCharFilterDescriptor, IIcuNormalizationCharFilter> selector
-		) =>
+		public CharFiltersDescriptor IcuNormalization(string name, Func<IcuNormalizationCharFilterDescriptor, IIcuNormalizationCharFilter> selector) =>
 			Assign(name, selector?.Invoke(new IcuNormalizationCharFilterDescriptor()));
 	}
 }

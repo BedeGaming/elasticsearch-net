@@ -1,24 +1,25 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using System;
 
-﻿namespace Nest
+namespace Nest
 {
-	public class ObjectAttribute : ElasticsearchCorePropertyAttributeBase, IObjectProperty
+	public class ObjectAttribute : ElasticsearchPropertyAttributeBase, IObjectProperty
 	{
-		public ObjectAttribute() : base(FieldType.Object) { }
+		IObjectProperty Self => this;
 
-		protected ObjectAttribute(FieldType type) : base(type) { }
-
-		public bool Enabled
-		{
-			get => Self.Enabled.GetValueOrDefault();
-			set => Self.Enabled = value;
-		}
-
-		Union<bool, DynamicMapping> IObjectProperty.Dynamic { get; set; }
+		DynamicMapping? IObjectProperty.Dynamic { get; set; }
 		bool? IObjectProperty.Enabled { get; set; }
+		bool? IObjectProperty.IncludeInAll { get; set; }
+		string IObjectProperty.Path { get; set; }
 		IProperties IObjectProperty.Properties { get; set; }
-		private IObjectProperty Self => this;
+
+		public DynamicMapping Dynamic { get { return Self.Dynamic.GetValueOrDefault(); } set { Self.Dynamic = value; } }
+		public bool Enabled { get { return Self.Enabled.GetValueOrDefault(); } set { Self.Enabled = value; } }
+		public bool IncludeInAll { get { return Self.IncludeInAll.GetValueOrDefault(); } set { Self.IncludeInAll = value; } }
+		[Obsolete("Deprecated in 1.0.0 and Removed in 5.0.0. Use CopyTo instead.")]
+		public string Path { get { return Self.Path; } set { Self.Path = value; } }
+
+		public ObjectAttribute() : base("object") { }
+		protected ObjectAttribute(string typeName) : base(typeName) { }
+		protected ObjectAttribute(Type type) : base(type) { }
 	}
 }

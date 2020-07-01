@@ -1,21 +1,16 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
+	[JsonObject(MemberSerialization.OptIn)]
 	public interface IFielddata
 	{
-		[DataMember(Name ="filter")]
-		IFielddataFilter Filter { get; set; }
-
-		[DataMember(Name ="loading")]
+		[JsonProperty("loading")]
 		FielddataLoading? Loading { get; set; }
+
+		[JsonProperty("filter")]
+		IFielddataFilter Filter { get; set; }
 	}
 
 	public abstract class FielddataBase : IFielddata
@@ -33,8 +28,8 @@ namespace Nest
 		FielddataLoading? IFielddata.Loading { get; set; }
 
 		public TDescriptor Filter(Func<FielddataFilterDescriptor, IFielddataFilter> filterSelector) =>
-			Assign(filterSelector(new FielddataFilterDescriptor()), (a, v) => a.Filter = v);
+			Assign(a => a.Filter = filterSelector(new FielddataFilterDescriptor()));
 
-		public TDescriptor Loading(FielddataLoading? loading) => Assign(loading, (a, v) => a.Loading = v);
+		public TDescriptor Loading(FielddataLoading loading) => Assign(a => a.Loading = loading);
 	}
 }

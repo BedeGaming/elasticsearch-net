@@ -1,55 +1,52 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(SlackAttachmentField))]
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<SlackAttachmentField>))]
 	public interface ISlackAttachmentField
 	{
-		[DataMember(Name ="short")]
-		bool? Short { get; set; }
-
-		[DataMember(Name ="title")]
+		[JsonProperty("title")]
 		string Title { get; set; }
 
-		[DataMember(Name ="value")]
+		[JsonProperty("value")]
 		string Value { get; set; }
+
+		[JsonProperty("short")]
+		bool? Short { get; set; }
 	}
 
 	public class SlackAttachmentField : ISlackAttachmentField
 	{
-		public bool? Short { get; set; }
 		public string Title { get; set; }
 
 		public string Value { get; set; }
+
+		public bool? Short { get; set; }
 	}
 
 	public class SlackAttachmentFieldsDescriptor : DescriptorPromiseBase<SlackAttachmentFieldsDescriptor, IList<ISlackAttachmentField>>
 	{
-		public SlackAttachmentFieldsDescriptor() : base(new List<ISlackAttachmentField>()) { }
+		public SlackAttachmentFieldsDescriptor() : base(new List<ISlackAttachmentField>()) {}
 
 		public SlackAttachmentFieldsDescriptor Field(Func<SlackAttachmentFieldDescriptor, ISlackAttachmentField> selector) =>
-			Assign(selector, (a, v) => a.AddIfNotNull(v?.Invoke(new SlackAttachmentFieldDescriptor())));
+			Assign(a => a.AddIfNotNull(selector?.Invoke(new SlackAttachmentFieldDescriptor())));
 	}
 
 	public class SlackAttachmentFieldDescriptor : DescriptorBase<SlackAttachmentFieldDescriptor, ISlackAttachmentField>, ISlackAttachmentField
 	{
-		bool? ISlackAttachmentField.Short { get; set; }
 		string ISlackAttachmentField.Title { get; set; }
 
 		string ISlackAttachmentField.Value { get; set; }
 
-		public SlackAttachmentFieldDescriptor Title(string title) => Assign(title, (a, v) => a.Title = v);
+		bool? ISlackAttachmentField.Short { get; set; }
 
-		public SlackAttachmentFieldDescriptor Value(string value) => Assign(value, (a, v) => a.Value = v);
+		public SlackAttachmentFieldDescriptor Title(string title) => Assign(a => a.Title = title);
 
-		public SlackAttachmentFieldDescriptor Short(bool? @short = true) => Assign(@short, (a, v) => a.Short = v);
+		public SlackAttachmentFieldDescriptor Value(string value) => Assign(a => a.Value = value);
+
+		public SlackAttachmentFieldDescriptor Short(bool @short = true) => Assign(a => a.Short = @short);
 	}
 }

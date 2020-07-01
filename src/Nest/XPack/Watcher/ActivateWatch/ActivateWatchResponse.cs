@@ -1,25 +1,26 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class ActivateWatchResponse : ResponseBase
+	public interface IActivateWatchResponse : IResponse
 	{
-		[DataMember(Name ="status")]
+		ActivationStatus Status { get; }
+	}
+
+	public class ActivateWatchResponse : ResponseBase, IActivateWatchResponse
+	{
+		[JsonProperty("_status")]
 		public ActivationStatus Status { get; internal set; }
 	}
 
-	[DataContract]
+	[JsonObject]
 	public class ActivationStatus
 	{
-		[DataMember(Name ="actions")]
-		public IReadOnlyDictionary<string, ActionStatus> Actions { get; set; }
-
-		[DataMember(Name ="state")]
+		[JsonProperty("state")]
 		public ActivationState State { get; internal set; }
+
+		[JsonProperty("actions")]
+		public Dictionary<string, ActionStatus> Actions { get; set; }
 	}
 }

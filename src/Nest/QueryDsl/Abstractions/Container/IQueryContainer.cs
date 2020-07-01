@@ -1,190 +1,176 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(QueryContainerInterfaceFormatter))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[JsonConverter(typeof(QueryContainerJsonConverter))]
 	public interface IQueryContainer
 	{
-		[DataMember(Name ="bool")]
-		IBoolQuery Bool { get; set; }
-
-		[DataMember(Name ="boosting")]
-		IBoostingQuery Boosting { get; set; }
-
-		[DataMember(Name ="common")]
-#pragma warning disable 618
-		ICommonTermsQuery CommonTerms { get; set; }
-#pragma warning restore 618
-
-		[DataMember(Name ="constant_score")]
-		IConstantScoreQuery ConstantScore { get; set; }
-
-		[DataMember(Name ="dis_max")]
-		IDisMaxQuery DisMax { get; set; }
-
-		[DataMember(Name ="exists")]
-		IExistsQuery Exists { get; set; }
-
-		[DataMember(Name ="function_score")]
-		IFunctionScoreQuery FunctionScore { get; set; }
-
-		[DataMember(Name ="fuzzy")]
-		IFuzzyQuery Fuzzy { get; set; }
-
-		[DataMember(Name ="geo_bounding_box")]
-		IGeoBoundingBoxQuery GeoBoundingBox { get; set; }
-
-		[DataMember(Name ="geo_distance")]
-		IGeoDistanceQuery GeoDistance { get; set; }
-
-		[DataMember(Name ="geo_polygon")]
-		IGeoPolygonQuery GeoPolygon { get; set; }
-
-		[DataMember(Name ="geo_shape")]
-		IGeoShapeQuery GeoShape { get; set; }
-
-		[DataMember(Name ="shape")]
-		IShapeQuery Shape { get; set; }
-
-		[DataMember(Name ="has_child")]
-		IHasChildQuery HasChild { get; set; }
-
-		[DataMember(Name ="has_parent")]
-		IHasParentQuery HasParent { get; set; }
-
-		[DataMember(Name ="ids")]
-		IIdsQuery Ids { get; set; }
-
-		[DataMember(Name = "intervals")]
-		IIntervalsQuery Intervals { get; set; }
-
-		[IgnoreDataMember]
+		[JsonIgnore]
 		bool IsConditionless { get; }
 
-		[IgnoreDataMember]
+		[JsonIgnore]
 		bool IsStrict { get; set; }
 
-		[IgnoreDataMember]
+		[JsonIgnore]
 		bool IsVerbatim { get; set; }
 
-		[IgnoreDataMember]
+		[JsonIgnore]
 		bool IsWritable { get; }
 
-		[DataMember(Name ="match")]
-		IMatchQuery Match { get; set; }
-
-		[DataMember(Name ="match_all")]
-		IMatchAllQuery MatchAll { get; set; }
-
-		[DataMember(Name ="match_bool_prefix")]
-		IMatchBoolPrefixQuery MatchBoolPrefix { get; set; }
-
-		[DataMember(Name ="match_none")]
-		IMatchNoneQuery MatchNone { get; set; }
-
-		[DataMember(Name ="match_phrase")]
-		IMatchPhraseQuery MatchPhrase { get; set; }
-
-		[DataMember(Name ="match_phrase_prefix")]
-		IMatchPhrasePrefixQuery MatchPhrasePrefix { get; set; }
-
-		[DataMember(Name ="more_like_this")]
-		IMoreLikeThisQuery MoreLikeThis { get; set; }
-
-		[DataMember(Name ="multi_match")]
-		IMultiMatchQuery MultiMatch { get; set; }
-
-		[DataMember(Name ="nested")]
-		INestedQuery Nested { get; set; }
-
-		[DataMember(Name ="parent_id")]
-		IParentIdQuery ParentId { get; set; }
-
-		[DataMember(Name ="percolate")]
-		IPercolateQuery Percolate { get; set; }
-
-		[DataMember(Name ="prefix")]
-		IPrefixQuery Prefix { get; set; }
-
-		[DataMember(Name ="query_string")]
-		IQueryStringQuery QueryString { get; set; }
-
-		[DataMember(Name ="range")]
-		IRangeQuery Range { get; set; }
-
-		[IgnoreDataMember]
+		[JsonIgnore]
 		IRawQuery RawQuery { get; set; }
 
-		[DataMember(Name ="regexp")]
-		IRegexpQuery Regexp { get; set; }
+		[JsonProperty("bool")]
+		IBoolQuery Bool { get; set; }
 
-		[DataMember(Name ="script")]
-		IScriptQuery Script { get; set; }
+		[JsonProperty("match_all")]
+		IMatchAllQuery MatchAll { get; set; }
 
-		/// <inheritdoc cref="IScriptScoreQuery"/>
-		[DataMember(Name ="script_score")]
-		IScriptScoreQuery ScriptScore { get; set; }
-
-		[DataMember(Name ="simple_query_string")]
-		ISimpleQueryStringQuery SimpleQueryString { get; set; }
-
-		[DataMember(Name ="span_containing")]
-		ISpanContainingQuery SpanContaining { get; set; }
-
-		[DataMember(Name ="field_masking_span")]
-		ISpanFieldMaskingQuery SpanFieldMasking { get; set; }
-
-		[DataMember(Name ="span_first")]
-		ISpanFirstQuery SpanFirst { get; set; }
-
-		[DataMember(Name ="span_multi")]
-		ISpanMultiTermQuery SpanMultiTerm { get; set; }
-
-		[DataMember(Name ="span_near")]
-		ISpanNearQuery SpanNear { get; set; }
-
-		[DataMember(Name ="span_not")]
-		ISpanNotQuery SpanNot { get; set; }
-
-		[DataMember(Name ="span_or")]
-		ISpanOrQuery SpanOr { get; set; }
-
-		[DataMember(Name ="span_term")]
-		ISpanTermQuery SpanTerm { get; set; }
-
-		[DataMember(Name ="span_within")]
-		ISpanWithinQuery SpanWithin { get; set; }
-
-		[DataMember(Name ="term")]
+		[JsonProperty("term")]
 		ITermQuery Term { get; set; }
 
-		[DataMember(Name ="terms")]
-		ITermsQuery Terms { get; set; }
-
-		[DataMember(Name ="terms_set")]
-		ITermsSetQuery TermsSet { get; set; }
-
-		[DataMember(Name = "wildcard")]
+		[JsonProperty("wildcard")]
 		IWildcardQuery Wildcard { get; set; }
 
-		/// <inheritdoc cref="IRankFeatureQuery"/>
-		[DataMember(Name = "rank_feature")]
-		IRankFeatureQuery RankFeature { get; set; }
+		[JsonProperty("prefix")]
+		IPrefixQuery Prefix { get; set; }
 
-		/// <inheritdoc cref="IDistanceFeatureQuery"/>
-		[DataMember(Name = "distance_feature")]
-		IDistanceFeatureQuery DistanceFeature { get; set; }
+		[JsonProperty("boosting")]
+		IBoostingQuery Boosting { get; set; }
 
-		/// <inheritdoc cref="IPinnedQuery"/>
-		[DataMember(Name = "pinned")]
-		IPinnedQuery Pinned { get; set; }
+		[JsonProperty("ids")]
+		IIdsQuery Ids { get; set; }
 
+		[JsonProperty("constant_score")]
+		IConstantScoreQuery ConstantScore { get; set; }
+
+		[JsonProperty("dis_max")]
+		IDisMaxQuery DisMax { get; set; }
+
+		[JsonProperty("multi_match")]
+		IMultiMatchQuery MultiMatch { get; set; }
+
+		[JsonProperty("match")]
+		IMatchQuery Match { get; set; }
+
+		[JsonProperty("fuzzy")]
+		IFuzzyQuery Fuzzy { get; set; }
+
+		[JsonProperty("geo_shape")]
+		IGeoShapeQuery GeoShape { get; set; }
+
+		[JsonProperty("common")]
+		ICommonTermsQuery CommonTerms { get; set; }
+
+		[JsonProperty("terms")]
+		ITermsQuery Terms { get; set; }
+
+		[JsonProperty("range")]
+		IRangeQuery Range { get; set; }
+
+		[JsonProperty("regexp")]
+		IRegexpQuery Regexp { get; set; }
+
+		[JsonProperty("has_child")]
+		IHasChildQuery HasChild { get; set; }
+
+		[JsonProperty("has_parent")]
+		IHasParentQuery HasParent { get; set; }
+
+		[JsonProperty("span_term")]
+		ISpanTermQuery SpanTerm { get; set; }
+
+		[JsonProperty("simple_query_string")]
+		ISimpleQueryStringQuery SimpleQueryString { get; set; }
+
+		[JsonProperty("query_string")]
+		IQueryStringQuery QueryString { get; set; }
+
+		[JsonProperty("mlt")]
+		IMoreLikeThisQuery MoreLikeThis { get; set; }
+
+		[JsonProperty("span_first")]
+		ISpanFirstQuery SpanFirst { get; set; }
+
+		[JsonProperty("span_or")]
+		ISpanOrQuery SpanOr { get; set; }
+
+		[JsonProperty("span_near")]
+		ISpanNearQuery SpanNear { get; set; }
+
+		[JsonProperty("span_not")]
+		ISpanNotQuery SpanNot { get; set; }
+
+		[JsonProperty("span_containing")]
+		ISpanContainingQuery SpanContaining { get; set; }
+
+		[JsonProperty("span_within")]
+		ISpanWithinQuery SpanWithin { get; set; }
+
+		[JsonProperty("span_multi")]
+		ISpanMultiTermQuery SpanMultiTerm { get; set; }
+
+		[JsonProperty("field_masking_span")]
+		ISpanFieldMaskingQuery SpanFieldMasking { get; set; }
+
+		[JsonProperty("nested")]
+		INestedQuery Nested { get; set; }
+
+		[JsonProperty("indices")]
+		IIndicesQuery Indices { get; set; }
+
+		[JsonProperty("function_score")]
+		IFunctionScoreQuery FunctionScore { get; set; }
+
+		[JsonProperty("template")]
+		ITemplateQuery Template { get; set; }
+
+		[JsonProperty("geo_bounding_box")]
+		IGeoBoundingBoxQuery GeoBoundingBox { get; set; }
+
+		[JsonProperty("geo_distance")]
+		IGeoDistanceQuery GeoDistance { get; set; }
+
+		[JsonProperty("geo_polygon")]
+		IGeoPolygonQuery GeoPolygon { get; set; }
+
+		[JsonProperty("geo_distance_range")]
+		IGeoDistanceRangeQuery GeoDistanceRange { get; set; }
+
+		[JsonProperty("geohash_cell")]
+		IGeoHashCellQuery GeoHashCell { get; set; }
+
+		[JsonProperty("script")]
+		IScriptQuery Script { get; set; }
+
+		[JsonProperty("exists")]
+		IExistsQuery Exists { get; set; }
+
+		[JsonProperty("missing")]
+#pragma warning disable 618
+		IMissingQuery Missing { get; set; }
+#pragma warning restore 618
+
+		[JsonProperty("type")]
+		ITypeQuery Type { get; set; }
+
+#pragma warning disable 618
+		[JsonProperty("limit")]
+		ILimitQuery Limit { get; set; }
+
+		[JsonProperty("filtered")]
+		IFilteredQuery Filtered { get; set; }
+
+		[JsonProperty("and")]
+		IAndQuery And { get; set; }
+
+		[JsonProperty("or")]
+		IOrQuery Or { get; set; }
+
+		[JsonProperty("not")]
+		INotQuery Not { get; set; }
+#pragma warning restore 618
 
 		void Accept(IQueryVisitor visitor);
 	}

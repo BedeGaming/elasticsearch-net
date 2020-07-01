@@ -1,155 +1,98 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
-using Elasticsearch.Net.Utf8Json.Internal;
-
+using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(ScriptTransformFormatter))]
+	[JsonObject]
+	[JsonConverter(typeof(ScriptTransformJsonConverter))]
 	public interface IScriptTransform : ITransform
 	{
-		[DataMember(Name = "lang")]
-		string Lang { get; set; }
-
-		[DataMember(Name = "params")]
-		[JsonFormatter(typeof(VerbatimDictionaryKeysFormatter<string, object>))]
+		[JsonProperty("params")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
 		Dictionary<string, object> Params { get; set; }
+
+		[JsonProperty("lang")]
+		string Lang { get; set; }
 	}
 
 	public abstract class ScriptTransformBase : TransformBase, IScriptTransform
 	{
-		public string Lang { get; set; }
 		public Dictionary<string, object> Params { get; set; }
+
+		public string Lang { get; set; }
 
 		internal override void WrapInContainer(ITransformContainer container) => container.Script = this;
 	}
 
 	public abstract class ScriptTransformDescriptorBase<TDescriptor, TInterface> : DescriptorBase<TDescriptor, TInterface>, IScriptTransform
-		where TDescriptor : ScriptTransformDescriptorBase<TDescriptor, TInterface>, TInterface, IScriptTransform
-		where TInterface : class, IScriptTransform
+	where TDescriptor : ScriptTransformDescriptorBase<TDescriptor, TInterface>, TInterface, IScriptTransform
+	where TInterface : class, IScriptTransform
 	{
-		string IScriptTransform.Lang { get; set; }
 		Dictionary<string, object> IScriptTransform.Params { get; set; }
+		string IScriptTransform.Lang { get; set; }
 
-		public TDescriptor Params(Dictionary<string, object> scriptParams) => Assign(scriptParams, (a, v) => a.Params = v);
+		public TDescriptor Params(Dictionary<string, object> scriptParams) => Assign(a => a.Params = scriptParams);
 
 		public TDescriptor Params(Func<FluentDictionary<string, object>, FluentDictionary<string, object>> paramsSelector) =>
-			Assign(paramsSelector, (a, v) => a.Params = v?.Invoke(new FluentDictionary<string, object>()));
+			Assign(a => a.Params = paramsSelector?.Invoke(new FluentDictionary<string, object>()));
 
-		public TDescriptor Lang(string lang) => Assign(lang, (a, v) => a.Lang = v);
+		public TDescriptor Lang(string lang) => Assign(a => a.Lang = lang);
 	}
 
 	public class ScriptTransformDescriptor : DescriptorBase<ScriptTransformDescriptor, IDescriptor>
 	{
-		public IndexedScriptTransformDescriptor Id(string id) => new IndexedScriptTransformDescriptor(id);
+		public FileScriptTransformDescriptor File(string file) => new FileScriptTransformDescriptor(file);
 
-		public InlineScriptTransformDescriptor Source(string source) => new InlineScriptTransformDescriptor(source);
+		public IndexedScriptTransformDescriptor Indexed(string id) => new IndexedScriptTransformDescriptor(id);
+
+		public InlineScriptTransformDescriptor Inline(string script) => new InlineScriptTransformDescriptor(script);
 	}
 
-	internal class ScriptTransformFormatter : IJsonFormatter<IScriptTransform>
+	internal class ScriptTransformJsonConverter : JsonConverter
 	{
-		private static readonly AutomataDictionary AutomataDictionary = new AutomataDictionary
-		{
-			{ "source", 0 },
-			{ "id", 1 },
-			{ "lang", 2 },
-			{ "params", 3 }
-		};
+		public override bool CanWrite => false;
 
-		public IScriptTransform Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			if (reader.GetCurrentJsonToken() != JsonToken.BeginObject)
-				return null;
+			throw new NotSupportedException();
+		}
 
-			var count = 0;
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+		{
+			var o = JObject.Load(reader);
+			var dict = o.Properties().ToDictionary(p => p.Name, p => p.Value);
+			if (!dict.HasAny()) return null;
+
 			IScriptTransform scriptTransform = null;
-			string language = null;
-			Dictionary<string, object> parameters = null;
-
-			while (reader.ReadIsInObject(ref count))
+			if (dict.ContainsKey("inline"))
 			{
-				if (AutomataDictionary.TryGetValue(reader.ReadPropertyNameSegmentRaw(), out var value))
-				{
-					switch (value)
-					{
-						case 0:
-							scriptTransform = new InlineScriptTransform(reader.ReadString());
-							break;
-						case 1:
-							scriptTransform = new IndexedScriptTransform(reader.ReadString());
-							break;
-						case 2:
-							language = reader.ReadString();
-							break;
-						case 3:
-							parameters = formatterResolver.GetFormatter<Dictionary<string, object>>()
-								.Deserialize(ref reader, formatterResolver);
-							break;
-					}
-				}
+				var inline = dict["inline"].ToString();
+				scriptTransform = new InlineScriptTransform(inline);
+			}
+			if (dict.ContainsKey("file"))
+			{
+				var file = dict["file"].ToString();
+				scriptTransform = new FileScriptTransform(file);
+			}
+			if (dict.ContainsKey("id"))
+			{
+				var id = dict["id"].ToString();
+				scriptTransform = new IndexedScriptTransform(id);
 			}
 
-			if (scriptTransform == null)
-				return null;
+			if (scriptTransform == null) return null;
 
-			scriptTransform.Lang = language;
-			scriptTransform.Params = parameters;
+			if (dict.ContainsKey("lang"))
+				scriptTransform.Lang = dict["lang"].ToString();
+			if (dict.ContainsKey("params"))
+				scriptTransform.Params = dict["params"].ToObject<Dictionary<string, object>>();
+
 			return scriptTransform;
 		}
 
-		public void Serialize(ref JsonWriter writer, IScriptTransform value, IJsonFormatterResolver formatterResolver)
-		{
-			if (value == null)
-			{
-				writer.WriteNull();
-				return;
-			}
-
-			writer.WriteBeginObject();
-			var written = false;
-
-			switch (value)
-			{
-				case IIndexedScriptTransform indexedScriptTransform:
-					writer.WritePropertyName("id");
-					writer.WriteString(indexedScriptTransform.Id);
-					written = true;
-					break;
-				case IInlineScriptTransform inlineScriptTransform:
-					writer.WritePropertyName("source");
-					writer.WriteString(inlineScriptTransform.Source);
-					written = true;
-					break;
-			}
-
-			if (value.Lang != null)
-			{
-				if (written)
-					writer.WriteValueSeparator();
-
-				writer.WritePropertyName("lang");
-				writer.WriteString(value.Lang);
-				written = true;
-			}
-
-			if (value.Params != null)
-			{
-				if (written)
-					writer.WriteValueSeparator();
-
-				writer.WritePropertyName("params");
-				var formatter = formatterResolver.GetFormatter<Dictionary<string, object>>();
-				formatter.Serialize(ref writer, value.Params, formatterResolver);
-			}
-
-			writer.WriteEndObject();
-		}
+		public override bool CanConvert(Type objectType) => true;
 	}
 }

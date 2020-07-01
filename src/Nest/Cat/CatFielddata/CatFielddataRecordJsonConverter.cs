@@ -1,65 +1,61 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using Elasticsearch.Net.Utf8Json;
-using Elasticsearch.Net.Utf8Json.Internal;
-
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	internal class CatFielddataRecordFormatter : IJsonFormatter<CatFielddataRecord>
+	internal class CatFielddataRecordJsonConverter : JsonConverter
 	{
-		private static readonly AutomataDictionary AutomataDictionary = new AutomataDictionary
+		public override bool CanWrite
 		{
-			{ "id", 0 },
-			{ "node", 1 },
-			{ "n", 1 },
-			{ "host", 2 },
-			{ "ip", 3 },
-			{ "field", 4 },
-			{ "size", 5 }
-		};
-
-		public CatFielddataRecord Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
-		{
-			var record = new CatFielddataRecord();
-			var count = 0;
-
-			while (reader.ReadIsInObject(ref count))
-			{
-				var property = reader.ReadPropertyNameSegmentRaw();
-				if (AutomataDictionary.TryGetValue(property, out var value))
-				{
-					switch (value)
-					{
-						case 0:
-							record.Id = reader.ReadString();
-							break;
-						case 1:
-							record.Node = reader.ReadString();
-							break;
-						case 2:
-							record.Host = reader.ReadString();
-							break;
-						case 3:
-							record.Ip = reader.ReadString();
-							break;
-						case 4:
-							record.Field = reader.ReadString();
-							break;
-						case 5:
-							record.Size = reader.ReadString();
-							break;
-					}
-				}
-			}
-
-			return record;
+			get { return false; }
 		}
 
-		public void Serialize(ref JsonWriter writer, CatFielddataRecord value, IJsonFormatterResolver formatterResolver) =>
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+		{
 			throw new NotSupportedException();
+		}
+
+
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+										JsonSerializer serializer)
+		{
+			var o = new CatFielddataRecord() { FieldSizes = new Dictionary<string, string>() };
+			while (reader.Read())
+			{
+				var prop = reader.Value as string;
+				if (prop == null) return o;
+
+				switch (prop)
+				{
+					case "id":
+						o.Id = reader.ReadAsString();
+						continue;
+					case "node":
+					case "n":
+						o.Node = reader.ReadAsString();
+						continue;
+					case "host":
+						o.Host = reader.ReadAsString();
+						continue;
+					case "ip":
+						o.Ip = reader.ReadAsString();
+						continue;
+					case "total":
+						o.Total = reader.ReadAsString();
+						continue;
+					default:
+						var value = reader.ReadAsString();
+						o.FieldSizes[prop] = value;
+						continue;
+				}
+			}
+			return o;
+		}
+
+		public override bool CanConvert(Type objectType)
+		{
+			return objectType == typeof(CatFielddataRecord);
+		}
 	}
 }

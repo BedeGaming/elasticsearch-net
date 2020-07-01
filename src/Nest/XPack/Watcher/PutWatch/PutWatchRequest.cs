@@ -1,43 +1,43 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
 	/// <summary>
-	/// A PutWatch request
+	/// A <see cref="IElasticClient.PutWatch(Nest.Id,Func{Nest.PutWatchDescriptor,Nest.IPutWatchRequest})" /> request
 	/// </summary>
-	[MapsApi("watcher.put_watch.json")]
 	public partial interface IPutWatchRequest
 	{
 		/// <summary>
-		/// The actions that will be run if the condition matches
+		/// Defines when the watch should run
 		/// </summary>
-		[DataMember(Name = "actions")]
-		Actions Actions { get; set; }
-
-		/// <summary>
-		/// Defines if the actions should be run
-		/// </summary>
-		[DataMember(Name = "condition")]
-		ConditionContainer Condition { get; set; }
+		[JsonProperty("trigger")]
+		TriggerContainer Trigger { get; set; }
 
 		/// <summary>
 		/// Defines the input that loads the data for the watch
 		/// </summary>
-		[DataMember(Name = "input")]
+		[JsonProperty("input")]
 		InputContainer Input { get; set; }
+
+		/// <summary>
+		/// Defines if the actions should be run
+		/// </summary>
+		[JsonProperty("condition")]
+		ConditionContainer Condition { get; set; }
+
+		/// <summary>
+		/// The actions that will be run if the condition matches
+		/// </summary>
+		[JsonProperty("actions")]
+		Actions Actions { get; set; }
 
 		/// <summary>
 		/// Metadata that will be copied into the history entries
 		/// </summary>
-		[DataMember(Name = "metadata")]
-		[JsonFormatter(typeof(VerbatimDictionaryInterfaceKeysFormatter<string, object>))]
+		[JsonProperty("metadata")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
 		IDictionary<string, object> Metadata { get; set; }
 
 		/// <summary>
@@ -46,50 +46,49 @@ namespace Nest
 		/// <remarks>
 		/// Default can be changed in the config file with the setting <code>xpack.watcher.throttle.period.default_period</code>.
 		/// </remarks>
-		[DataMember(Name = "throttle_period")]
+		[JsonProperty("throttle_period")]
 		string ThrottlePeriod { get; set; }
 
 		/// <summary>
 		/// Processes and changes the payload in the watch execution context to prepare it for the actions.
 		/// </summary>
-		[DataMember(Name = "transform")]
+		[JsonProperty("transform")]
 		TransformContainer Transform { get; set; }
-
-		/// <summary>
-		/// Defines when the watch should run
-		/// </summary>
-		[DataMember(Name = "trigger")]
-		TriggerContainer Trigger { get; set; }
 	}
 
-	/// <inheritdoc cref="IPutWatchRequest" />
+	/// <inheritdoc/>
 	public partial class PutWatchRequest
 	{
-		/// <inheritdoc />
-		public Actions Actions { get; set; }
+		public PutWatchRequest() {}
 
-		/// <inheritdoc />
-		public ConditionContainer Condition { get; set; }
-
-		/// <inheritdoc />
-		public InputContainer Input { get; set; }
-
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public IDictionary<string, object> Metadata { get; set; }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
+		public TriggerContainer Trigger { get; set; }
+
+		/// <inheritdoc/>
+		public InputContainer Input { get; set; }
+
+		/// <inheritdoc/>
 		public string ThrottlePeriod { get; set; }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
+		public ConditionContainer Condition { get; set; }
+
+		/// <inheritdoc/>
 		public TransformContainer Transform { get; set; }
 
-		/// <inheritdoc />
-		public TriggerContainer Trigger { get; set; }
+		/// <inheritdoc/>
+		public Actions Actions { get; set; }
 	}
 
-	/// <inheritdoc cref="IPutWatchRequest" />
+	/// <inheritdoc/>
+	[DescriptorFor("WatcherPutWatch")]
 	public partial class PutWatchDescriptor
 	{
+		public PutWatchDescriptor() {}
+
 		Actions IPutWatchRequest.Actions { get; set; }
 		ConditionContainer IPutWatchRequest.Condition { get; set; }
 		InputContainer IPutWatchRequest.Input { get; set; }
@@ -98,35 +97,35 @@ namespace Nest
 		TransformContainer IPutWatchRequest.Transform { get; set; }
 		TriggerContainer IPutWatchRequest.Trigger { get; set; }
 
-		/// <inheritdoc cref="IPutWatchRequest.Actions" />
+		/// <inheritdoc/>
 		public PutWatchDescriptor Actions(Func<ActionsDescriptor, IPromise<Actions>> actions) =>
-			Assign(actions, (a, v) => a.Actions = v?.Invoke(new ActionsDescriptor())?.Value);
+			Assign(a => a.Actions = actions?.Invoke(new ActionsDescriptor())?.Value);
 
-		/// <inheritdoc cref="IPutWatchRequest.Condition" />
+		/// <inheritdoc/>
 		public PutWatchDescriptor Condition(Func<ConditionDescriptor, ConditionContainer> selector) =>
-			Assign(selector.InvokeOrDefault(new ConditionDescriptor()), (a, v) => a.Condition = v);
+			Assign(a => a.Condition = selector.InvokeOrDefault(new ConditionDescriptor()));
 
-		/// <inheritdoc cref="IPutWatchRequest.Input" />
+		/// <inheritdoc/>
 		public PutWatchDescriptor Input(Func<InputDescriptor, InputContainer> selector) =>
-			Assign(selector.InvokeOrDefault(new InputDescriptor()), (a, v) => a.Input = v);
+			Assign(a => a.Input = selector.InvokeOrDefault(new InputDescriptor()));
 
-		/// <inheritdoc cref="IPutWatchRequest.Metadata" />
+		/// <inheritdoc/>
 		public PutWatchDescriptor Metadata(Func<FluentDictionary<string, object>, FluentDictionary<string, object>> paramsDictionary) =>
-			Assign(paramsDictionary, (a, v) => a.Metadata = v?.Invoke(new FluentDictionary<string, object>()));
+			Assign(a => a.Metadata = paramsDictionary(new FluentDictionary<string, object>()));
 
-		/// <inheritdoc cref="IPutWatchRequest.Metadata" />
+		/// <inheritdoc/>
 		public PutWatchDescriptor Metadata(Dictionary<string, object> paramsDictionary) =>
-			Assign(paramsDictionary, (a, v) => a.Metadata = v);
+			Assign(a => a.Metadata = paramsDictionary);
 
-		/// <inheritdoc cref="IPutWatchRequest.ThrottlePeriod" />
-		public PutWatchDescriptor ThrottlePeriod(string throttlePeriod) => Assign(throttlePeriod, (a, v) => a.ThrottlePeriod = v);
+		/// <inheritdoc/>
+		public PutWatchDescriptor ThrottlePeriod(string throttlePeriod) => Assign(a => a.ThrottlePeriod = throttlePeriod);
 
-		/// <inheritdoc cref="IPutWatchRequest.Transform" />
+		/// <inheritdoc/>
 		public PutWatchDescriptor Transform(Func<TransformDescriptor, TransformContainer> selector) =>
-			Assign(selector.InvokeOrDefault(new TransformDescriptor()), (a, v) => a.Transform = v);
+			Assign(a => a.Transform = selector.InvokeOrDefault(new TransformDescriptor()));
 
-		/// <inheritdoc cref="IPutWatchRequest.Trigger" />
+		/// <inheritdoc/>
 		public PutWatchDescriptor Trigger(Func<TriggerDescriptor, TriggerContainer> selector) =>
-			Assign(selector.InvokeOrDefault(new TriggerDescriptor()), (a, v) => a.Trigger = v);
+			Assign(a => a.Trigger = selector.InvokeOrDefault(new TriggerDescriptor()));
 	}
 }

@@ -1,7 +1,3 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +10,6 @@ namespace Nest
 		{
 			visitor.Visit(qd);
 			VisitQuery(qd.MatchAll, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.MatchNone, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.MoreLikeThis, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.MultiMatch, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.CommonTerms, visitor, (v, d) => v.Visit(d));
@@ -30,38 +25,60 @@ namespace Nest
 				v.Visit(d);
 				VisitQuery(d as IDateRangeQuery, visitor, (vv, dd) => v.Visit(dd));
 				VisitQuery(d as INumericRangeQuery, visitor, (vv, dd) => v.Visit(dd));
-				VisitQuery(d as ILongRangeQuery, visitor, (vv, dd) => v.Visit(dd));
 				VisitQuery(d as ITermRangeQuery, visitor, (vv, dd) => v.Visit(dd));
 			});
-			VisitQuery(qd.GeoShape, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.Shape, visitor, (v, d) => v.Visit(d));
+			VisitQuery(qd.GeoShape, visitor, (v, d) =>
+			{
+				v.Visit(d);
+				VisitQuery(d as IGeoIndexedShapeQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapeMultiPointQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapeMultiPolygonQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapePolygonQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapePointQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapeMultiLineStringQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapeLineStringQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapeEnvelopeQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapeCircleQuery, visitor, (vv, dd) => v.Visit(dd));
+				VisitQuery(d as IGeoShapeGeometryCollectionQuery, visitor, (vv, dd) => v.Visit(dd));
+			});
 			VisitQuery(qd.Ids, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.Intervals, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Prefix, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.QueryString, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Range, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.RankFeature, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Regexp, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.SimpleQueryString, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Term, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Terms, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Wildcard, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Match, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.MatchPhrase, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.MatchBoolPrefix, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.MatchPhrasePrefix, visitor, (v, d) => v.Visit(d));
+			VisitQuery(qd.Type, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Script, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.ScriptScore, visitor, (v, d) => v.Visit(d));
+			VisitQuery(qd.Missing, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.Exists, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.GeoPolygon, visitor, (v, d) => v.Visit(d));
+			VisitQuery(qd.GeoDistanceRange, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.GeoDistance, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.GeoBoundingBox, visitor, (v, d) => v.Visit(d));
+			VisitQuery(qd.GeoHashCell, visitor, (v, d) => v.Visit(d));
+			VisitQuery(qd.Limit, visitor, (v, d) => v.Visit(d));
+			VisitQuery(qd.Template, visitor, (v, d) => v.Visit(d));
 			VisitQuery(qd.RawQuery, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.Percolate, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.ParentId, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.TermsSet, visitor, (v, d) => v.Visit(d));
-			VisitQuery(qd.Pinned, visitor, (v, d) => v.Visit(d));
 
+			VisitQuery(qd.Not, visitor, (v, d) =>
+			{
+				v.Visit(d);
+				Accept(v, d.Filters);
+			});
+			VisitQuery(qd.And, visitor, (v, d) =>
+			{
+				v.Visit(d);
+				Accept(v, d.Filters);
+			});
+			VisitQuery(qd.Or, visitor, (v, d) =>
+			{
+				v.Visit(d);
+				Accept(v, d.Filters);
+			});
 			VisitQuery(qd.Bool, visitor, (v, d) =>
 			{
 				v.Visit(d);
@@ -89,9 +106,11 @@ namespace Nest
 				v.Visit(d);
 				Accept(v, d.Queries);
 			});
-			VisitQuery(qd.DistanceFeature, visitor, (v, d) =>
+			VisitQuery(qd.Filtered, visitor, (v, d) =>
 			{
-				v.Visit(d);
+				visitor.Visit(d);
+				Accept(v, d.Query);
+				Accept(v, d.Filter);
 			});
 			VisitQuery(qd.FunctionScore, visitor, (v, d) =>
 			{
@@ -107,6 +126,12 @@ namespace Nest
 			{
 				v.Visit(d);
 				Accept(v, d.Query);
+			});
+			VisitQuery(qd.Indices, visitor, (v, d) =>
+			{
+				v.Visit(d);
+				Accept(v, d.Query);
+				Accept(v, d.NoMatchQuery, VisitorScope.NoMatchQuery);
 			});
 			VisitQuery(qd.Nested, visitor, (v, d) =>
 			{
@@ -164,15 +189,13 @@ namespace Nest
 
 		private static void Accept(IQueryVisitor visitor, IEnumerable<IQueryContainer> queries, VisitorScope scope = VisitorScope.Query)
 		{
-			if (queries == null) return;
-
+			if (!queries.HasAny()) return;
 			foreach (var f in queries) Accept(visitor, f, scope);
 		}
 
 		private static void Accept(IQueryVisitor visitor, IQueryContainer query, VisitorScope scope = VisitorScope.Query)
 		{
 			if (query == null) return;
-
 			visitor.Scope = scope;
 			query.Accept(visitor);
 		}
@@ -180,7 +203,6 @@ namespace Nest
 		private static void Accept(IQueryVisitor visitor, ISpanQuery query, VisitorScope scope = VisitorScope.Span)
 		{
 			if (query == null) return;
-
 			visitor.Scope = scope;
 			query.Accept(visitor);
 		}
@@ -252,7 +274,6 @@ namespace Nest
 			where T : class, ISpanSubQuery
 		{
 			if (qd == null) return;
-
 			VisitQuery(qd, visitor, (v, d) =>
 			{
 				visitor.Visit(qd);

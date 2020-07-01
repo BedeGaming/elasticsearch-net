@@ -1,30 +1,47 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using System;
 
-﻿namespace Nest
+namespace Nest
 {
-	public class GeoPointAttribute : ElasticsearchDocValuesPropertyAttributeBase, IGeoPointProperty
+	public class GeoPointAttribute : ElasticsearchPropertyAttributeBase, IGeoPointProperty
 	{
-		public GeoPointAttribute() : base(FieldType.GeoPoint) { }
+		IGeoPointProperty Self => this;
 
-		/// <inheritdoc cref="IGeoPointProperty.IgnoreMalformed" />
-		public bool IgnoreMalformed
-		{
-			get => Self.IgnoreMalformed.GetValueOrDefault();
-			set => Self.IgnoreMalformed = value;
-		}
+		bool? IGeoPointProperty.LatLon { get; set; }
+		bool? IGeoPointProperty.GeoHash { get; set; }
+		int? IGeoPointProperty.GeoHashPrecision { get; set; }
+		bool? IGeoPointProperty.GeoHashPrefix { get; set; }
+		bool? IGeoPointProperty.Validate { get; set; }
+		bool? IGeoPointProperty.ValidateLatitude { get; set; }
+		bool? IGeoPointProperty.ValidateLongitude { get; set; }
+		bool? IGeoPointProperty.Normalize { get; set; }
+		bool? IGeoPointProperty.NormalizeLatitude { get; set; }
+		bool? IGeoPointProperty.NormalizeLongitude { get; set; }
+		int? IGeoPointProperty.PrecisionStep { get; set; }
+		IGeoPointFielddata IGeoPointProperty.Fielddata { get; set; }
 
-		/// <inheritdoc cref="IGeoPointProperty.IgnoreZValue" />
-		public bool IgnoreZValue
-		{
-			get => Self.IgnoreZValue.GetValueOrDefault(true);
-			set => Self.IgnoreZValue = value;
-		}
+		[Obsolete("Deprecated in 2.3.0 and Removed in 5.0.0")]
+		public bool LatLon { get { return Self.LatLon.GetValueOrDefault(); } set { Self.LatLon = value; } }
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public bool GeoHash { get { return Self.GeoHash.GetValueOrDefault(); } set { Self.GeoHash = value; } }
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public bool GeoHashPrefix { get { return Self.GeoHashPrefix.GetValueOrDefault(); } set { Self.GeoHashPrefix = value; } }
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public int GeoHashPrecision { get { return Self.GeoHashPrecision.GetValueOrDefault(); } set { Self.GeoHashPrecision = value; } }
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public bool Validate { get { return Self.Validate.GetValueOrDefault(); } set { Self.Validate = value; } }
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public bool ValidateLatitude { get { return Self.ValidateLatitude.GetValueOrDefault(); } set { Self.ValidateLatitude = value; } }
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public bool ValidateLongitude { get { return Self.ValidateLongitude.GetValueOrDefault(); } set { Self.ValidateLongitude = value; } }
+		[Obsolete("Removed in 5.0.0")]
+		public bool Normalize { get { return Self.Normalize.GetValueOrDefault(); } set { Self.Normalize = value; } }
+		[Obsolete("Removed in 5.0.0")]
+		public bool NormalizeLatitude { get { return Self.NormalizeLatitude.GetValueOrDefault(); } set { Self.NormalizeLatitude = value; } }
+		[Obsolete("Removed in 5.0.0")]
+		public bool NormalizeLongitude { get { return Self.NormalizeLongitude.GetValueOrDefault(); } set { Self.NormalizeLongitude = value; } }
+		[Obsolete("Removed in 5.0.0")]
+		public int PrecisionStep { get { return Self.PrecisionStep.GetValueOrDefault(); } set { Self.PrecisionStep = value; } }
 
-		bool? IGeoPointProperty.IgnoreMalformed { get; set; }
-		bool? IGeoPointProperty.IgnoreZValue { get; set; }
-		GeoLocation IGeoPointProperty.NullValue { get; set; }
-		private IGeoPointProperty Self => this;
+		public GeoPointAttribute() : base("geo_point") { }
 	}
 }

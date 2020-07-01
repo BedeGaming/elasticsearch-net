@@ -1,38 +1,34 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(SerialDifferencingAggregation))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<SerialDifferencingAggregation>))]
 	public interface ISerialDifferencingAggregation : IPipelineAggregation
 	{
-		[DataMember(Name ="lag")]
+		[JsonProperty("lag")]
 		int? Lag { get; set; }
 	}
 
 	public class SerialDifferencingAggregation : PipelineAggregationBase, ISerialDifferencingAggregation
 	{
+		public int? Lag { get; set; }
+
 		internal SerialDifferencingAggregation() { }
 
 		public SerialDifferencingAggregation(string name, SingleBucketsPath bucketsPath)
-			: base(name, bucketsPath) { }
-
-		public int? Lag { get; set; }
+			: base(name, bucketsPath)
+		{ }
 
 		internal override void WrapInContainer(AggregationContainer c) => c.SerialDifferencing = this;
 	}
 
 	public class SerialDifferencingAggregationDescriptor
 		: PipelineAggregationDescriptorBase<SerialDifferencingAggregationDescriptor, ISerialDifferencingAggregation, SingleBucketsPath>
-			, ISerialDifferencingAggregation
+		, ISerialDifferencingAggregation
 	{
 		int? ISerialDifferencingAggregation.Lag { get; set; }
 
-		public SerialDifferencingAggregationDescriptor Lag(int? lag) => Assign(lag, (a, v) => a.Lag = v);
+		public SerialDifferencingAggregationDescriptor Lag(int lag) => Assign(a => a.Lag = lag);
 	}
 }

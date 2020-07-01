@@ -1,34 +1,24 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using System;
 
-﻿namespace Nest
+namespace Nest
 {
-	public class IpAttribute : ElasticsearchDocValuesPropertyAttributeBase, IIpProperty
+	public class IpAttribute : ElasticsearchPropertyAttributeBase, IIpProperty
 	{
-		public IpAttribute() : base(FieldType.Ip) { }
-
-		public double Boost
-		{
-			get => Self.Boost.GetValueOrDefault();
-			set => Self.Boost = value;
-		}
-
-		public bool Index
-		{
-			get => Self.Index.GetValueOrDefault();
-			set => Self.Index = value;
-		}
-
-		public string NullValue
-		{
-			get => Self.NullValue;
-			set => Self.NullValue = value;
-		}
+		IIpProperty Self => this;
 
 		double? IIpProperty.Boost { get; set; }
-		bool? IIpProperty.Index { get; set; }
+		bool? IIpProperty.IncludeInAll { get; set; }
+		NonStringIndexOption? IIpProperty.Index { get; set; }
 		string IIpProperty.NullValue { get; set; }
-		private IIpProperty Self => this;
+		int? IIpProperty.PrecisionStep { get; set; }
+
+		public double Boost { get { return Self.Boost.GetValueOrDefault(); } set { Self.Boost = value; } }
+		public bool IncludeInAll { get { return Self.IncludeInAll.GetValueOrDefault(); } set { Self.IncludeInAll = value; } }
+		public NonStringIndexOption Index { get { return Self.Index.GetValueOrDefault(); } set { Self.Index = value; } }
+		public string NullValue { get { return Self.NullValue; } set { Self.NullValue = value; } }
+		[Obsolete("Removed in 5.0.0")]
+		public int PrecisionStep { get { return Self.PrecisionStep.GetValueOrDefault(); } set { Self.PrecisionStep = value; } }
+
+		public IpAttribute() : base("ip") { }
 	}
 }

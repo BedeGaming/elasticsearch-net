@@ -1,37 +1,38 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	[JsonFormatter(typeof(DictionaryResponseFormatter<GetUserResponse, string, XPackUser>))]
-	public class GetUserResponse : DictionaryResponseBase<string, XPackUser>
+	public interface IGetUserResponse : IResponse
 	{
-		[IgnoreDataMember]
-		public IReadOnlyDictionary<string, XPackUser> Users => Self.BackingDictionary;
+		IDictionary<string, User> Users { get; }
 	}
 
-	public class XPackUser
+	[JsonObject(MemberSerialization.OptIn)]
+	[JsonConverter(typeof(DictionaryResponseJsonConverter<GetUserResponse, string, User>))]
+	public class GetUserResponse : DictionaryResponseBase<string, User>, IGetUserResponse
 	{
-		[DataMember(Name ="email")]
-		public string Email { get; internal set; }
+		[JsonIgnore]
+		public IDictionary<string, User> Users => Self.BackingDictionary;
+	}
 
-		[DataMember(Name ="full_name")]
-		public string FullName { get; internal set; }
+	public class User
+	{
+		[JsonProperty("username")]
+		public string Username { get; set; }
 
-		[DataMember(Name ="metadata")]
-		public IReadOnlyDictionary<string, object> Metadata { get; internal set; } = EmptyReadOnly<string, object>.Dictionary;
+		[JsonProperty("roles")]
+		public IEnumerable<string> Roles { get; set; }
 
-		[DataMember(Name ="roles")]
-		public IReadOnlyCollection<string> Roles { get; internal set; } = EmptyReadOnly<string>.Collection;
+		[JsonProperty("full_name")]
+		public string FullName { get; set; }
 
-		[DataMember(Name ="username")]
-		public string Username { get; internal set; }
+		[JsonProperty("email")]
+		public string Email { get; set; }
+
+		[JsonProperty("metadata")]
+		public IDictionary<string, object> Metadata { get; set; }
 	}
 }

@@ -1,48 +1,45 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
-using Elasticsearch.Net.Utf8Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(SimulatedActionsFormatter))]
+	[JsonConverter(typeof(SimulatedActionsConverter))]
 	public class SimulatedActions
 	{
-		private SimulatedActions() { }
+		public bool UseAll { get; private set; }
 
 		public IEnumerable<string> Actions { get; private set; }
 
+		private SimulatedActions() { }
+
 		public static SimulatedActions All => new SimulatedActions { UseAll = true };
-		public bool UseAll { get; private set; }
 
 		public static SimulatedActions Some(params string[] actions) => new SimulatedActions { Actions = actions };
 
 		public static SimulatedActions Some(IEnumerable<string> actions) => new SimulatedActions { Actions = actions };
 	}
 
-	internal class SimulatedActionsFormatter : IJsonFormatter<SimulatedActions>
+	internal class SimulatedActionsConverter : JsonConverter
 	{
-		public SimulatedActions Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
-		{
-			if (reader.GetCurrentJsonToken() == JsonToken.String)
-				return SimulatedActions.All;
+		public override bool CanConvert(Type objectType) => true;
 
-			var formatter = formatterResolver.GetFormatter<IEnumerable<string>>();
-			return SimulatedActions.Some(formatter.Deserialize(ref reader, formatterResolver));
+		public override bool CanRead => true;
+
+		public override bool CanWrite => true;
+
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+		{
+			if (reader.TokenType == JsonToken.String) return SimulatedActions.All;
+			return SimulatedActions.Some(serializer.Deserialize<List<string>>(reader));
 		}
 
-		public void Serialize(ref JsonWriter writer, SimulatedActions value, IJsonFormatterResolver formatterResolver)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			if (value == null) return;
-
-			if (value.UseAll) writer.WriteString("_all");
-			else
-			{
-				var formatter = formatterResolver.GetFormatter<IEnumerable<string>>();
-				formatter.Serialize(ref writer, value.Actions, formatterResolver);
-			}
+			var s = value as SimulatedActions;
+			if (s == null) return;
+			if (s.UseAll) writer.WriteValue("_all");
+			else serializer.Serialize(writer, s.Actions);
 		}
 	}
 }

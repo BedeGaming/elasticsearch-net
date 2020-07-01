@@ -1,10 +1,4 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
-// ReSharper disable InconsistentNaming
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -16,28 +10,26 @@ namespace Nest
 		/// <summary>
 		/// The mu parameter. Defaults to 2000.
 		/// </summary>
-		[DataMember(Name ="mu")]
-		[JsonFormatter(typeof(NullableStringIntFormatter))]
+		[JsonProperty("mu")]
 		int? Mu { get; set; }
 	}
 
 	/// <inheritdoc />
 	public class LMDirichletSimilarity : ILMDirichletSimilarity
 	{
+		public string Type => "LMDirichlet";
+
 		/// <inheritdoc />
 		public int? Mu { get; set; }
-
-		public string Type => "LMDirichlet";
 	}
 
 	/// <inheritdoc />
 	public class LMDirichletSimilarityDescriptor
 		: DescriptorBase<LMDirichletSimilarityDescriptor, ILMDirichletSimilarity>, ILMDirichletSimilarity
 	{
-		int? ILMDirichletSimilarity.Mu { get; set; }
 		string ISimilarity.Type => "LMDirichlet";
+		int? ILMDirichletSimilarity.Mu { get; set; }
 
-		/// <inheritdoc />
-		public LMDirichletSimilarityDescriptor Mu(int? mu) => Assign(mu, (a, v) => a.Mu = v);
+		public LMDirichletSimilarityDescriptor Mu(int? mu) => Assign(a => a.Mu = mu);
 	}
 }

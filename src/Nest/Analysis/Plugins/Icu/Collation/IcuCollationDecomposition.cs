@@ -1,9 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Runtime.Serialization;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Nest
 {
@@ -16,13 +13,10 @@ namespace Nest
 	/// great many of the world’s languages do not require text normalization, most locales
 	/// set no as the default decomposition mode.
 	/// </summary>
-	/// <remarks>
-	/// Requires analysis-icu plugin to be installed
-	/// </remarks>
-	[StringEnum]
+	[JsonConverter(typeof(StringEnumConverter))]
 	public enum IcuCollationDecomposition
 	{
-		[EnumMember(Value = "no")] No,
-		[EnumMember(Value = "identical")] Canonical
+		[EnumMember(Value="no")] No,
+		[EnumMember(Value="identical")] Canonical
 	}
 }

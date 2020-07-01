@@ -1,79 +1,144 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-using System.Diagnostics;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using System;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	/// <summary>
-	/// Data type mapping to map a property as a geopoint
-	/// </summary>
-	[InterfaceDataContract]
-	public interface IGeoPointProperty : IDocValuesProperty
+	[JsonObject(MemberSerialization.OptIn)]
+	public interface IGeoPointProperty : IProperty
 	{
-		/// <summary>
-		/// If true, malformed geo-points are ignored. If false (default), malformed
-		/// geo-points throw an exception and reject the whole document.
-		/// </summary>
-		[DataMember(Name ="ignore_malformed")]
-		bool? IgnoreMalformed { get; set; }
+		[JsonProperty("lat_lon")]
+		[Obsolete("Deprecated in 2.3.0 and Removed in 5.0.0")]
+		bool? LatLon { get; set; }
 
+		[JsonProperty("geohash")]
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		bool? GeoHash { get; set; }
 
-		/// <summary>
-		/// If true (default) three dimension points will be accepted (stored in source) but only
-		/// latitude and longitude values will be indexed; the third dimension is ignored. If false, geo-points
-		/// containing any more than latitude and longitude (two dimensions) values
-		/// throw an exception and reject the whole document.
-		/// </summary>
-		[DataMember(Name ="ignore_z_value")]
-		bool? IgnoreZValue { get; set; }
+		[JsonProperty("geohash_precision")]
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		int? GeoHashPrecision { get; set; }
 
-		/// <summary>
-		/// Accepts a geo_point value which is substituted for any explicit null values.
-		/// Defaults to null, which means the field is treated as missing.
-		/// </summary>
-		[DataMember(Name ="null_value")]
-		GeoLocation NullValue { get; set; }
+		[JsonProperty("geohash_prefix")]
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		bool? GeoHashPrefix { get; set; }
+
+		[JsonProperty("validate")]
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		bool? Validate { get; set; }
+
+		[JsonProperty("validate_lat")]
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		bool? ValidateLatitude { get; set; }
+
+		[JsonProperty("validate_lon")]
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		bool? ValidateLongitude { get; set; }
+
+		[JsonProperty("normalize")]
+		[Obsolete("Removed in 5.0.0")]
+		bool? Normalize { get; set; }
+
+		[JsonProperty("normalize_lat")]
+		[Obsolete("Removed in 5.0.0")]
+		bool? NormalizeLatitude { get; set; }
+
+		[JsonProperty("normalize_lon")]
+		[Obsolete("Removed in 5.0.0")]
+		bool? NormalizeLongitude { get; set; }
+
+		[JsonProperty("precision_step")]
+		[Obsolete("Removed in 5.0.0")]
+		int? PrecisionStep { get; set; }
+
+		[JsonProperty("fielddata")]
+		[Obsolete("Removed in 5.0.0")]
+		IGeoPointFielddata Fielddata { get; set; }
 	}
 
-	/// <inheritdoc cref="IGeoPointProperty"/>
-	[DebuggerDisplay("{DebugDisplay}")]
-	public class GeoPointProperty : DocValuesPropertyBase, IGeoPointProperty
+	public class GeoPointProperty : PropertyBase, IGeoPointProperty
 	{
-		public GeoPointProperty() : base(FieldType.GeoPoint) { }
+		public GeoPointProperty() : base("geo_point") { }
 
-		/// <inheritdoc />
-		public bool? IgnoreMalformed { get; set; }
-
-		/// <inheritdoc />
-		public bool? IgnoreZValue { get; set; }
-
-		/// <inheritdoc />
-		public GeoLocation NullValue { get; set; }
+		[Obsolete("Deprecated in 2.3.0 and Removed in 5.0.0")]
+		public bool? LatLon { get; set; }
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public bool? GeoHash { get; set; }
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public bool? GeoHashPrefix { get; set; }
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public int? GeoHashPrecision { get; set; }
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public bool? Validate { get; set; }
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public bool? ValidateLatitude { get; set; }
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public bool? ValidateLongitude { get; set; }
+		[Obsolete("Removed in 5.0.0")]
+		public bool? Normalize { get; set; }
+		[Obsolete("Removed in 5.0.0")]
+		public bool? NormalizeLatitude { get; set; }
+		[Obsolete("Removed in 5.0.0")]
+		public bool? NormalizeLongitude { get; set; }
+		[Obsolete("Removed in 5.0.0")]
+		public int? PrecisionStep { get; set; }
+		[Obsolete("Removed in 5.0.0")]
+		public IGeoPointFielddata Fielddata { get; set; }
 	}
 
-	/// <inheritdoc cref="IGeoPointProperty"/>
-	[DebuggerDisplay("{DebugDisplay}")]
 	public class GeoPointPropertyDescriptor<T>
-		: DocValuesPropertyDescriptorBase<GeoPointPropertyDescriptor<T>, IGeoPointProperty, T>, IGeoPointProperty
+		: PropertyDescriptorBase<GeoPointPropertyDescriptor<T>, IGeoPointProperty, T>, IGeoPointProperty
 		where T : class
 	{
-		public GeoPointPropertyDescriptor() : base(FieldType.GeoPoint) { }
+		bool? IGeoPointProperty.LatLon { get; set; }
+		bool? IGeoPointProperty.GeoHash { get; set; }
+		int? IGeoPointProperty.GeoHashPrecision { get; set; }
+		bool? IGeoPointProperty.GeoHashPrefix { get; set; }
+		bool? IGeoPointProperty.Validate { get; set; }
+		bool? IGeoPointProperty.ValidateLatitude { get; set; }
+		bool? IGeoPointProperty.ValidateLongitude { get; set; }
+		bool? IGeoPointProperty.Normalize { get; set; }
+		bool? IGeoPointProperty.NormalizeLatitude { get; set; }
+		bool? IGeoPointProperty.NormalizeLongitude { get; set; }
+		int? IGeoPointProperty.PrecisionStep { get; set; }
+		IGeoPointFielddata IGeoPointProperty.Fielddata { get; set; }
 
-		bool? IGeoPointProperty.IgnoreMalformed { get; set; }
-		bool? IGeoPointProperty.IgnoreZValue { get; set; }
-		GeoLocation IGeoPointProperty.NullValue { get; set; }
+		public GeoPointPropertyDescriptor() : base("geo_point") { }
 
-		/// <inheritdoc cref="IGeoPointProperty.IgnoreMalformed" />
-		public GeoPointPropertyDescriptor<T> IgnoreMalformed(bool? ignoreMalformed = true) => Assign(ignoreMalformed, (a, v) => a.IgnoreMalformed = v);
+		[Obsolete("Deprecated in 2.3.0 and Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> LatLon(bool latLon = true) => Assign(a => a.LatLon = latLon);
 
-		/// <inheritdoc cref="IGeoPointProperty.IgnoreZValue" />
-		public GeoPointPropertyDescriptor<T> IgnoreZValue(bool? ignoreZValue = true) => Assign(ignoreZValue, (a, v) => a.IgnoreZValue = v);
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> GeoHash(bool geoHash = true) => Assign(a => a.GeoHash = geoHash);
 
-		/// <inheritdoc cref="IGeoPointProperty.NullValue" />
-		public GeoPointPropertyDescriptor<T> NullValue(GeoLocation defaultValue) => Assign(defaultValue, (a, v) => a.NullValue = v);
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> GeoHashPrecision(int geoHashPrecision) => Assign(a => a.GeoHashPrecision = geoHashPrecision);
+
+		[Obsolete("Deprecated in 2.4.0 and Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> GeoHashPrefix(bool geoHashPrefix = true) => Assign(a => a.GeoHashPrefix = geoHashPrefix);
+
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public GeoPointPropertyDescriptor<T> Validate(bool validate = true) => Assign(a => a.Validate = validate);
+
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public GeoPointPropertyDescriptor<T> ValidateLongitude(bool validateLatitude = true) => Assign(a => a.ValidateLatitude = validateLatitude);
+
+		[Obsolete("Removed in 5.0.0. Use IgnoreMalformed")]
+		public GeoPointPropertyDescriptor<T> ValidateLatitude(bool validateLongitude = true) => Assign(a => a.ValidateLongitude = validateLongitude);
+
+		[Obsolete("Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> Normalize(bool normalize = true) => Assign(a => a.Normalize = normalize);
+
+		[Obsolete("Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> NormalizeLatitude(bool normalizeLatitude = true) => Assign(a => a.NormalizeLatitude = normalizeLatitude);
+
+		[Obsolete("Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> NormalizeLongitude(bool normalizeLongitude = true) => Assign(a => a.NormalizeLongitude = normalizeLongitude);
+
+		[Obsolete("Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> PrecisionStep(int precisionStep) => Assign(a => a.PrecisionStep = precisionStep);
+
+		[Obsolete("Removed in 5.0.0")]
+		public GeoPointPropertyDescriptor<T> Fielddata(Func<GeoPointFielddataDescriptor, IGeoPointFielddata> selector) =>
+			Assign(a => a.Fielddata = selector(new GeoPointFielddataDescriptor()));
 	}
 }

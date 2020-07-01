@@ -1,21 +1,17 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Reflection;
-using Elasticsearch.Net;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Nest
 {
 	public class PropertyWalker
 	{
-		private readonly int _maxRecursion;
-		private readonly ConcurrentDictionary<Type, int> _seenTypes;
 		private readonly Type _type;
 		private readonly IPropertyVisitor _visitor;
+		private readonly int _maxRecursion;
+		private readonly ConcurrentDictionary<Type, int> _seenTypes;
 
 		public PropertyWalker(Type type, IPropertyVisitor visitor, int maxRecursion = 0)
 		{
@@ -38,17 +34,19 @@ namespace Nest
 		{
 			var properties = new Properties();
 
-			if (seenTypes != null && seenTypes.TryGetValue(_type, out var seen) && seen > maxRecursion)
+			int seen;
+			if (seenTypes != null && seenTypes.TryGetValue(_type, out seen) && seen > maxRecursion)
 				return properties;
 
 			foreach (var propertyInfo in _type.AllPropertiesCached())
 			{
 				var attribute = ElasticsearchPropertyAttributeBase.From(propertyInfo);
-				if (attribute != null && attribute.Ignore) continue;
-				if (_visitor.SkipProperty(propertyInfo, attribute)) continue;
+				if (attribute != null && attribute.Ignore)
+					continue;
 
 				var property = GetProperty(propertyInfo, attribute);
-				if (property is IPropertyWithClrOrigin withCLrOrigin)
+				var withCLrOrigin = property as IPropertyWithClrOrigin;
+				if (withCLrOrigin != null)
 					withCLrOrigin.ClrOrigin = propertyInfo;
 				properties.Add(propertyInfo, property);
 			}
@@ -59,14 +57,19 @@ namespace Nest
 		private IProperty GetProperty(PropertyInfo propertyInfo, ElasticsearchPropertyAttributeBase attribute)
 		{
 			var property = _visitor.Visit(propertyInfo, attribute);
-			if (property != null) return property;
+			if (property != null)
+				return property;
 
 			if (propertyInfo.GetGetMethod().IsStatic)
 				return null;
 
-			property = attribute ?? InferProperty(propertyInfo);
+			if (attribute != null)
+				property = attribute;
+			else
+				property = InferProperty(propertyInfo.PropertyType);
 
-			if (property is IObjectProperty objectProperty)
+			var objectProperty = property as IObjectProperty;
+			if (objectProperty != null)
 			{
 				var type = GetUnderlyingType(propertyInfo.PropertyType);
 				var seenTypes = new ConcurrentDictionary<Type, int>(_seenTypes);
@@ -80,34 +83,17 @@ namespace Nest
 			return property;
 		}
 
-		private static IProperty InferProperty(PropertyInfo propertyInfo)
+		private IProperty InferProperty(Type type)
 		{
-			var type = GetUnderlyingType(propertyInfo.PropertyType);
+			type = GetUnderlyingType(type);
 
 			if (type == typeof(string))
-				return new TextProperty
-				{
-					Fields = new Properties
-					{
-						{
-							"keyword", new KeywordProperty
-							{
-								IgnoreAbove = 256
-							}
-						}
-					}
-				};
+				return new StringProperty();
 
-			if (type.IsEnum)
-			{
-				if (type.GetTypeInfo().GetCustomAttribute<StringEnumAttribute>() != null
-					|| propertyInfo.GetCustomAttribute<StringEnumAttribute>() != null)
-					return new KeywordProperty();
-
+			if (type.IsEnumType())
 				return new NumberProperty(NumberType.Integer);
-			}
 
-			if (type.IsValueType)
+			if (type.IsValue())
 			{
 				switch (type.Name)
 				{
@@ -136,44 +122,23 @@ namespace Nest
 						return new BooleanProperty();
 					case "Char":
 					case "Guid":
-						return new KeywordProperty();
+						return new StringProperty();
 				}
 			}
 
 			if (type == typeof(GeoLocation))
 				return new GeoPointProperty();
 
-			if (type == typeof(CompletionField))
+			if (type.IsGeneric() && type.GetGenericTypeDefinition() == typeof(CompletionField<>))
 				return new CompletionProperty();
 
-			if (type == typeof(DateRange))
-				return new DateRangeProperty();
-
-			if (type == typeof(DoubleRange))
-				return new DoubleRangeProperty();
-
-			if (type == typeof(FloatRange))
-				return new FloatRangeProperty();
-
-			if (type == typeof(IntegerRange))
-				return new IntegerRangeProperty();
-
-			if (type == typeof(LongRange))
-				return new LongRangeProperty();
-
-			if (type == typeof(IpAddressRange))
-				return new IpRangeProperty();
-
-			if (type == typeof(QueryContainer))
-				return new PercolatorProperty();
-
-			if (type == typeof(IGeoShape))
-				return new GeoShapeProperty();
+			if (type == typeof(Attachment))
+				return new AttachmentProperty();
 
 			return new ObjectProperty();
 		}
 
-		private static Type GetUnderlyingType(Type type)
+		private Type GetUnderlyingType(Type type)
 		{
 			if (type.IsArray)
 				return type.GetElementType();

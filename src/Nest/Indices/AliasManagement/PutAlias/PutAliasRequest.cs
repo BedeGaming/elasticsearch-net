@@ -1,76 +1,35 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	/// <summary>
-	/// A request to put an alias to one or more indices
-	/// </summary>
-	[MapsApi("indices.put_alias.json")]
-	public partial interface IPutAliasRequest
+
+	public partial interface IPutAliasRequest 
 	{
-		/// <inheritdoc cref="IAlias.Filter"/>
-		[DataMember(Name = "filter")]
+		[JsonProperty("routing")]
+		string Routing { get; set; }
+
+		[JsonProperty("filter")]
 		QueryContainer Filter { get; set; }
-
-		/// <inheritdoc cref="IAlias.IndexRouting"/>
-		[DataMember(Name = "index_routing")]
-		Routing IndexRouting { get; set; }
-
-		/// <inheritdoc cref="IAlias.IsWriteIndex" />
-		[DataMember(Name = "is_write_index")]
-		bool? IsWriteIndex { get; set; }
-
-		/// <inheritdoc cref="IAlias.Routing"/>
-		[DataMember(Name = "routing")]
-		Routing Routing { get; set; }
-
-		/// <inheritdoc cref="IAlias.SearchRouting"/>
-		[DataMember(Name = "search_routing")]
-		Routing SearchRouting { get; set; }
 	}
 
-	/// <inheritdoc cref="IPutAliasRequest"/>
-	public partial class PutAliasRequest
+	public partial class PutAliasRequest 
 	{
-		/// <inheritdoc cref="IPutAliasRequest.Filter"/>
+		public string Routing { get; set; }
+
 		public QueryContainer Filter { get; set; }
-		/// <inheritdoc cref="IPutAliasRequest.IndexRouting"/>
-		public Routing IndexRouting { get; set; }
-		/// <inheritdoc cref="IPutAliasRequest.IsWriteIndex" />
-		public bool? IsWriteIndex { get; set; }
-		/// <inheritdoc cref="IPutAliasRequest.Routing"/>
-		public Routing Routing { get; set; }
-		/// <inheritdoc cref="IPutAliasRequest.SearchRouting"/>
-		public Routing SearchRouting { get; set; }
 	}
 
-	public partial class PutAliasDescriptor
+	[DescriptorFor("IndicesPutAlias")]
+	public partial class PutAliasDescriptor 
 	{
+		string IPutAliasRequest.Routing { get; set; }
 		QueryContainer IPutAliasRequest.Filter { get; set; }
-		Routing IPutAliasRequest.IndexRouting { get; set; }
-		bool? IPutAliasRequest.IsWriteIndex { get; set; }
-		Routing IPutAliasRequest.Routing { get; set; }
-		Routing IPutAliasRequest.SearchRouting { get; set; }
 
-		/// <inheritdoc cref="IPutAliasRequest.Routing"/>
-		public PutAliasDescriptor Routing(Routing routing) => Assign(routing, (a, v) => a.Routing = v);
+		public PutAliasDescriptor Routing(string routing) => Assign(a => a.Routing = routing);
 
-		/// <inheritdoc cref="IPutAliasRequest.IndexRouting"/>
-		public PutAliasDescriptor IndexRouting(Routing routing) => Assign(routing, (a, v) => a.IndexRouting = v);
-
-		/// <inheritdoc cref="IPutAliasRequest.SearchRouting"/>
-		public PutAliasDescriptor SearchRouting(Routing routing) => Assign(routing, (a, v) => a.SearchRouting = v);
-
-		/// <inheritdoc cref="IPutAliasRequest.IsWriteIndex" />
-		public PutAliasDescriptor IsWriteIndex(bool? isWriteIndex = true) => Assign(isWriteIndex, (a, v) => a.IsWriteIndex = v);
-
-		/// <inheritdoc cref="IPutAliasRequest.Filter"/>
-		public PutAliasDescriptor Filter<T>(Func<QueryContainerDescriptor<T>, QueryContainer> filterSelector) where T : class =>
-			Assign(filterSelector, (a, v) => a.Filter = v?.Invoke(new QueryContainerDescriptor<T>()));
+		public PutAliasDescriptor Filter<T>(Func<QueryContainerDescriptor<T>, QueryContainer> filterSelector)
+			where T : class =>
+			Assign(a => a.Filter = filterSelector?.Invoke(new QueryContainerDescriptor<T>()));
 	}
 }

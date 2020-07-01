@@ -1,25 +1,38 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	public interface IUpdateResponse<out TDocument> : IResponse where TDocument : class
+	public interface IUpdateResponse<T> : IResponse
+		where T : class
 	{
-		IInlineGet<TDocument> Get { get; }
+		[JsonProperty(PropertyName = "_shards")]
+		ShardsMetaData ShardsHit { get; }
+
+		[JsonProperty(PropertyName = "_index")]
+		string Index { get; }
+
+		[JsonProperty(PropertyName = "_type")]
+		string Type { get; }
+
+		[JsonProperty(PropertyName = "_id")]
+		string Id { get; }
+
+		[JsonProperty(PropertyName = "_version")]
+		long Version { get; }
+
+		[JsonProperty(PropertyName = "get")]
+		InstantGet<T> Get { get; }
 	}
 
-	[DataContract]
-	public class UpdateResponse<TDocument> : WriteResponseBase, IUpdateResponse<TDocument>
-		where TDocument : class
+	[JsonObject]
+	public class UpdateResponse<T> : ResponseBase, IUpdateResponse<T>
+		where T : class
 	{
-		public override bool IsValid => base.IsValid && 
-			(Result != Result.NotFound && Result != Result.Error);
-		
-		[DataMember(Name ="get")]
-		public IInlineGet<TDocument> Get { get; internal set; }
-
+		public ShardsMetaData ShardsHit { get; private set; }
+		public string Index { get; private set; }
+		public string Type { get; private set; }
+		public string Id { get; private set; }
+		public long Version { get; private set; }
+		public InstantGet<T> Get { get; private set; }
 	}
 }

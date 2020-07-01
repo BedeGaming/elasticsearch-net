@@ -1,64 +1,70 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	/// <summary>
-	/// Creates a snapshot repository
-	/// </summary>
-	[MapsApi("snapshot.create_repository.json")]
-	[JsonFormatter(typeof(CreateRepositoryFormatter))]
-	public partial interface ICreateRepositoryRequest
+
+	[JsonConverter(typeof(CreateRepositoryJsonConverter))]
+	public partial interface ICreateRepositoryRequest 
 	{
-		/// <summary>
-		/// The snapshot repository
-		/// </summary>
 		ISnapshotRepository Repository { get; set; }
 	}
 
-	/// <inheritdoc cref="ICreateRepositoryRequest" />
-	public partial class CreateRepositoryRequest
+	public partial class CreateRepositoryRequest 
 	{
-		/// <inheritdoc />
 		public ISnapshotRepository Repository { get; set; }
 	}
 
-	/// <inheritdoc cref="ICreateRepositoryRequest" />
+	[DescriptorFor("SnapshotCreateRepository")]
 	public partial class CreateRepositoryDescriptor
 	{
 		ISnapshotRepository ICreateRepositoryRequest.Repository { get; set; }
 
-		/// <inheritdoc cref="IFileSystemRepository"/>
+		/// <summary>
+		///	The shared file system repository ("type": "fs") is using shared file system to store snapshot. 
+		/// The path specified in the location parameter should point to the same location in the shared 
+		/// filesystem and be accessible on all data and master nodes. 
+		/// </summary>
+		/// <param name="location"></param>
+		/// <param name="selector"></param>
 		public CreateRepositoryDescriptor FileSystem(Func<FileSystemRepositoryDescriptor, IFileSystemRepository> selector) =>
-			Assign(selector, (a, v) => a.Repository = v?.Invoke(new FileSystemRepositoryDescriptor()));
+			Assign(a => a.Repository = selector?.Invoke(new FileSystemRepositoryDescriptor()));
 
-		/// <inheritdoc cref="IReadOnlyUrlRepository" />
+		/// <summary>
+		/// The URL repository ("type": "url") can be used as an alternative read-only way to access data 
+		/// created by shared file system repository is using shared file system to store snapshot. 
+		/// </summary>
+		/// <param name="location"></param>
+		/// <param name="selector"></param>
 		public CreateRepositoryDescriptor ReadOnlyUrl(Func<ReadOnlyUrlRepositoryDescriptor, IReadOnlyUrlRepository> selector) =>
-			Assign(selector, (a, v) => a.Repository = v?.Invoke(new ReadOnlyUrlRepositoryDescriptor()));
-
-		/// <inheritdoc cref="IAzureRepository" />
+			Assign(a => a.Repository = selector?.Invoke(new ReadOnlyUrlRepositoryDescriptor()));
+	
+		/// <summary>
+		/// Specify an azure storage container to snapshot and restore to. (defaults to a container named elasticsearch-snapshots)
+		/// </summary>
 		public CreateRepositoryDescriptor Azure(Func<AzureRepositoryDescriptor, IAzureRepository> selector = null) =>
-			Assign(selector.InvokeOrDefault(new AzureRepositoryDescriptor()), (a, v) => a.Repository = v);
+			Assign(a => a.Repository = selector.InvokeOrDefault(new AzureRepositoryDescriptor()));
 
-		/// <inheritdoc cref="IHdfsRepository" />
+		/// <summary>
+		/// Create an snapshot/restore repository that points to an HDFS filesystem
+		/// </summary>
+		/// <param name="path"></param>
+		/// <param name="selector"></param>
 		public CreateRepositoryDescriptor Hdfs(Func<HdfsRepositoryDescriptor, IHdfsRepository> selector) =>
-			Assign(selector, (a, v) => a.Repository = v?.Invoke(new HdfsRepositoryDescriptor()));
+			Assign(a => a.Repository = selector?.Invoke(new HdfsRepositoryDescriptor()));
 
-		/// <inheritdoc cref="IS3Repository" />
+		/// <summary>
+		/// Snapshot and restore to an Amazon S3 bucket
+		/// </summary>
+		/// <param name="bucket"></param>
+		/// <param name="selector"></param>
+		/// <returns></returns>
 		public CreateRepositoryDescriptor S3(Func<S3RepositoryDescriptor, IS3Repository> selector) =>
-			Assign(selector, (a, v) => a.Repository = v?.Invoke(new S3RepositoryDescriptor()));
-
-		/// <inheritdoc cref="ISourceOnlyRepository" />
-		public CreateRepositoryDescriptor SourceOnly(Func<SourceOnlyRepositoryDescriptor, ISourceOnlyRepository> selector) =>
-			Assign(selector, (a, v) => a.Repository = v?.Invoke(new SourceOnlyRepositoryDescriptor()));
+			Assign(a => a.Repository = selector?.Invoke(new S3RepositoryDescriptor()));
 
 		/// <summary>
 		/// Register a custom repository
 		/// </summary>
-		public CreateRepositoryDescriptor Custom(ISnapshotRepository repository) => Assign(repository, (a, v) => a.Repository = v);
+		public CreateRepositoryDescriptor Custom(ISnapshotRepository repository) => Assign(a => a.Repository = repository);
 	}
 }

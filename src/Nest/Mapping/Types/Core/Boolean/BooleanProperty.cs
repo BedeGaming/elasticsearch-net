@@ -1,64 +1,50 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System;
-using System.Diagnostics;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	/// <summary>
-	/// The boolean fields accepts true and false values
-	/// </summary>
-	[InterfaceDataContract]
-	public interface IBooleanProperty : IDocValuesProperty
+
+	[JsonObject(MemberSerialization.OptIn)]
+	public interface IBooleanProperty : IProperty
 	{
-		[DataMember(Name = "boost")]
+		[JsonProperty("index")]
+		NonStringIndexOption? Index { get; set; }
+
+		[JsonProperty("boost")]
 		double? Boost { get; set; }
 
-		[DataMember(Name = "fielddata")]
-		INumericFielddata Fielddata { get; set; }
-
-		[DataMember(Name = "index")]
-		bool? Index { get; set; }
-
-		[DataMember(Name = "null_value")]
+		[JsonProperty("null_value")]
 		bool? NullValue { get; set; }
+
+		[JsonProperty("fielddata")]
+		INumericFielddata Fielddata { get; set; }
 	}
 
-	[DebuggerDisplay("{DebugDisplay}")]
-	public class BooleanProperty : DocValuesPropertyBase, IBooleanProperty
+	public class BooleanProperty : PropertyBase, IBooleanProperty
 	{
-		public BooleanProperty() : base(FieldType.Boolean) { }
+		public BooleanProperty() : base("boolean") { }
 
+		public NonStringIndexOption? Index { get; set; }
 		public double? Boost { get; set; }
-		public INumericFielddata Fielddata { get; set; }
-
-		public bool? Index { get; set; }
 		public bool? NullValue { get; set; }
+		public INumericFielddata Fielddata { get; set; }
 	}
 
-	[DebuggerDisplay("{DebugDisplay}")]
 	public class BooleanPropertyDescriptor<T>
-		: DocValuesPropertyDescriptorBase<BooleanPropertyDescriptor<T>, IBooleanProperty, T>, IBooleanProperty
+		: PropertyDescriptorBase<BooleanPropertyDescriptor<T>, IBooleanProperty, T>, IBooleanProperty
 		where T : class
 	{
-		public BooleanPropertyDescriptor() : base(FieldType.Boolean) { }
-
 		double? IBooleanProperty.Boost { get; set; }
-		INumericFielddata IBooleanProperty.Fielddata { get; set; }
-		bool? IBooleanProperty.Index { get; set; }
+		NonStringIndexOption? IBooleanProperty.Index { get; set; }
 		bool? IBooleanProperty.NullValue { get; set; }
+		INumericFielddata IBooleanProperty.Fielddata { get; set; }
 
-		public BooleanPropertyDescriptor<T> Boost(double? boost) => Assign(boost, (a, v) => a.Boost = v);
+		public BooleanPropertyDescriptor() : base("boolean") { }
 
-		public BooleanPropertyDescriptor<T> Index(bool? index = true) => Assign(index, (a, v) => a.Index = v);
-
-		public BooleanPropertyDescriptor<T> NullValue(bool? nullValue) => Assign(nullValue, (a, v) => a.NullValue = v);
-
+		public BooleanPropertyDescriptor<T> Boost(double boost) => Assign(a => a.Boost = boost);
+		public BooleanPropertyDescriptor<T> Index(NonStringIndexOption index = NonStringIndexOption.NotAnalyzed) => Assign(a => a.Index = index);
+		public BooleanPropertyDescriptor<T> NullValue(bool nullValue) => Assign(a => a.NullValue = nullValue);
 		public BooleanPropertyDescriptor<T> Fielddata(Func<NumericFielddataDescriptor, INumericFielddata> selector) =>
-			Assign(selector(new NumericFielddataDescriptor()), (a, v) => a.Fielddata = v);
+			Assign(a => a.Fielddata = selector(new NumericFielddataDescriptor()));
 	}
 }

@@ -1,24 +1,18 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
 	/// <summary>
 	/// The Authentication mechanism for a request to a HTTP endpoint
 	/// </summary>
-	[InterfaceDataContract]
-	[ReadAs(typeof(HttpInputAuthentication))]
+	[JsonObject]
 	public interface IHttpInputAuthentication
 	{
 		/// <summary>
 		/// Basic Authentication credentials
 		/// </summary>
-		[DataMember(Name ="basic")]
+		[JsonProperty("basic")]
 		IHttpInputBasicAuthentication Basic { get; set; }
 	}
 
@@ -37,53 +31,52 @@ namespace Nest
 
 		/// <inheritdoc />
 		public HttpInputAuthenticationDescriptor Basic(Func<HttpInputBasicAuthenticationDescriptor, IHttpInputBasicAuthentication> selector) =>
-			Assign(selector.Invoke(new HttpInputBasicAuthenticationDescriptor()), (a, v) => a.Basic = v);
+			Assign(a => a.Basic = selector.Invoke(new HttpInputBasicAuthenticationDescriptor()));
 	}
 
 	/// <summary>
 	/// Basic Authentication credentials
 	/// </summary>
-	[InterfaceDataContract]
-	[ReadAs(typeof(HttpInputBasicAuthentication))]
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<HttpInputBasicAuthentication>))]
 	public interface IHttpInputBasicAuthentication
 	{
 		/// <summary>
-		/// Password for Basic Authentication
-		/// </summary>
-		[DataMember(Name ="password")]
-		string Password { get; set; }
-
-		/// <summary>
 		/// Username for Basic Authentication
 		/// </summary>
-		[DataMember(Name ="username")]
+		[JsonProperty("username")]
 		string Username { get; set; }
+
+		/// <summary>
+		/// Password for Basic Authentication
+		/// </summary>
+		[JsonProperty("password")]
+		string Password { get; set; }
 	}
 
 	/// <inheritdoc />
-	[DataContract]
+	[JsonObject]
 	public class HttpInputBasicAuthentication : IHttpInputBasicAuthentication
 	{
 		/// <inheritdoc />
-		public string Password { get; set; }
-
-		/// <inheritdoc />
 		public string Username { get; set; }
+		/// <inheritdoc />
+		public string Password { get; set; }
 	}
 
 	/// <inheritdoc />
 	public class HttpInputBasicAuthenticationDescriptor
 		: DescriptorBase<HttpInputBasicAuthenticationDescriptor, IHttpInputBasicAuthentication>, IHttpInputBasicAuthentication
 	{
-		string IHttpInputBasicAuthentication.Password { get; set; }
 		string IHttpInputBasicAuthentication.Username { get; set; }
+		string IHttpInputBasicAuthentication.Password { get; set; }
 
 		/// <inheritdoc />
 		public HttpInputBasicAuthenticationDescriptor Username(string username) =>
-			Assign(username, (a, v) => a.Username = v);
+			Assign(a => a.Username = username);
 
 		/// <inheritdoc />
 		public HttpInputBasicAuthenticationDescriptor Password(string password) =>
-			Assign(password, (a, v) => a.Password = v);
+			Assign(a => a.Password = password);
 	}
 }

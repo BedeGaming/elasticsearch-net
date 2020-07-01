@@ -1,78 +1,74 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
-using Elasticsearch.Net.Utf8Json.Internal;
-
+﻿using System;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[StringEnum]
+	/// <summary>
+	/// Controls how elasticsearch handles dynamic mapping changes when a new document present new fields
+	/// </summary>
+	[JsonConverter(typeof(DynamicMappingJsonConverter))]
 	public enum DynamicMapping
 	{
 		/// <summary>
-		/// If new unmapped fields are passed, the whole document will not be added/updated
+		/// Default value, allows unmapped fields to be cause a mapping update 
+		/// </summary>
+		[EnumMember(Value = "allow")]
+		Allow,
+		/// <summary>
+		/// New unmapped fields will be silently ignored
+		/// </summary>
+		[EnumMember(Value = "ignore")]
+		Ignore,
+		/// <summary>
+		/// If new unmapped fields are passed, the whole document WON'T be added/updated
 		/// </summary>
 		[EnumMember(Value = "strict")]
 		Strict
 	}
 
-	internal class DynamicMappingFormatter : IJsonFormatter<Union<bool,DynamicMapping>>
+	internal class DynamicMappingJsonConverter : JsonConverter
 	{
-		private static readonly AutomataDictionary Values = new AutomataDictionary { { "true", 0 }, { "false", 1 }, { "strict", 2 } };
-
-		public void Serialize(ref JsonWriter writer, Union<bool, DynamicMapping> value, IJsonFormatterResolver formatterResolver)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			if (value == null)
+			var v = value as DynamicMapping?;
+			if (!v.HasValue)
 			{
-				writer.WriteNull();
+				writer.WriteValue(true);
 				return;
 			}
-
-			switch (value.Tag)
+			switch (v.Value)
 			{
-				case 0:
-					writer.WriteBoolean(value.Item1);
+				case DynamicMapping.Strict:
+					writer.WriteValue("strict");
 					break;
-				case 1:
-					writer.WriteString(value.Item2.GetStringValue());
+				case DynamicMapping.Ignore:
+					writer.WriteValue(false);
+					break;
+				default:
+					writer.WriteValue(true);
 					break;
 			}
 		}
 
-		public Union<bool, DynamicMapping> Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			if (reader.ReadIsNull())
+			var v = reader.Value;
+			if (v == null)
 				return null;
 
-			var token = reader.GetCurrentJsonToken();
-			switch (token)
+			var sv = v.ToString().ToLowerInvariant();
+			switch (sv)
 			{
-				case JsonToken.True:
-				case JsonToken.False:
-					return new Union<bool, DynamicMapping>(reader.ReadBoolean());
-				case JsonToken.String:
-					var segment = reader.ReadStringSegmentUnsafe();
-					if (Values.TryGetValue(segment, out var value))
-					{
-						switch (value)
-						{
-							case 0:
-								return new Union<bool, DynamicMapping>(true);
-							case 1:
-								return new Union<bool, DynamicMapping>(false);
-							case 2:
-								return new Union<bool, DynamicMapping>(DynamicMapping.Strict);
-						}
-					}
-
-					return null;
+				case "false":
+					return DynamicMapping.Ignore;
+				case "strict":
+					return DynamicMapping.Strict;
 				default:
-					throw new JsonParsingException($"Cannot parse Union<bool, DynamicMapping> from token '{token}'");
+					return DynamicMapping.Allow;
 			}
 		}
+
+		public override bool CanConvert(Type objectType) => objectType == typeof(DynamicMapping?);
 	}
 }

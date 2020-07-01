@@ -1,133 +1,77 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace Nest
 {
-	/// <summary>
-	/// Suggest option
-	/// </summary>
-	[InterfaceDataContract]
-	[ReadAs(typeof(SuggestOption<>))]
-	public interface ISuggestOption<out TDocument> where TDocument : class
+	[JsonObject]
+	[JsonConverter(typeof(SuggestOptionJsonConverter))]
+	public class SuggestOption
 	{
-		/// <summary>
-		/// Phrase suggestions only, true if matching documents for the collate query were found,
-		/// </summary>
-		[DataMember(Name = "collate_match")]
-		bool CollateMatch { get; }
+		private readonly JObject _payload;
+		private readonly JsonSerializer _defaultSerializer;
 
-		/// <summary>
-		/// Completion suggester only, the contexts associated with the completed document
-		/// </summary>
-		[DataMember(Name = "contexts")]
-		IDictionary<string, IEnumerable<Context>> Contexts { get; }
+		public SuggestOption() { }
+		internal SuggestOption(JObject payload, JsonSerializer serializer)
+		{
+			_payload = payload;
+			_defaultSerializer = serializer;
+		}
 
-		// TODO this should be reported to elastic/elasticsearch
-		[DataMember(Name = "_score")]
-		double? DocumentScore { get; }
+		[JsonProperty("freq")]
+		public int? Frequency { get; internal set; }
 
-		/// <inheritdoc />
-		[DataMember(Name = "fields")]
-		FieldValues Fields { get; }
+		[JsonProperty("score")]
+		public double Score { get; internal set; }
 
-		/// <summary>
-		/// Term suggester only
-		/// </summary>
-		[DataMember(Name = "freq")]
-		long Frequency { get; set; }
+		[JsonProperty("text")]
+		public string Text { get; internal set; }
 
-		/// <summary>
-		/// Phrase suggester only, highlighted version of text
-		/// </summary>
-		[DataMember(Name = "highlighted")]
-		string Highlighted { get; }
-
-		/// <summary>
-		/// Completion suggester only, the id of the completed document
-		/// </summary>
-		[DataMember(Name = "_id")]
-		string Id { get; }
-
-		/// <summary>
-		/// Completion suggester only, the index of the completed document
-		/// </summary>
-		[DataMember(Name = "_index")]
-		IndexName Index { get; }
-
-		/// <summary> Either the <see cref="DocumentScore" /> or the <see cref="SuggestScore" /></summary>
-		[IgnoreDataMember]
-		double Score { get; }
-
-		/// <summary>
-		/// Completion suggester only, the source of the completed document
-		/// </summary>
-		[DataMember(Name = "_source")]
-		[JsonFormatter(typeof(SourceFormatter<>))]
-		TDocument Source { get; }
-
-		[DataMember(Name = "score")]
-		double? SuggestScore { get; }
-
-		[DataMember(Name = "text")]
-		string Text { get; }
-	}
-
-	/// <inheritdoc />
-	public class SuggestOption<TDocument> : ISuggestOption<TDocument>
-		where TDocument : class
-	{
-		/// <inheritdoc />
-		[DataMember(Name = "collate_match")]
-		public bool CollateMatch { get; internal set; }
-
-		/// <inheritdoc />
-		[DataMember(Name = "contexts")]
-		public IDictionary<string, IEnumerable<Context>> Contexts { get; internal set; }
-
-		/// <inheritdoc />
-		[DataMember(Name = "_score")]
-		public double? DocumentScore { get; internal set; }
-
-		/// <inheritdoc />
-		[DataMember(Name = "fields")]
-		public FieldValues Fields { get; internal set; }
-
-		/// <inheritdoc />
-		[DataMember(Name = "freq")]
-		public long Frequency { get; set; }
-
-		/// <inheritdoc />
-		[DataMember(Name = "highlighted")]
+		[JsonProperty("highlighted")]
 		public string Highlighted { get; internal set; }
 
-		/// <inheritdoc />
-		[DataMember(Name = "_id")]
-		public string Id { get; internal set; }
+        [JsonProperty("collate_match")]
+        public bool CollateMatch { get; internal set; }
 
-		/// <inheritdoc />
-		[DataMember(Name = "_index")]
-		public IndexName Index { get; internal set; }
+        public T Payload<T>(JsonSerializer serializer = null) 
+			where T : class
+		{
+			if (_payload == null) return null;
+			var s = serializer ?? _defaultSerializer;
+			return s != null
+				? _payload.ToObject<T>(s)
+				: _payload.ToObject<T>();
+		}
+	}
 
-		/// <inheritdoc />
-		[IgnoreDataMember]
-		public double Score => DocumentScore ?? SuggestScore ?? 0;
+	public class SuggestOptionJsonConverter : JsonConverter
+	{
 
-		/// <inheritdoc />
-		[DataMember(Name = "_source")]
-		[JsonFormatter(typeof(SourceFormatter<>))]
-		public TDocument Source { get; internal set; }
+		public override bool CanConvert(Type objectType) => typeof(SuggestOption) == objectType;
+		public override bool CanWrite => false;
 
-		/// <inheritdoc />
-		[DataMember(Name = "score")]
-		public double? SuggestScore { get; internal set; }
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+		{
+			var o = JObject.Load(reader);
+			var properties = o.Properties().ToDictionary(p => p.Name, p => p.Value);
+			var option = properties.ContainsKey("payload")
+				? new SuggestOption(properties["payload"].Value<JObject>(), serializer)
+				: new SuggestOption();
+			if (properties.ContainsKey("freq"))
+				option.Frequency = (int)properties["freq"];
+			if (properties.ContainsKey("score"))
+				option.Score = (double)properties["score"];
+			if (properties.ContainsKey("text"))
+				option.Text = (string)properties["text"];
+            if (properties.ContainsKey("collate_match"))
+                option.CollateMatch = (bool)properties["collate_match"];
+            return option;
+		}
 
-		/// <inheritdoc />
-		[DataMember(Name = "text")]
-		public string Text { get; internal set; }
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+		{
+			throw new NotSupportedException();
+		}
 	}
 }

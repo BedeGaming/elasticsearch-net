@@ -1,19 +1,22 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class ClearCachedRealmsResponse : ResponseBase
+	public interface IClearCachedRealmsResponse : IResponse
 	{
-		[DataMember(Name ="cluster_name")]
-		public string ClusterName { get; internal set; }
+		[JsonProperty("cluster_name")]
+		string ClusterName { get; }
 
-		[DataMember(Name ="nodes")]
-		public IReadOnlyDictionary<string, SecurityNode> Nodes { get; internal set; } = EmptyReadOnly<string, SecurityNode>.Dictionary;
+		[JsonProperty("nodes")]
+		IDictionary<string, ShieldNode>  Nodes { get; }
+	}
+
+	public class ClearCachedRealmsResponse : ResponseBase, IClearCachedRealmsResponse
+	{
+		public string ClusterName { get; internal set; }
+		public IDictionary<string, ShieldNode>  Nodes { get; internal set; }
 	}
 }

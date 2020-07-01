@@ -1,16 +1,13 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(ValueCountAggregation))]
-	public interface IValueCountAggregation : IFormattableMetricAggregation { }
 
-	public class ValueCountAggregation : FormattableMetricAggregationBase, IValueCountAggregation
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<ValueCountAggregation>))]
+	public interface IValueCountAggregation : IMetricAggregation { }
+
+	public class ValueCountAggregation : MetricAggregationBase, IValueCountAggregation
 	{
 		internal ValueCountAggregation() { }
 
@@ -19,8 +16,8 @@ namespace Nest
 		internal override void WrapInContainer(AggregationContainer c) => c.ValueCount = this;
 	}
 
-	public class ValueCountAggregationDescriptor<T>
-		: FormattableMetricAggregationDescriptorBase<ValueCountAggregationDescriptor<T>, IValueCountAggregation, T>
-			, IValueCountAggregation
+	public class ValueCountAggregationDescriptor<T> 
+		: MetricAggregationDescriptorBase<ValueCountAggregationDescriptor<T>, IValueCountAggregation, T>
+			, IValueCountAggregation 
 		where T : class { }
 }

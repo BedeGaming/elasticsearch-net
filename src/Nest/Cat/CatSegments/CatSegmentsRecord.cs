@@ -1,57 +1,53 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
+	[JsonObject]
 	public class CatSegmentsRecord : ICatRecord
 	{
-		[DataMember(Name ="committed")]
-		public string Committed { get; set; }
-
-		[DataMember(Name ="compound")]
-		public string Compound { get; set; }
-
-		[DataMember(Name ="docs.count")]
-		public string DocsCount { get; set; }
-
-		[DataMember(Name ="docs.deleted")]
-		public string DocsDeleted { get; set; }
-
-		[DataMember(Name ="generation")]
-		public string Generation { get; set; }
-
-		[DataMember(Name ="id")]
-		public string Id { get; set; }
-
-		[DataMember(Name ="index")]
+		[JsonProperty("index")]
 		public string Index { get; set; }
 
-		[DataMember(Name ="ip")]
-		public string Ip { get; set; }
-
-		[DataMember(Name ="prirep")]
+		[JsonProperty("shard")]
+		public string Shard { get; set; }
+		
+		[JsonProperty("prirep")]
 		public string PrimaryReplica { get; set; }
 
-		[DataMember(Name ="searchable")]
-		public string Searchable { get; set; }
+		[JsonProperty("ip")]
+		public string Ip { get; set; }
 
-		[DataMember(Name ="segment")]
+		[JsonProperty("id")]
+		public string Id { get; set; }
+
+		[JsonProperty("segment")]
 		public string Segment { get; set; }
 
-		[DataMember(Name ="shard")]
-		public string Shard { get; set; }
+		[JsonProperty("generation")]
+		public string Generation { get; set; }
 
-		[DataMember(Name ="size")]
+		[JsonProperty("docs.count")]
+		public string DocsCount { get; set; }
+
+		[JsonProperty("docs.deleted")]
+		public string DocsDeleted { get; set; }
+
+		[JsonProperty("size")]
 		public string Size { get; set; }
 
-		[DataMember(Name ="size.memory")]
+		[JsonProperty("size.memory")]
 		public string SizeMemory { get; set; }
 
-		[DataMember(Name ="version")]
+		[JsonProperty("committed")]
+		public string Committed { get; set; }
+
+		[JsonProperty("searchable")]
+		public string Searchable { get; set; }
+
+		[JsonProperty("version")]
 		public string Version { get; set; }
+
+		[JsonProperty("compound")]
+		public string Compound { get; set; }
 	}
 }

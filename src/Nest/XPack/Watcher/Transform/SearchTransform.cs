@@ -1,21 +1,16 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(SearchTransform))]
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<SearchTransform>))]
 	public interface ISearchTransform : ITransform
 	{
-		[DataMember(Name ="request")]
+		[JsonProperty("request")]
 		ISearchInputRequest Request { get; set; }
 
-		[DataMember(Name ="timeout")]
+		[JsonProperty("timeout")]
 		Time Timeout { get; set; }
 	}
 
@@ -33,8 +28,8 @@ namespace Nest
 		Time ISearchTransform.Timeout { get; set; }
 
 		public SearchTransformDescriptor Request(Func<SearchInputRequestDescriptor, ISearchInputRequest> selector) =>
-			Assign(selector.InvokeOrDefault(new SearchInputRequestDescriptor()), (a, v) => a.Request = v);
+			Assign(a => a.Request = selector.InvokeOrDefault(new SearchInputRequestDescriptor()));
 
-		public SearchTransformDescriptor Timeout(Time timeout) => Assign(timeout, (a, v) => a.Timeout = v);
+		public SearchTransformDescriptor Timeout(Time timeout) => Assign(a => a.Timeout = timeout);
 	}
 }

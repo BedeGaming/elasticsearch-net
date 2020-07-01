@@ -1,79 +1,93 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[MapsApi("indices.create.json")]
-	[ReadAs(typeof(CreateIndexRequest))]
-	public partial interface ICreateIndexRequest : IIndexState { }
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<CreateIndexRequest>))]
+	public partial interface ICreateIndexRequest : IIndexState
+	{
+	}
 
 	public partial class CreateIndexRequest
 	{
+		//TODO Only here for ReadAsType new() constraint needs to be updated
+		public CreateIndexRequest() { }
+
+		public CreateIndexRequest(IndexName index, IndexState state) : this(index)
+		{
+			this.Settings = state.Settings;
+			this.Mappings = state.Mappings;
+			this.Aliases = state.Aliases;
+			RemoveReadOnlySettings(this.Settings);
+		}
+
 		private static readonly string[] ReadOnlySettings =
 		{
 			"index.creation_date",
 			"index.uuid",
 			"index.version.created",
-			"index.provided_name"
 		};
 
-		public CreateIndexRequest(IndexName index, IIndexState state) : this(index)
-		{
-			Settings = state.Settings;
-			Mappings = state.Mappings;
-			RemoveReadOnlySettings(Settings);
-		}
-
-		public IAliases Aliases { get; set; }
-
-		public ITypeMapping Mappings { get; set; }
-
-		public IIndexSettings Settings { get; set; }
-
-		internal static void RemoveReadOnlySettings(IIndexSettings settings)
+		internal static void RemoveReadOnlySettings (IIndexSettings settings)
 		{
 			if (settings == null) return;
-
-			foreach (var bad in ReadOnlySettings)
+			foreach(var bad in ReadOnlySettings)
 			{
 				if (settings.ContainsKey(bad))
 					settings.Remove(bad);
 			}
 		}
+
+		public IWarmers Warmers { get; set; }
+
+		public IIndexSettings Settings { get; set; }
+
+		public IMappings Mappings { get; set; }
+
+		public IAliases Aliases { get; set; }
+
+		[Obsolete("Use Similarity within Settings. Removed in NEST 6.x")]
+		[JsonIgnore]
+		public ISimilarities Similarity { get; set; }
 	}
 
+	[DescriptorFor("IndicesCreate")]
 	public partial class CreateIndexDescriptor
 	{
-		IAliases IIndexState.Aliases { get; set; }
-
-		ITypeMapping IIndexState.Mappings { get; set; }
 		IIndexSettings IIndexState.Settings { get; set; }
 
-		public CreateIndexDescriptor InitializeUsing(IIndexState indexSettings) => Assign(indexSettings, (a, v) =>
+		IMappings IIndexState.Mappings { get; set; }
+
+		IWarmers IIndexState.Warmers { get; set; }
+
+		IAliases IIndexState.Aliases { get; set; }
+
+		[Obsolete("Use Similarity within Settings. Removed in NEST 6.x")]
+		ISimilarities IIndexState.Similarity { get; set; }
+
+		public CreateIndexDescriptor InitializeUsing(IIndexState indexSettings) => Assign(a =>
 		{
-			a.Settings = v.Settings;
-			a.Mappings = v.Mappings;
-			a.Aliases = v.Aliases;
+			a.Settings = indexSettings.Settings;
+			a.Mappings = indexSettings.Mappings;
+			a.Warmers = indexSettings.Warmers;
+			a.Aliases = indexSettings.Aliases;
 			CreateIndexRequest.RemoveReadOnlySettings(a.Settings);
 		});
 
 		public CreateIndexDescriptor Settings(Func<IndexSettingsDescriptor, IPromise<IIndexSettings>> selector) =>
-			Assign(selector, (a, v) => a.Settings = v?.Invoke(new IndexSettingsDescriptor())?.Value);
+			Assign(a => a.Settings = selector?.Invoke(new IndexSettingsDescriptor())?.Value);
 
-		public CreateIndexDescriptor Map<T>(Func<TypeMappingDescriptor<T>, ITypeMapping> selector) where T : class =>
-			Assign(selector, (a, v) => a.Mappings = v?.Invoke(new TypeMappingDescriptor<T>()));
+		public CreateIndexDescriptor Mappings(Func<MappingsDescriptor, IPromise<IMappings>> selector) =>
+			Assign(a => a.Mappings = selector?.Invoke(new MappingsDescriptor())?.Value);
 
-		public CreateIndexDescriptor Map(Func<TypeMappingDescriptor<object>, ITypeMapping> selector) =>
-			Assign(selector, (a, v) => a.Mappings = v?.Invoke(new TypeMappingDescriptor<object>()));
-
-		[Obsolete("Mappings is no longer a dictionary in 7.x, please use the simplified Map() method on this descriptor instead")]
-		public CreateIndexDescriptor Mappings(Func<MappingsDescriptor, ITypeMapping> selector) =>
-			Assign(selector, (a, v) => a.Mappings = v?.Invoke(new MappingsDescriptor()));
+		public CreateIndexDescriptor Warmers(Func<WarmersDescriptor, IPromise<IWarmers>> selector) =>
+			Assign(a => a.Warmers = selector?.Invoke(new WarmersDescriptor())?.Value);
 
 		public CreateIndexDescriptor Aliases(Func<AliasesDescriptor, IPromise<IAliases>> selector) =>
-			Assign(selector, (a, v) => a.Aliases = v?.Invoke(new AliasesDescriptor())?.Value);
+			Assign(a => a.Aliases = selector?.Invoke(new AliasesDescriptor())?.Value);
+
+		[Obsolete("Use Similarity within Settings. Removed in NEST 6.x")]
+		public CreateIndexDescriptor Similarity(Func<SimilaritiesDescriptor, IPromise<ISimilarities>> selector) =>
+			Assign(a => a.Similarity = selector?.Invoke(new SimilaritiesDescriptor())?.Value);
 	}
 }

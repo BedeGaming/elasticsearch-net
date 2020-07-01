@@ -1,50 +1,46 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
 	public partial interface IElasticClient
 	{
-		/// <inheritdoc />
-		GetRepositoryResponse GetRepository(Func<GetRepositoryDescriptor, IGetRepositoryRequest> selector = null);
+		/// <inheritdoc/>
+		IGetRepositoryResponse GetRepository(Func<GetRepositoryDescriptor, IGetRepositoryRequest> selector = null);
 
-		/// <inheritdoc />
-		GetRepositoryResponse GetRepository(IGetRepositoryRequest request);
+		/// <inheritdoc/>
+		IGetRepositoryResponse GetRepository(IGetRepositoryRequest request);
 
-		/// <inheritdoc />
-		Task<GetRepositoryResponse> GetRepositoryAsync(Func<GetRepositoryDescriptor, IGetRepositoryRequest> selector = null,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IGetRepositoryResponse> GetRepositoryAsync(Func<GetRepositoryDescriptor, IGetRepositoryRequest> selector = null);
 
-		/// <inheritdoc />
-		Task<GetRepositoryResponse> GetRepositoryAsync(IGetRepositoryRequest request,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IGetRepositoryResponse> GetRepositoryAsync(IGetRepositoryRequest request);
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public GetRepositoryResponse GetRepository(Func<GetRepositoryDescriptor, IGetRepositoryRequest> selector = null) =>
-			GetRepository(selector.InvokeOrDefault(new GetRepositoryDescriptor()));
+		/// <inheritdoc/>
+		public IGetRepositoryResponse GetRepository(Func<GetRepositoryDescriptor, IGetRepositoryRequest> selector = null) =>
+			this.GetRepository(selector.InvokeOrDefault(new GetRepositoryDescriptor()));
 
-		/// <inheritdoc />
-		public GetRepositoryResponse GetRepository(IGetRepositoryRequest request) =>
-			DoRequest<IGetRepositoryRequest, GetRepositoryResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IGetRepositoryResponse GetRepository(IGetRepositoryRequest request) => 
+			this.Dispatcher.Dispatch<IGetRepositoryRequest, GetRepositoryRequestParameters, GetRepositoryResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.SnapshotGetRepositoryDispatch<GetRepositoryResponse>(p)
+			);
 
-		/// <inheritdoc />
-		public Task<GetRepositoryResponse> GetRepositoryAsync(
-			Func<GetRepositoryDescriptor, IGetRepositoryRequest> selector = null,
-			CancellationToken ct = default
-		) => GetRepositoryAsync(selector.InvokeOrDefault(new GetRepositoryDescriptor()), ct);
+		/// <inheritdoc/>
+		public Task<IGetRepositoryResponse> GetRepositoryAsync(Func<GetRepositoryDescriptor, IGetRepositoryRequest> selector = null) => 
+			this.GetRepositoryAsync(selector.InvokeOrDefault(new GetRepositoryDescriptor()));
 
-		/// <inheritdoc />
-		public Task<GetRepositoryResponse> GetRepositoryAsync(IGetRepositoryRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IGetRepositoryRequest, GetRepositoryResponse>(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IGetRepositoryResponse> GetRepositoryAsync(IGetRepositoryRequest request) => 
+			this.Dispatcher.DispatchAsync<IGetRepositoryRequest, GetRepositoryRequestParameters, GetRepositoryResponse, IGetRepositoryResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.SnapshotGetRepositoryDispatchAsync<GetRepositoryResponse>(p)
+			);
 	}
 }

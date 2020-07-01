@@ -1,19 +1,12 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using System.Collections.Generic;
 
-﻿namespace Nest
+namespace Nest
 {
-	public class SignificantTermsAggregate<TKey> : MultiBucketAggregate<SignificantTermsBucket<TKey>>
+	public class SignificantTermsAggregate : MultiBucketAggregate<SignificantTermsBucket>
 	{
-		/// <summary>
-		/// The background count
-		/// </summary>
-		public long? BgCount { get; set; }
+		public SignificantTermsAggregate() { }
+		public SignificantTermsAggregate(IDictionary<string, IAggregate> aggregations) : base(aggregations) { }
 
-		/// <summary>
-		/// The document count
-		/// </summary>
 		public long DocCount { get; set; }
 	}
 }

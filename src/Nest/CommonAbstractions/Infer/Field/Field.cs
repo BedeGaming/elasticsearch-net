@@ -1,139 +1,124 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using System.Linq;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(FieldFormatter))]
-	[DebuggerDisplay("{DebugDisplay,nq}")]
+	[ContractJsonConverter(typeof(FieldJsonConverter))]
 	public class Field : IEquatable<Field>, IUrlParameter
 	{
-		private readonly object _comparisonValue;
-		private readonly Type _type;
+		private string _name;
+		private Expression _expression;
+		private PropertyInfo _property;
+		private Type _type;
+		private object _comparisonValue;
 
-		public Field(string name, double? boost = null, string format = null)
+		public string Name
 		{
-			name.ThrowIfNullOrEmpty(nameof(name));
-			Name = ParseFieldName(name, out var b);
-			Boost = b ?? boost;
-			Format = format;
-			_comparisonValue = Name;
+			get { return _name; }
+			set
+			{
+				double? b;
+				_name = ParseFieldName(value, out b);
+				if (b.HasValue) Boost = b;
+				SetComparisonValue(_name);
+			}
 		}
 
-		public Field(Expression expression, double? boost = null, string format = null)
+		public Expression Expression
 		{
-			Expression = expression ?? throw new ArgumentNullException(nameof(expression));
-			Boost = boost;
-			Format = format;
-			_comparisonValue = expression.ComparisonValueFromExpression(out var type, out var cachable);
-			_type = type;
-			CachableExpression = cachable;
+			get { return _expression; }
+			set
+			{
+				_expression = value;
+				Type type;
+				var comparisonValue = value.ComparisonValueFromExpression(out type);
+				_type = type;
+				SetComparisonValue(comparisonValue);
+				CacheableExpression = !new HasVariableExpressionVisitor(value).Found;
+			}
 		}
 
-		public Field(PropertyInfo property, double? boost = null, string format = null)
+		public PropertyInfo Property
 		{
-			Property = property ?? throw new ArgumentNullException(nameof(property));
-			Boost = boost;
-			Format = format;
-			_comparisonValue = property;
-			_type = property.DeclaringType;
+			get { return _property; }
+			set
+			{
+				_property = value;
+				SetComparisonValue(value);
+				_type = value.DeclaringType;
+			}
 		}
 
-		/// <summary>
-		/// A boost to apply to the field
-		/// </summary>
 		public double? Boost { get; set; }
 
-		/// <summary>
-		/// A format to apply to the field.
-		/// </summary>
-		/// <remarks>
-		/// Can be used only for Doc Value Fields Elasticsearch 6.4.0+
-		/// </remarks>
-		public string Format { get; set; }
+		public bool CacheableExpression { get; private set; }
 
-		// TODO: Rename to CacheableExpression in 8.0.0
-		public bool CachableExpression { get; }
+		public Fields And<T>(Expression<Func<T, object>> field) where T : class =>
+			new Fields(new [] { this, field });
 
-		/// <summary>
-		/// An expression from which the name of the field can be inferred
-		/// </summary>
-		public Expression Expression { get; }
+		public Fields And(string field) => new Fields(new [] { this, field });
 
-		/// <summary>
-		/// The name of the field
-		/// </summary>
-		public string Name { get; }
-
-		/// <summary>
-		/// A property from which the name of the field can be inferred
-		/// </summary>
-		public PropertyInfo Property { get; }
-
-		internal string DebugDisplay =>
-			$"{Expression?.ToString() ?? PropertyDebug ?? Name}{(Boost.HasValue ? "^" + Boost.Value : string.Empty)}"
-			+ $"{(!string.IsNullOrEmpty(Format) ? " format: " + Format : string.Empty)}"
-			+ $"{(_type == null ? string.Empty : " typeof: " + _type.Name)}";
-
-		public override string ToString() => DebugDisplay;
-
-		private string PropertyDebug => Property == null ? null : $"PropertyInfo: {Property.Name}";
-
-		public bool Equals(Field other) => _type != null
-			? other != null && _type == other._type && _comparisonValue.Equals(other._comparisonValue)
-			: other != null && _comparisonValue.Equals(other._comparisonValue);
-
-		string IUrlParameter.GetString(IConnectionConfigurationValues settings)
+		public static Field Create(string name, double? boost = null)
 		{
-			if (!(settings is IConnectionSettingsValues nestSettings))
-				throw new ArgumentNullException(nameof(settings),
-					$"Can not resolve {nameof(Field)} if no {nameof(IConnectionSettingsValues)} is provided");
+			if (name.IsNullOrEmpty()) return null;
 
-			return nestSettings.Inferrer.Field(this);
+			Field field = name;
+			if (!field.Boost.HasValue)
+				field.Boost = boost;
+
+			return field;
 		}
 
-		public Fields And(Field field) => new Fields(new[] { this, field });
+		public static Field Create(Expression expression, double? boost = null)
+		{
+			if (expression == null) return null;
 
-		public Fields And<T, TValue>(Expression<Func<T, TValue>> field, double? boost = null, string format = null) where T : class =>
-			new Fields(new[] { this, new Field(field, boost, format) });
-		
-		public Fields And<T>(Expression<Func<T, object>> field, double? boost = null, string format = null) where T : class =>
-			new Fields(new[] { this, new Field(field, boost, format) });
-
-		public Fields And(string field, double? boost = null, string format = null) =>
-			new Fields(new[] { this, new Field(field, boost, format) });
-
-		public Fields And(PropertyInfo property, double? boost = null, string format = null) =>
-			new Fields(new[] { this, new Field(property, boost, format) });
+			Field field = expression;
+			field.Boost = boost;
+			return field;
+		}
 
 		private static string ParseFieldName(string name, out double? boost)
 		{
 			boost = null;
 			if (name == null) return null;
 
-			var caretIndex = name.IndexOf('^');
-			if (caretIndex == -1)
-				return name;
-
-			var parts = name.Split(new[] { '^' }, 2, StringSplitOptions.RemoveEmptyEntries);
-			name = parts[0];
-			boost = double.Parse(parts[1], CultureInfo.InvariantCulture);
+			var parts = name.Split(new [] { '^' }, StringSplitOptions.RemoveEmptyEntries);
+			if (parts.Length > 1)
+			{
+				name = parts[0];
+				boost = double.Parse(parts[1], CultureInfo.InvariantCulture);
+			}
 			return name;
 		}
 
-		public static implicit operator Field(string name) => name.IsNullOrEmpty() ? null : new Field(name);
+		public static implicit operator Field(string name)
+		{
+			return name.IsNullOrEmpty() ? null : new Field
+			{
+				Name = name,
+			};
+		}
 
-		public static implicit operator Field(Expression expression) => expression == null ? null : new Field(expression);
+		public static implicit operator Field(Expression expression)
+		{
+			return expression == null ? null : new Field
+			{
+				Expression = expression
+			};
+		}
 
-		public static implicit operator Field(PropertyInfo property) => property == null ? null : new Field(property);
+		public static implicit operator Field(PropertyInfo property)
+		{
+			return property == null ? null : new Field
+			{
+				Property = property
+			};
+		}
 
 		public override int GetHashCode()
 		{
@@ -145,19 +130,46 @@ namespace Nest
 			}
 		}
 
-		public override bool Equals(object obj)
+		bool IEquatable<Field>.Equals(Field other)
 		{
-			switch (obj)
-			{
-				case string s: return Equals(s);
-				case PropertyInfo p: return Equals(p);
-				case Field f: return Equals(f);
-				default: return false;
-			}
+			return _type != null
+				? other != null && _type == other._type && _comparisonValue.Equals(other._comparisonValue)
+				: other != null && _comparisonValue.Equals(other._comparisonValue);
 		}
 
-		public static bool operator ==(Field x, Field y) => Equals(x, y);
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			if (obj.GetType() != GetType()) return false;
+			return ((IEquatable<Field>)this).Equals(obj as Field);
+		}
 
-		public static bool operator !=(Field x, Field y) => !Equals(x, y);
+		public static bool operator ==(Field x, Field y)
+		{
+			return Equals(x, y);
+		}
+
+		public static bool operator !=(Field x, Field y)
+		{
+			return !(x == y);
+		}
+
+		string IUrlParameter.GetString(IConnectionConfigurationValues settings)
+		{
+			var nestSettings = settings as IConnectionSettingsValues;
+			if (nestSettings == null)
+				throw new Exception("Tried to pass field name on querysting but it could not be resolved because no nest settings are available");
+
+			return nestSettings.Inferrer.Field(this);
+		}
+
+		private void SetComparisonValue(object value)
+		{
+			if (_comparisonValue != null && value != null)
+				throw new InvalidOperationException($"{nameof(_comparisonValue)} already has a value");
+
+			_comparisonValue = value;
+		}
 	}
 }

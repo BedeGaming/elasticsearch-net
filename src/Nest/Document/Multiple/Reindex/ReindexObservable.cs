@@ -1,66 +1,30 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using System.Collections.ObjectModel;
 using Elasticsearch.Net;
-using static Nest.Infer;
 
 namespace Nest
 {
-	public class ReindexObservable<TSource> : ReindexObservable<TSource, TSource>
-		where TSource : class
+	public class ReindexObservable<T> : IDisposable, IObservable<IReindexResponse<T>> where T : class
 	{
-		public ReindexObservable(IElasticClient client, IConnectionSettingsValues connectionSettings,
-			IReindexRequest<TSource, TSource> reindexRequest, CancellationToken cancellationToken
-		)
-			: base(client, connectionSettings, reindexRequest, cancellationToken) { }
-	}
-
-	public class ReindexObservable<TSource, TTarget> : IDisposable, IObservable<BulkAllResponse>
-		where TSource : class
-		where TTarget : class
-	{
-		private readonly IElasticClient _client;
-		private readonly CancellationToken _compositeCancelToken;
-		private readonly CancellationTokenSource _compositeCancelTokenSource;
+		private readonly IReindexRequest _reindexRequest;
 		private readonly IConnectionSettingsValues _connectionSettings;
-		private readonly IReindexRequest<TSource, TTarget> _reindexRequest;
 
-		private Action<long> _incrementSeenDocuments = l => { };
-		private Action _incrementSeenScrollOperations = () => { };
+		private IElasticClient _client { get; set; }
 
-		public ReindexObservable(
-			IElasticClient client,
-			IConnectionSettingsValues connectionSettings,
-			IReindexRequest<TSource, TTarget> reindexRequest,
-			CancellationToken cancellationToken
-		)
+		public ReindexObservable(IElasticClient client, IConnectionSettingsValues connectionSettings, IReindexRequest reindexRequest)
 		{
-			_connectionSettings = connectionSettings;
-			_reindexRequest = reindexRequest;
-			_client = client;
-			_compositeCancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-			_compositeCancelToken = _compositeCancelTokenSource.Token;
+			this._connectionSettings = connectionSettings;
+			this._reindexRequest = reindexRequest;
+			this._client = client;
 		}
 
-		public bool IsDisposed { get; private set; }
-
-		public void Dispose()
-		{
-			IsDisposed = true;
-			_compositeCancelTokenSource?.Cancel();
-		}
-
-		public IDisposable Subscribe(IObserver<BulkAllResponse> observer)
+		public IDisposable Subscribe(IObserver<IReindexResponse<T>> observer)
 		{
 			observer.ThrowIfNull(nameof(observer));
-			try
+			try 
 			{
-				Reindex(observer);
+				this.Reindex(observer);
 			}
 			catch (Exception e)
 			{
@@ -69,180 +33,103 @@ namespace Nest
 			return this;
 		}
 
-		public IDisposable Subscribe(ReindexObserver observer)
+		private void Reindex(IObserver<IReindexResponse<T>> observer)
 		{
-			_incrementSeenDocuments = observer.IncrementSeenScrollDocuments;
-			_incrementSeenScrollOperations = observer.IncrementSeenScrollOperations;
-			return Subscribe((IObserver<BulkAllResponse>)observer);
-		}
+			var fromIndex = this._reindexRequest.From;
+			var toIndex = this._reindexRequest.To;
+			var scroll = this._reindexRequest.Scroll ?? TimeSpan.FromMinutes(2);
+			var size = this._reindexRequest.Size ?? 100;
 
-		private void Reindex(IObserver<BulkAllResponse> observer)
-		{
-			var bulkMeta = _reindexRequest.BulkAll?.Invoke(Enumerable.Empty<IHitMetadata<TTarget>>());
-			var scrollAll = _reindexRequest.ScrollAll;
-			var toIndex = bulkMeta?.Index.Resolve(_connectionSettings);
+			var resolvedFrom = fromIndex.Resolve(this._connectionSettings);
+			resolvedFrom.ThrowIfNullOrEmpty(nameof(fromIndex));
+			var resolvedTo = toIndex.Resolve(this._connectionSettings);
+			resolvedTo.ThrowIfNullOrEmpty(nameof(toIndex));
 
-			var slices = CreateIndex(toIndex, scrollAll);
-
-			var backPressure = CreateBackPressure(bulkMeta, scrollAll, slices);
-
-			var scrollDocuments = ScrollAll(slices, backPressure)
-				.SelectMany(r => r.SearchResponse.Hits)
-				.Select(r => r.Copy(_reindexRequest.Map));
-
-			var observableBulk = BulkAll(scrollDocuments, backPressure, toIndex);
-
-			//by casting the observable can potentially store more meta data on the user provided observer
-			if (observer is BulkAllObserver moreInfoObserver)
-				observableBulk.Subscribe(moreInfoObserver);
-			else observableBulk.Subscribe(observer);
-		}
-
-		private BulkAllObservable<IHitMetadata<TTarget>> BulkAll(IEnumerable<IHitMetadata<TTarget>> scrollDocuments,
-			ProducerConsumerBackPressure backPressure, string toIndex
-		)
-		{
-			var bulkAllRequest = _reindexRequest.BulkAll?.Invoke(scrollDocuments);
-			if (bulkAllRequest == null)
-				throw new Exception("BulkAll must set on ReindexRequest in order to get the target of a Reindex operation");
-
-			bulkAllRequest.BackPressure = backPressure;
-			bulkAllRequest.BufferToBulk = (bulk, hits) =>
+			if (!this._reindexRequest.OmitIndexCreation)
 			{
-				foreach (var hit in hits)
-				{
-					var item = new BulkIndexOperation<TTarget>(hit.Source)
-					{
-						Index = toIndex,
-						Id = hit.Id,
-						Routing = hit.Routing,
-					};
-					bulk.AddOperation(item);
-				}
-			};
-
-			var observableBulk = _client.BulkAll(bulkAllRequest, _compositeCancelToken);
-			return observableBulk;
-		}
-
-		private ProducerConsumerBackPressure CreateBackPressure(IBulkAllRequest<IHitMetadata<TTarget>> bulkMeta, IScrollAllRequest scrollAll,
-			int slices
-		)
-		{
-			var backPressureFactor = _reindexRequest.BackPressureFactor ?? CoordinatedRequestDefaults.ReindexBackPressureFactor;
-			var maxConcurrentConsumers = bulkMeta?.MaxDegreeOfParallelism ?? CoordinatedRequestDefaults.BulkAllMaxDegreeOfParallelismDefault;
-			var maxConcurrentProducers = scrollAll?.MaxDegreeOfParallelism ?? slices;
-			var maxConcurrency = Math.Min(maxConcurrentConsumers, maxConcurrentProducers);
-
-			var bulkSize = bulkMeta?.Size ?? CoordinatedRequestDefaults.BulkAllSizeDefault;
-			var searchSize = scrollAll?.Search?.Size ?? 10;
-			var producerBandwidth = searchSize * maxConcurrency * backPressureFactor;
-			var funnelTooSmall = producerBandwidth < bulkSize;
-			if (funnelTooSmall)
-				throw new Exception("The back pressure settings are too conservative in providing enough documents for a single bulk operation. "
-					+ $"searchSize:{searchSize} * maxConcurrency:{maxConcurrency} * backPressureFactor:{backPressureFactor} = {producerBandwidth}"
-					+ $" which is smaller then the bulkSize:{bulkSize}."
-				);
-
-			var funnelExact = producerBandwidth == bulkSize;
-			if (funnelExact)
-				throw new Exception(
-					"The back pressure settings are too conservative. They provide enough documents for a single bulk but not enough room to advance "
-					+ $"searchSize:{searchSize} * maxConcurrency:{maxConcurrency} * backPressureFactor:{backPressureFactor} = {producerBandwidth}"
-					+ $" which is exactly the bulkSize:{bulkSize}. Increase the BulkAll max concurrency or the backPressureFactor"
-				);
-
-			var backPressure = new ProducerConsumerBackPressure(backPressureFactor, maxConcurrency);
-			return backPressure;
-		}
-
-		private IEnumerable<IScrollAllResponse<TSource>> ScrollAll(int slices, ProducerConsumerBackPressure backPressure)
-		{
-			var scrollAll = _reindexRequest.ScrollAll;
-			var scroll = _reindexRequest.ScrollAll?.ScrollTime ?? TimeSpan.FromMinutes(2);
-
-			var scrollAllRequest = new ScrollAllRequest(scroll, slices)
-			{
-				RoutingField = scrollAll.RoutingField,
-				MaxDegreeOfParallelism = scrollAll.MaxDegreeOfParallelism ?? slices,
-				Search = scrollAll.Search,
-				BackPressure = backPressure
-			};
-
-			var scrollObservable = _client.ScrollAll<TSource>(scrollAllRequest, _compositeCancelToken);
-			return new GetEnumerator<IScrollAllResponse<TSource>>()
-				.ToEnumerable(scrollObservable)
-				.Select(ObserveScrollAllResponse);
-		}
-
-		private IScrollAllResponse<TSource> ObserveScrollAllResponse(IScrollAllResponse<TSource> response)
-		{
-			_incrementSeenScrollOperations();
-			_incrementSeenDocuments(response.SearchResponse.Hits.Count);
-			return response;
-		}
-
-		private static ElasticsearchClientException Throw(string message, IApiCallDetails details) =>
-			new ElasticsearchClientException(PipelineFailure.BadResponse, message, details);
-
-		private int CreateIndex(string toIndex, IScrollAllRequest scrollAll)
-		{
-			var fromIndices = _reindexRequest.ScrollAll?.Search?.Index ?? Indices<TSource>();
-
-			if (string.IsNullOrEmpty(toIndex))
-				throw new Exception($"Could not resolve the target index name to reindex to make sure the bulk all operation describes one");
-
-			var numberOfShards = CreateIndexIfNeeded(fromIndices, toIndex);
-
-			var slices = scrollAll?.Slices ?? numberOfShards;
-			if (scrollAll?.Slices < 0 && numberOfShards.HasValue)
-				slices = numberOfShards;
-			else if (scrollAll?.Slices < 0)
-				throw new Exception("Slices is a negative number and no sane default could be inferred from the origin index's number_of_shards");
-
-			if (!slices.HasValue)
-				throw new Exception("Slices is not specified and could not be inferred from the number of "
-					+ "shards hint from the source. This could happen if the scroll all points to multiple indices and no slices have been set");
-
-			return slices.Value;
-		}
-
-		/// <summary>
-		/// Tries to create the target index if it does not exist already, if the source points to a single index we'll
-		/// use the original index settings to bootstrap the create index request if not provided
-		/// </summary>
-		/// <returns>Either the number of shards from to source or the target as a slice hint to ScrollAll</returns>
-		private int? CreateIndexIfNeeded(Indices fromIndices, string resolvedTo)
-		{
-			if (_reindexRequest.OmitIndexCreation) return null;
-
-			var pointsToSingleSourceIndex = fromIndices.Match((a) => false, (m) => m.Indices.Count == 1);
-			var targetExistsAlready = _client.Indices.Exists(resolvedTo);
-			if (targetExistsAlready.Exists) return null;
-
-			_compositeCancelToken.ThrowIfCancellationRequested();
-			IndexState originalIndexState = null;
-			var resolvedFrom = fromIndices.Resolve(_connectionSettings);
-
-			if (pointsToSingleSourceIndex)
-			{
-				var getIndexResponse = _client.Indices.Get(resolvedFrom);
-				_compositeCancelToken.ThrowIfCancellationRequested();
-				originalIndexState = getIndexResponse.Indices[resolvedFrom];
-				if (_reindexRequest.OmitIndexCreation)
-					return originalIndexState.Settings.NumberOfShards;
+				var indexSettings = this._client.GetIndex(fromIndex);
+				Func<CreateIndexDescriptor, ICreateIndexRequest> settings = (ci) => this._reindexRequest.CreateIndexRequest ?? ci;
+				var createIndexResponse = this._client.CreateIndex(
+					toIndex, (c) => settings(c.InitializeUsing(indexSettings.Indices[resolvedFrom])));
+				if (!createIndexResponse.IsValid)
+					throw new ElasticsearchClientException(PipelineFailure.BadResponse, $"Failed to create destination index {toIndex}.", createIndexResponse.ApiCall);
 			}
 
-			var createIndexRequest = _reindexRequest.CreateIndexRequest ??
-				(originalIndexState != null
-					? new CreateIndexRequest(resolvedTo, originalIndexState)
-					: new CreateIndexRequest(resolvedTo));
-			var createIndexResponse = _client.Indices.Create(createIndexRequest);
-			_compositeCancelToken.ThrowIfCancellationRequested();
-			if (!createIndexResponse.IsValid)
-				throw Throw($"Could not create destination index {resolvedTo}.", createIndexResponse.ApiCall);
+			var page = 0;
+			var searchResult = this._client.Search<T>(
+				s => s
+					.Index(fromIndex)
+					.Type(this._reindexRequest.Type)
+					.From(0)
+					.Size(size)
+					.Query(q=>this._reindexRequest.Query)
+					.Sort(sort=>sort.Field(f=>f.Field("_doc")))
+					.SearchType(SearchType.Scan)
+					.Scroll(scroll)
+				);
+			if (searchResult.Total <= 0)
+				throw new ElasticsearchClientException(PipelineFailure.BadResponse, $"Source index {fromIndex} doesn't contain any documents.", searchResult.ApiCall);
 
-			return createIndexRequest.Settings?.NumberOfShards;
+			IBulkResponse indexResult = null;
+			do
+			{
+				var result = searchResult;
+				searchResult = this._client.Scroll<T>(scroll, result.ScrollId);
+				if (searchResult.Documents.HasAny())
+					indexResult = this.IndexSearchResults(searchResult, observer, toIndex, page);
+				page++;
+			} while (searchResult.IsValid && indexResult != null && indexResult.IsValid && searchResult.Documents.HasAny());
+
+
+			observer.OnCompleted();
+		}
+
+		public IBulkResponse IndexSearchResults(ISearchResponse<T> searchResult,IObserver<IReindexResponse<T>> observer, IndexName toIndex, int page)
+		{
+			if (!searchResult.IsValid)
+				throw new ElasticsearchClientException(PipelineFailure.BadResponse, $"Indexing failed on scroll #{page}.", searchResult.ApiCall);
+
+			var bb = new BulkDescriptor();
+			foreach (var d in searchResult.Hits)
+			{
+				IHit<T> d1 = d;
+				bb.Index<T>(bi => Index(bi, d1, toIndex));
+			}
+
+			var indexResult = this._client.Bulk(bb);
+			if (!indexResult.IsValid)
+				throw new ElasticsearchClientException(PipelineFailure.BadResponse, $"Failed indexing page {page}.", indexResult.ApiCall);
+
+			observer.OnNext(new ReindexResponse<T>()
+			{
+				BulkResponse = indexResult,
+				SearchResponse = searchResult,
+				Scroll = page
+			});
+			return indexResult;
+		}
+
+		private static BulkIndexDescriptor<T> Index(BulkIndexDescriptor<T> descriptor, IHit<T> hit, IndexName toIndex)
+		{
+			descriptor
+				.Document(hit.Source)
+				.Type(hit.Type)
+				.Index(toIndex)
+				.Id(hit.Id)
+				.Routing(hit.Routing)
+				.Timestamp(hit.Timestamp);
+
+			if (hit.Parent != null)
+				descriptor.Parent(hit.Parent);
+
+			if (hit.Ttl.HasValue)
+				descriptor.Ttl(hit.Ttl.Value);
+
+			return descriptor;
+		}
+	
+		public void Dispose()
+		{
 		}
 	}
 }

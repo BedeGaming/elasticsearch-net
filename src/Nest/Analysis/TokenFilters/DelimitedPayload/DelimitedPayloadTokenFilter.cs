@@ -1,8 +1,4 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -14,41 +10,45 @@ namespace Nest
 		/// <summary>
 		/// Character used for splitting the tokens.
 		/// </summary>
-		[DataMember(Name ="delimiter")]
-		char? Delimiter { get; set; }
+		[JsonProperty("delimiter")]
+		char Delimiter { get; set; }
 
 		/// <summary>
-		/// The type of the payload. int for integer, float for float and identity for characters.
+		/// The type of the payload. int for integer, float for float and identity for characters. 
 		/// </summary>
-		[DataMember(Name ="encoding")]
+		[JsonProperty("encoding")]
 		DelimitedPayloadEncoding? Encoding { get; set; }
+
 	}
 
-	/// <inheritdoc />
+	/// <inheritdoc/>
 	public class DelimitedPayloadTokenFilter : TokenFilterBase, IDelimitedPayloadTokenFilter
 	{
-		public DelimitedPayloadTokenFilter() : base("delimited_payload") { }
+		public DelimitedPayloadTokenFilter() : base("delimited_payload_filter") { }
 
-		/// <inheritdoc />
-		public char? Delimiter { get; set; }
+		/// <inheritdoc/>
+		public char Delimiter { get; set; }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public DelimitedPayloadEncoding? Encoding { get; set; }
+
 	}
 
-	/// <inheritdoc />
-	public class DelimitedPayloadTokenFilterDescriptor
+	///<inheritdoc/>
+	public class DelimitedPayloadTokenFilterDescriptor 
 		: TokenFilterDescriptorBase<DelimitedPayloadTokenFilterDescriptor, IDelimitedPayloadTokenFilter>, IDelimitedPayloadTokenFilter
 	{
-		protected override string Type => "delimited_payload";
+		protected override string Type => "delimited_payload_filter";
 
-		char? IDelimitedPayloadTokenFilter.Delimiter { get; set; }
+		char IDelimitedPayloadTokenFilter.Delimiter { get; set; }
 		DelimitedPayloadEncoding? IDelimitedPayloadTokenFilter.Encoding { get; set; }
 
-		/// <inheritdoc />
-		public DelimitedPayloadTokenFilterDescriptor Delimiter(char? delimiter) => Assign(delimiter, (a, v) => a.Delimiter = v);
+		///<inheritdoc/>
+		public DelimitedPayloadTokenFilterDescriptor Delimiter(char delimiter) => Assign(a => a.Delimiter = delimiter);
 
-		/// <inheritdoc />
-		public DelimitedPayloadTokenFilterDescriptor Encoding(DelimitedPayloadEncoding? encoding) => Assign(encoding, (a, v) => a.Encoding = v);
+		///<inheritdoc/>
+		public DelimitedPayloadTokenFilterDescriptor Encoding(DelimitedPayloadEncoding? encoding) => Assign(a => a.Encoding = encoding);
+
 	}
+
 }

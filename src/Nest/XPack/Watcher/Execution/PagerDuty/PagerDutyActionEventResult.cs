@@ -1,23 +1,19 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
 	public class PagerDutyActionEventResult
 	{
-		[DataMember(Name ="event")]
+		[JsonProperty("event")]
 		public PagerDutyEvent Event { get; set; }
 
-		[DataMember(Name ="reason")]
+		[JsonProperty("reason")]
 		public string Reason { get; set; }
 
-		[DataMember(Name ="request")]
+		[JsonProperty("request")]
 		public HttpInputRequestResult Request { get; set; }
 
-		[DataMember(Name ="response")]
+		[JsonProperty("response")]
 		public HttpInputResponseResult Response { get; set; }
 	}
 }

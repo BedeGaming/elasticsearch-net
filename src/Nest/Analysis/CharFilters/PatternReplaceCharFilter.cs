@@ -1,61 +1,45 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
 	/// <summary>
-	/// The pattern_replace char filter allows the use of a regex to manipulate the characters in a string before analysis.
+	/// The pattern_replace char filter allows the use of a regex to manipulate the characters in a string before analysis. 
 	/// </summary>
 	public interface IPatternReplaceCharFilter : ICharFilter
 	{
-		[DataMember(Name ="flags")]
-		string Flags { get; set; }
-
-		[DataMember(Name ="pattern")]
+		[JsonProperty("pattern")]
 		string Pattern { get; set; }
 
-		[DataMember(Name ="replacement")]
+		[JsonProperty("replacement")]
 		string Replacement { get; set; }
 	}
-
-	/// <inheritdoc />
+	
+	/// <inheritdoc/>
 	public class PatternReplaceCharFilter : CharFilterBase, IPatternReplaceCharFilter
 	{
 		public PatternReplaceCharFilter() : base("pattern_replace") { }
 
-		/// <inheritdoc />
-		public string Flags { get; set; }
-
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public string Pattern { get; set; }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public string Replacement { get; set; }
 	}
-
-	/// <inheritdoc />
-	public class PatternReplaceCharFilterDescriptor
+	/// <inheritdoc/>
+	public class PatternReplaceCharFilterDescriptor 
 		: CharFilterDescriptorBase<PatternReplaceCharFilterDescriptor, IPatternReplaceCharFilter>, IPatternReplaceCharFilter
 	{
 		protected override string Type => "pattern_replace";
-
-		string IPatternReplaceCharFilter.Flags { get; set; }
 		string IPatternReplaceCharFilter.Pattern { get; set; }
 		string IPatternReplaceCharFilter.Replacement { get; set; }
 
-		/// <inheritdoc />
-		public PatternReplaceCharFilterDescriptor Flags(string flags) =>
-			Assign(flags, (a, v) => a.Flags = v);
-
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public PatternReplaceCharFilterDescriptor Pattern(string pattern) =>
-			Assign(pattern, (a, v) => a.Pattern = v);
+			Assign(a => a.Pattern = pattern);
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public PatternReplaceCharFilterDescriptor Replacement(string replacement) =>
-			Assign(replacement, (a, v) => a.Replacement = v);
+			Assign(a => a.Replacement = replacement);
+
 	}
 }

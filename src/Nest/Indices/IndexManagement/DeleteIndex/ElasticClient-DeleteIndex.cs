@@ -1,10 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
@@ -12,45 +8,44 @@ namespace Nest
 	{
 		/// <summary>
 		/// The delete index API allows to delete an existing index.
-		/// <para> </para>
-		/// http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-delete-index.html
+		/// <para> </para>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-delete-index.html
 		/// </summary>
 		/// <param name="selector">A descriptor that describes the parameters for the delete index operation</param>
-		DeleteIndexResponse DeleteIndex(Indices indices, Func<DeleteIndexDescriptor, IDeleteIndexRequest> selector = null);
+		IDeleteIndexResponse DeleteIndex(Indices indices, Func<DeleteIndexDescriptor, IDeleteIndexRequest> selector = null);
 
-		/// <inheritdoc />
-		DeleteIndexResponse DeleteIndex(IDeleteIndexRequest request);
+		/// <inheritdoc/>
+		IDeleteIndexResponse DeleteIndex(IDeleteIndexRequest request);
 
-		/// <inheritdoc />
-		Task<DeleteIndexResponse> DeleteIndexAsync(
-			Indices indices,
-			Func<DeleteIndexDescriptor, IDeleteIndexRequest> selector = null,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IDeleteIndexResponse> DeleteIndexAsync(Indices indices, Func<DeleteIndexDescriptor, IDeleteIndexRequest> selector = null);
 
-		/// <inheritdoc />
-		Task<DeleteIndexResponse> DeleteIndexAsync(IDeleteIndexRequest request, CancellationToken ct = default);
+		/// <inheritdoc/>
+		Task<IDeleteIndexResponse> DeleteIndexAsync(IDeleteIndexRequest request);
+
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public DeleteIndexResponse DeleteIndex(Indices indices, Func<DeleteIndexDescriptor, IDeleteIndexRequest> selector = null) =>
-			DeleteIndex(selector.InvokeOrDefault(new DeleteIndexDescriptor(indices)));
+		/// <inheritdoc/>
+		public IDeleteIndexResponse DeleteIndex(Indices indices, Func<DeleteIndexDescriptor, IDeleteIndexRequest> selector = null) =>
+			this.DeleteIndex(selector.InvokeOrDefault(new DeleteIndexDescriptor(indices)));
 
-		/// <inheritdoc />
-		public DeleteIndexResponse DeleteIndex(IDeleteIndexRequest request) =>
-			DoRequest<IDeleteIndexRequest, DeleteIndexResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IDeleteIndexResponse DeleteIndex(IDeleteIndexRequest request) => 
+			this.Dispatcher.Dispatch<IDeleteIndexRequest, DeleteIndexRequestParameters, DeleteIndexResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.IndicesDeleteDispatch<DeleteIndexResponse>(p)
+			);
 
-		/// <inheritdoc />
-		public Task<DeleteIndexResponse> DeleteIndexAsync(
-			Indices indices,
-			Func<DeleteIndexDescriptor, IDeleteIndexRequest> selector = null,
-			CancellationToken ct = default
-		) => DeleteIndexAsync(selector.InvokeOrDefault(new DeleteIndexDescriptor(indices)), ct);
+		/// <inheritdoc/>
+		public Task<IDeleteIndexResponse> DeleteIndexAsync(Indices indices, Func<DeleteIndexDescriptor, IDeleteIndexRequest> selector = null) =>
+			this.DeleteIndexAsync(selector.InvokeOrDefault(new DeleteIndexDescriptor(indices)));
 
-		/// <inheritdoc />
-		public Task<DeleteIndexResponse> DeleteIndexAsync(IDeleteIndexRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IDeleteIndexRequest, DeleteIndexResponse>(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IDeleteIndexResponse> DeleteIndexAsync(IDeleteIndexRequest request) => 
+			this.Dispatcher.DispatchAsync<IDeleteIndexRequest, DeleteIndexRequestParameters, DeleteIndexResponse, IDeleteIndexResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.IndicesDeleteDispatchAsync<DeleteIndexResponse>(p)
+			);
 	}
 }

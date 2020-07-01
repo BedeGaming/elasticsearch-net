@@ -1,21 +1,21 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	public class ClusterRerouteResponse : ResponseBase
+	public interface IClusterRerouteResponse : IResponse
 	{
-		[DataMember(Name ="explanations")]
-		public IReadOnlyCollection<ClusterRerouteExplanation> Explanations { get; internal set; } =
-			EmptyReadOnly<ClusterRerouteExplanation>.Collection;
+		[JsonProperty("state")]
+		ClusterRerouteState State { get; set; }
 
-		[DataMember(Name ="state")]
-		public DynamicDictionary State { get; internal set; }
+		[JsonProperty("explanations")]
+		IEnumerable<ClusterRerouteExplanation> Explanations { get; set; }
+	}
+
+	public class ClusterRerouteResponse : ResponseBase, IClusterRerouteResponse
+	{
+		public int Version { get; set; }
+		public ClusterRerouteState State { get; set; }
+		public IEnumerable<ClusterRerouteExplanation> Explanations { get; set; }
 	}
 }

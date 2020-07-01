@@ -1,26 +1,22 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System;
+﻿using Elasticsearch.Net;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Elasticsearch.Net;
 
 namespace Nest
 {
-	public class SnapshotObservable : IDisposable, IObservable<SnapshotStatusResponse>
+	public class SnapshotObservable : IDisposable, IObservable<ISnapshotStatusResponse>
 	{
 		private readonly IElasticClient _elasticClient;
-		private readonly TimeSpan _interval = TimeSpan.FromSeconds(2);
 		private readonly ISnapshotRequest _snapshotRequest;
-		private readonly SnapshotStatusHumbleObject _snapshotStatusHumbleObject;
-		private EventHandler<SnapshotCompletedEventArgs> _completedEentHandler;
-		private bool _disposed;
-		private EventHandler<SnapshotErrorEventArgs> _errorEventHandler;
-		private EventHandler<SnapshotNextEventArgs> _nextEventHandler;
+		private readonly TimeSpan _interval = TimeSpan.FromSeconds(2);
 		private Timer _timer;
+		private bool _disposed;
+		private readonly SnapshotStatusHumbleObject _snapshotStatusHumbleObject;
+		private EventHandler<SnapshotNextEventArgs> _nextEventHandler;
+		private EventHandler<SnapshotCompletedEventArgs> _completedEentHandler;
+		private EventHandler<SnapshotErrorEventArgs> _errorEventHandler;
 
 		public SnapshotObservable(IElasticClient elasticClient, ISnapshotRequest snapshotRequest)
 		{
@@ -43,16 +39,14 @@ namespace Nest
 			_interval = interval;
 		}
 
-		public void Dispose() => Dispose(true);
-
-		public IDisposable Subscribe(IObserver<SnapshotStatusResponse> observer)
+		public IDisposable Subscribe(IObserver<ISnapshotStatusResponse> observer)
 		{
 			observer.ThrowIfNull(nameof(observer));
 
 			try
 			{
-				_snapshotRequest.RequestParameters.WaitForCompletion = false;
-				var snapshotResponse = _elasticClient.Snapshot.Snapshot(_snapshotRequest);
+				_snapshotRequest.RequestParameters.WaitForCompletion(false);
+				var snapshotResponse = this._elasticClient.Snapshot(_snapshotRequest);
 
 				if (!snapshotResponse.IsValid)
 					throw new ElasticsearchClientException(PipelineFailure.BadResponse, "Failed to create snapshot.", snapshotResponse.ApiCall);
@@ -81,7 +75,7 @@ namespace Nest
 
 		private void Snapshot(object state)
 		{
-			var observer = state as IObserver<SnapshotStatusResponse>;
+			var observer = state as IObserver<ISnapshotStatusResponse>;
 
 			if (observer == null) throw new ArgumentException("state");
 
@@ -92,8 +86,7 @@ namespace Nest
 
 				_snapshotStatusHumbleObject.CheckStatus();
 
-				_timer.Change(TimeSpan.FromMilliseconds(Math.Max(0, _interval.TotalMilliseconds - watch.ElapsedMilliseconds)),
-					Timeout.InfiniteTimeSpan);
+				_timer.Change(TimeSpan.FromMilliseconds(Math.Max(0, _interval.TotalMilliseconds - watch.ElapsedMilliseconds)), Timeout.InfiniteTimeSpan);
 			}
 			catch (Exception exception)
 			{
@@ -102,7 +95,15 @@ namespace Nest
 			}
 		}
 
-		private void StopTimer(object sender, EventArgs restoreCompletedEventArgs) => _timer.Change(Timeout.Infinite, Timeout.Infinite);
+		private void StopTimer(object sender, EventArgs restoreCompletedEventArgs)
+		{
+			_timer.Change(Timeout.Infinite, Timeout.Infinite);
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
 
 		protected virtual void Dispose(bool disposing)
 		{
@@ -123,34 +124,50 @@ namespace Nest
 			_disposed = true;
 		}
 
-		~SnapshotObservable() => Dispose(false);
+		~SnapshotObservable()
+		{
+			Dispose(false);
+		}
 	}
 
 	public class SnapshotNextEventArgs : EventArgs
 	{
-		public SnapshotNextEventArgs(SnapshotStatusResponse snapshotStatusResponse) => SnapshotStatusResponse = snapshotStatusResponse;
+		public ISnapshotStatusResponse SnapshotStatusResponse { get; }
 
-		public SnapshotStatusResponse SnapshotStatusResponse { get; }
+		public SnapshotNextEventArgs(ISnapshotStatusResponse snapshotStatusResponse)
+		{
+			SnapshotStatusResponse = snapshotStatusResponse;
+		}
 	}
 
 	public class SnapshotCompletedEventArgs : EventArgs
 	{
-		public SnapshotCompletedEventArgs(SnapshotStatusResponse snapshotStatusResponse) => SnapshotStatusResponse = snapshotStatusResponse;
+		public ISnapshotStatusResponse SnapshotStatusResponse { get; private set; }
 
-		public SnapshotStatusResponse SnapshotStatusResponse { get; private set; }
+		public SnapshotCompletedEventArgs(ISnapshotStatusResponse snapshotStatusResponse)
+		{
+			SnapshotStatusResponse = snapshotStatusResponse;
+		}
 	}
 
 	public class SnapshotErrorEventArgs : EventArgs
 	{
-		public SnapshotErrorEventArgs(Exception exception) => Exception = exception;
-
 		public Exception Exception { get; }
+
+		public SnapshotErrorEventArgs(Exception exception)
+		{
+			Exception = exception;
+		}
 	}
 
 	public class SnapshotStatusHumbleObject
 	{
 		private readonly IElasticClient _elasticClient;
 		private readonly ISnapshotRequest _snapshotRequest;
+
+		public event EventHandler<SnapshotCompletedEventArgs> Completed;
+		public event EventHandler<SnapshotErrorEventArgs> Error;
+		public event EventHandler<SnapshotNextEventArgs> Next;
 
 		public SnapshotStatusHumbleObject(IElasticClient elasticClient, ISnapshotRequest snapshotRequest)
 		{
@@ -161,21 +178,16 @@ namespace Nest
 			_snapshotRequest = snapshotRequest;
 		}
 
-		public event EventHandler<SnapshotCompletedEventArgs> Completed;
-		public event EventHandler<SnapshotErrorEventArgs> Error;
-		public event EventHandler<SnapshotNextEventArgs> Next;
-
 		public void CheckStatus()
 		{
 			try
 			{
 				var snapshotStatusResponse =
-					_elasticClient.Snapshot.Status(new SnapshotStatusRequest(_snapshotRequest.RepositoryName,
+					_elasticClient.SnapshotStatus(new SnapshotStatusRequest(_snapshotRequest.RepositoryName,
 						_snapshotRequest.Snapshot));
 
 				if (!snapshotStatusResponse.IsValid)
-					throw new ElasticsearchClientException(PipelineFailure.BadResponse, "Failed to get snapshot status.",
-						snapshotStatusResponse.ApiCall);
+					throw new ElasticsearchClientException(PipelineFailure.BadResponse, "Failed to get snapshot status.", snapshotStatusResponse.ApiCall);
 
 				if (snapshotStatusResponse.Snapshots.All(s => s.ShardsStats.Done == s.ShardsStats.Total))
 				{
@@ -209,4 +221,5 @@ namespace Nest
 			if (handler != null) handler(this, errorEventArgs);
 		}
 	}
+
 }

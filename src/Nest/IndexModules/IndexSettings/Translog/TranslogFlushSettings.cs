@@ -1,16 +1,16 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 namespace Nest
 {
 	public interface ITranslogFlushSettings
 	{
 		/// <summary>
-		/// How often to check if a flush is needed, randomized between
-		/// the interval value and 2x the interval value. Defaults to 5s.
+		/// Once the translog hits this size, a flush will happen. Defaults to 512mb.
 		/// </summary>
-		Time Interval { get; set; }
+		string ThresholdSize { get; set; }
+
+		/// <summary>
+		/// After how many operations to flush. Defaults to unlimited.
+		/// </summary>
+		int? ThresholdOps { get; set; }
 
 		/// <summary>
 		/// How long to wait before triggering a flush regardless of translog size. Defaults to 30m.
@@ -18,37 +18,42 @@ namespace Nest
 		Time ThresholdPeriod { get; set; }
 
 		/// <summary>
-		/// Once the translog hits this size, a flush will happen. Defaults to 512mb.
+		/// How often to check if a flush is needed, randomized between 
+		/// the interval value and 2x the interval value. Defaults to 5s.
 		/// </summary>
-		string ThresholdSize { get; set; }
+		Time Interval { get; set; }
 	}
 
 	public class TranslogFlushSettings : ITranslogFlushSettings
 	{
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public Time Interval { get; set; }
-
-		/// <inheritdoc />
+		/// <inheritdoc/>
+		public int? ThresholdOps { get; set; }
+		/// <inheritdoc/>
 		public Time ThresholdPeriod { get; set; }
-
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public string ThresholdSize { get; set; }
 	}
 
-	public class TranslogFlushSettingsDescriptor : DescriptorBase<TranslogFlushSettingsDescriptor, ITranslogFlushSettings>, ITranslogFlushSettings
+	public class TranslogFlushSettingsDescriptor: DescriptorBase<TranslogFlushSettingsDescriptor, ITranslogFlushSettings>, ITranslogFlushSettings
 	{
 		Time ITranslogFlushSettings.Interval { get; set; }
+		int? ITranslogFlushSettings.ThresholdOps { get; set; }
 		Time ITranslogFlushSettings.ThresholdPeriod { get; set; }
 		string ITranslogFlushSettings.ThresholdSize { get; set; }
 
-		/// <inheritdoc />
-		public TranslogFlushSettingsDescriptor ThresholdSize(string size) => Assign(size, (a, v) => a.ThresholdSize = v);
+		/// <inheritdoc/>
+		public TranslogFlushSettingsDescriptor ThresholdSize(string size) => Assign(a => a.ThresholdSize = size);
 
-		/// <inheritdoc />
-		public TranslogFlushSettingsDescriptor ThresholdPeriod(Time time) =>
-			Assign(time, (a, v) => a.ThresholdPeriod = v);
+		/// <inheritdoc/>
+		public TranslogFlushSettingsDescriptor ThresholdOps(int? operations) => Assign(a => a.ThresholdOps = operations);
 
-		/// <inheritdoc />
-		public TranslogFlushSettingsDescriptor Interval(Time time) => Assign(time, (a, v) => a.Interval = v);
+		/// <inheritdoc/>
+		public TranslogFlushSettingsDescriptor ThresholdPeriod(Time time) => 
+			Assign(a => a.ThresholdPeriod = time);
+
+		/// <inheritdoc/>
+		public TranslogFlushSettingsDescriptor Interval(Time time) => Assign(a => a.Interval = time);
 	}
 }

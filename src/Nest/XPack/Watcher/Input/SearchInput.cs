@@ -1,11 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -13,8 +8,8 @@ namespace Nest
 	/// An input to load the results of an Elasticsearch search request into the execution
 	/// context when a watch is triggered.
 	/// </summary>
-	[InterfaceDataContract]
-	[ReadAs(typeof(SearchInput))]
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<SearchInput>))]
 	public interface ISearchInput : IInput
 	{
 		/// <summary>
@@ -22,13 +17,13 @@ namespace Nest
 		/// When a search generates a large response, you can use extract
 		/// to select the relevant fields instead of loading the entire response
 		/// </summary>
-		[DataMember(Name ="extract")]
+		[JsonProperty("extract")]
 		IEnumerable<string> Extract { get; set; }
 
 		/// <summary>
 		/// The search request details
 		/// </summary>
-		[DataMember(Name ="request")]
+		[JsonProperty("request")]
 		ISearchInputRequest Request { get; set; }
 
 		/// <summary>
@@ -36,11 +31,11 @@ namespace Nest
 		/// If no response is returned within this time, the search input times out and fails.
 		/// This setting overrides the default search operations timeouts.
 		/// </summary>
-		[DataMember(Name ="timeout")]
+		[JsonProperty("timeout")]
 		Time Timeout { get; set; }
 	}
 
-	/// <inheritdoc cref="ISearchInput" />
+	/// <inheritdoc />
 	public class SearchInput : InputBase, ISearchInput
 	{
 		/// <inheritdoc />
@@ -55,7 +50,7 @@ namespace Nest
 		internal override void WrapInContainer(IInputContainer container) => container.Search = this;
 	}
 
-	/// <inheritdoc cref="ISearchInput" />
+	/// <inheritdoc />
 	public class SearchInputDescriptor
 		: DescriptorBase<SearchInputDescriptor, ISearchInput>, ISearchInput
 	{
@@ -63,17 +58,17 @@ namespace Nest
 		ISearchInputRequest ISearchInput.Request { get; set; }
 		Time ISearchInput.Timeout { get; set; }
 
-		/// <inheritdoc cref="ISearchInput.Request" />
+		/// <inheritdoc />
 		public SearchInputDescriptor Request(Func<SearchInputRequestDescriptor, ISearchInputRequest> selector) =>
-			Assign(selector, (a, v) => a.Request = v?.InvokeOrDefault(new SearchInputRequestDescriptor()));
+			Assign(a => a.Request = selector?.InvokeOrDefault(new SearchInputRequestDescriptor()));
 
-		/// <inheritdoc cref="ISearchInput.Extract" />
-		public SearchInputDescriptor Extract(IEnumerable<string> extract) => Assign(extract, (a, v) => a.Extract = v);
+		/// <inheritdoc />
+		public SearchInputDescriptor Extract(IEnumerable<string> extract) => Assign(a => a.Extract = extract);
 
-		/// <inheritdoc cref="ISearchInput.Extract" />
-		public SearchInputDescriptor Extract(params string[] extract) => Assign(extract, (a, v) => a.Extract = v);
+		/// <inheritdoc />
+		public SearchInputDescriptor Extract(params string[] extract) => Assign(a => a.Extract = extract);
 
-		/// <inheritdoc cref="ISearchInput.Timeout" />
-		public SearchInputDescriptor Timeout(Time timeout) => Assign(timeout, (a, v) => a.Timeout = v);
+		/// <inheritdoc />
+		public SearchInputDescriptor Timeout(Time timeout) => Assign(a => a.Timeout = timeout);
 	}
 }

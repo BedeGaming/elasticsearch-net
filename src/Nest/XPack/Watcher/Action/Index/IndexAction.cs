@@ -1,57 +1,63 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Linq.Expressions;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
+	[JsonObject]
 	public interface IIndexAction : IAction
 	{
-		[DataMember(Name = "execution_time_field")]
-		Field ExecutionTimeField { get; set; }
-
-		[DataMember(Name = "index")]
+		[JsonProperty("index")]
 		IndexName Index { get; set; }
 
-		[DataMember(Name = "timeout")]
+		[JsonProperty("doc_type")]
+		TypeName DocType { get; set; }
+
+		[JsonProperty("execution_time_field")]
+		Field ExecutionTimeField { get; set; }
+
+		[JsonProperty("timeout")]
 		Time Timeout { get; set; }
 	}
 
 	public class IndexAction : ActionBase, IIndexAction
 	{
-		public IndexAction(string name) : base(name) { }
-
 		public override ActionType ActionType => ActionType.Index;
-
-		public Field ExecutionTimeField { get; set; }
 
 		public IndexName Index { get; set; }
 
+		public TypeName DocType { get; set; }
+
+		public Field ExecutionTimeField { get; set; }
+
 		public Time Timeout { get; set; }
+
+		public IndexAction(string name) : base(name) {}
 	}
 
 	public class IndexActionDescriptor : ActionsDescriptorBase<IndexActionDescriptor, IIndexAction>, IIndexAction
 	{
-		public IndexActionDescriptor(string name) : base(name) { }
-
-		protected override ActionType ActionType => ActionType.Index;
-		Field IIndexAction.ExecutionTimeField { get; set; }
 		IndexName IIndexAction.Index { get; set; }
+		TypeName IIndexAction.DocType { get; set; }
+		Field IIndexAction.ExecutionTimeField { get; set; }
 		Time IIndexAction.Timeout { get; set; }
 
-		public IndexActionDescriptor Index(IndexName index) => Assign(index, (a, v) => a.Index = v);
+		protected override ActionType ActionType => ActionType.Index;
 
-		public IndexActionDescriptor Index<T>() => Assign(typeof(T), (a, v) => a.Index = v);
+		public IndexActionDescriptor(string name) : base(name) {}
 
-		public IndexActionDescriptor ExecutionTimeField(Field field) => Assign(field, (a, v) => a.ExecutionTimeField = v);
+		public IndexActionDescriptor Index(IndexName index) => Assign(a => a.Index = index);
 
-		public IndexActionDescriptor ExecutionTimeField<T, TValue>(Expression<Func<T, TValue>> objectPath) => Assign(objectPath, (a, v) => a.ExecutionTimeField = v);
+		public IndexActionDescriptor Index<T>() => Assign(a => a.Index = typeof(T));
 
-		public IndexActionDescriptor Timeout(Time timeout) => Assign(timeout, (a, v) => a.Timeout = v);
+		public IndexActionDescriptor DocType(TypeName type) => Assign(a => a.DocType = type);
+
+		public IndexActionDescriptor DocType<T>() => Assign(a => a.DocType = typeof(T));
+
+		public IndexActionDescriptor ExecutionTimeField(Field field) => Assign(a => a.ExecutionTimeField = field);
+
+		public IndexActionDescriptor ExecutionTimeField<T>(Expression<Func<T, object>> objectPath) => Assign(a => a.ExecutionTimeField = objectPath);
+
+		public IndexActionDescriptor Timeout(Time timeout) => Assign(a => a.Timeout = timeout);
 	}
 }

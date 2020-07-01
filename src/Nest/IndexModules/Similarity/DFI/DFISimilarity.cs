@@ -1,8 +1,4 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -14,28 +10,28 @@ namespace Nest
 		/// <summary>
 		/// The independence measure
 		/// </summary>
-		[DataMember(Name ="independence_measure")]
+		[JsonProperty("independence_measure")]
 		DFIIndependenceMeasure? IndependenceMeasure { get; set; }
 	}
 
-	/// <inheritdoc />
+	/// <inheritdoc/>
 	public class DFISimilarity : IDFISimilarity
 	{
-		/// <inheritdoc />
-		public DFIIndependenceMeasure? IndependenceMeasure { get; set; }
-
 		public string Type => "DFI";
+
+		/// <inheritdoc/>
+		public DFIIndependenceMeasure? IndependenceMeasure { get; set; }
 	}
 
-	/// <inheritdoc />
+	/// <inheritdoc/>
 	public class DFISimilarityDescriptor
 		: DescriptorBase<DFISimilarityDescriptor, IDFISimilarity>, IDFISimilarity
 	{
-		DFIIndependenceMeasure? IDFISimilarity.IndependenceMeasure { get; set; }
 		string ISimilarity.Type => "DFI";
+		DFIIndependenceMeasure? IDFISimilarity.IndependenceMeasure { get; set; }
 
-		/// <inheritdoc />
-		public DFISimilarityDescriptor IndependenceMeasure(DFIIndependenceMeasure? independenceMeasure) =>
-			Assign(independenceMeasure, (a, v) => a.IndependenceMeasure = v);
+		/// <inheritdoc/>
+		public DFISimilarityDescriptor IndependenceMeasure(DFIIndependenceMeasure independenceMeasure) =>
+			Assign(a => a.IndependenceMeasure = independenceMeasure);
 	}
 }

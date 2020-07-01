@@ -1,46 +1,44 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Nest
 {
 	public class TopHitsAggregate : MetricAggregateBase
 	{
-		private readonly IJsonFormatterResolver _formatterResolver;
-		private readonly IList<LazyDocument> _hits;
+		private readonly IEnumerable<JObject> _hits;
 
-		public TopHitsAggregate() { }
+		private readonly JsonSerializer _defaultSerializer;
 
-		internal TopHitsAggregate(IList<LazyDocument> hits, IJsonFormatterResolver formatterResolver)
-		{
-			_hits = hits;
-			_formatterResolver = formatterResolver;
-		}
+		public long Total { get; set; }
 
 		public double? MaxScore { get; set; }
 
-		public TotalHits Total { get; set; }
-
-		private IEnumerable<IHit<TDocument>> ConvertHits<TDocument>()
-			where TDocument : class
+		public TopHitsAggregate() { }
+		
+		internal TopHitsAggregate(IEnumerable<JObject> hits)
 		{
-			var formatter = _formatterResolver.GetFormatter<IHit<TDocument>>();
-			return _hits.Select(h =>
-			{
-				var reader = new JsonReader(h.Bytes);
-				return formatter.Deserialize(ref reader, _formatterResolver);
-			});
+			_hits = hits;
 		}
 
-		public IReadOnlyCollection<IHit<TDocument>> Hits<TDocument>()
-			where TDocument : class =>
-			ConvertHits<TDocument>().ToList().AsReadOnly();
+		internal TopHitsAggregate(IEnumerable<JObject> hits, JsonSerializer serializer)
+		{
+			_hits = hits ?? Enumerable.Empty<JObject>();
+			_defaultSerializer = serializer;
+		}
 
-		public IReadOnlyCollection<TDocument> Documents<TDocument>() where TDocument : class =>
-			ConvertHits<TDocument>().Select(h => h.Source).ToList().AsReadOnly();
+		public IEnumerable<Hit<T>> Hits<T>(JsonSerializer serializer = null) 
+			where T : class
+		{
+			var s = serializer ?? _defaultSerializer;
+
+			return s != null 
+				? _hits.Select(h => h.ToObject<Hit<T>>(s)) 
+				: _hits.Select(h => h.ToObject<Hit<T>>());
+		}
+
+		public IEnumerable<T> Documents<T>(JsonSerializer serializer = null) where T : class =>
+			this.Hits<T>(serializer).Select(h => h.Source);
 	}
 }

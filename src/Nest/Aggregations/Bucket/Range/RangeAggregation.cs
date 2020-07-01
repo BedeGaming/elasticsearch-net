@@ -1,39 +1,34 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(RangeAggregation))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<RangeAggregation>))]
 	public interface IRangeAggregation : IBucketAggregation
 	{
-		[DataMember(Name ="field")]
+		[JsonProperty("field")]
 		Field Field { get; set; }
 
-		[DataMember(Name ="ranges")]
-		IEnumerable<IAggregationRange> Ranges { get; set; }
-
-		[DataMember(Name ="script")]
+		[JsonProperty("script")]
 		IScript Script { get; set; }
+
+		[JsonProperty(PropertyName = "ranges")]
+		IEnumerable<IRange> Ranges { get; set; }
 	}
 
 	public class RangeAggregation : BucketAggregationBase, IRangeAggregation
 	{
+		public Field Field { get; set; }
+		public IScript Script { get; set; }
+		public IEnumerable<IRange> Ranges { get; set; }
+
 		internal RangeAggregation() { }
 
 		public RangeAggregation(string name) : base(name) { }
-
-		public Field Field { get; set; }
-		public IEnumerable<IAggregationRange> Ranges { get; set; }
-		public IScript Script { get; set; }
 
 		internal override void WrapInContainer(AggregationContainer c) => c.Range = this;
 	}
@@ -44,20 +39,20 @@ namespace Nest
 	{
 		Field IRangeAggregation.Field { get; set; }
 
-		IEnumerable<IAggregationRange> IRangeAggregation.Ranges { get; set; }
-
 		IScript IRangeAggregation.Script { get; set; }
 
-		public RangeAggregationDescriptor<T> Field(Field field) => Assign(field, (a, v) => a.Field = v);
+		IEnumerable<IRange> IRangeAggregation.Ranges { get; set; }
 
-		public RangeAggregationDescriptor<T> Field<TValue>(Expression<Func<T, TValue>> field) => Assign(field, (a, v) => a.Field = v);
+		public RangeAggregationDescriptor<T> Field(string field) => Assign(a => a.Field = field);
 
-		public RangeAggregationDescriptor<T> Script(string script) => Assign((InlineScript)script, (a, v) => a.Script = v);
+		public RangeAggregationDescriptor<T> Field(Expression<Func<T, object>> field) => Assign(a => a.Field = field);
+
+		public RangeAggregationDescriptor<T> Script(string script) => Assign(a => a.Script = (InlineScript)script);
 
 		public RangeAggregationDescriptor<T> Script(Func<ScriptDescriptor, IScript> scriptSelector) =>
-			Assign(scriptSelector, (a, v) => a.Script = v?.Invoke(new ScriptDescriptor()));
+			Assign(a => a.Script = scriptSelector?.Invoke(new ScriptDescriptor()));
 
-		public RangeAggregationDescriptor<T> Ranges(params Func<AggregationRangeDescriptor, IAggregationRange>[] ranges) =>
-			Assign(ranges.Select(r => r(new AggregationRangeDescriptor())), (a, v) => a.Ranges = v);
+		public RangeAggregationDescriptor<T> Ranges(params Func<RangeDescriptor, IRange>[] ranges) =>
+			Assign(a => a.Ranges = ranges.Select(r => r(new RangeDescriptor())));
 	}
 }

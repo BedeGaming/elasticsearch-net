@@ -1,17 +1,11 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(FielddataRegexFilter))]
+	[JsonObject(MemberSerialization.OptIn)]
 	public interface IFielddataRegexFilter
 	{
-		[DataMember(Name ="pattern")]
+		[JsonProperty("pattern")]
 		string Pattern { get; set; }
 	}
 
@@ -25,6 +19,6 @@ namespace Nest
 	{
 		string IFielddataRegexFilter.Pattern { get; set; }
 
-		public FielddataRegexFilterDescriptor Pattern(string pattern) => Assign(pattern, (a, v) => a.Pattern = v);
+		public FielddataRegexFilterDescriptor Pattern(string pattern) => Assign(a => a.Pattern = pattern);
 	}
 }

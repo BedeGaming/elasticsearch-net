@@ -1,58 +1,56 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	public interface IMoveClusterRerouteCommand : IClusterRerouteCommand
+
+	public interface IMoveClusterRerouteCommand: IClusterRerouteCommand
 	{
-		[DataMember(Name ="from_node")]
+		[JsonProperty("from_node")]
 		string FromNode { get; set; }
 
-		[DataMember(Name ="index")]
+		[JsonProperty("index")]
 		IndexName Index { get; set; }
 
-		[DataMember(Name ="shard")]
-		int? Shard { get; set; }
+		[JsonProperty("shard")]
+		int Shard { get; set; }
 
-		[DataMember(Name ="to_node")]
+		[JsonProperty("to_node")]
 		string ToNode { get; set; }
 	}
-
 	public class MoveClusterRerouteCommand : IMoveClusterRerouteCommand
 	{
-		public string FromNode { get; set; }
-
-		public IndexName Index { get; set; }
 		public string Name => "move";
 
-		public int? Shard { get; set; }
+		public IndexName Index { get; set; }
+
+		public int Shard { get; set; }
+
+		public string FromNode { get; set; }
 
 		public string ToNode { get; set; }
 	}
 
-	public class MoveClusterRerouteCommandDescriptor
+	public class MoveClusterRerouteCommandDescriptor 
 		: DescriptorBase<MoveClusterRerouteCommandDescriptor, IMoveClusterRerouteCommand>, IMoveClusterRerouteCommand
 	{
-		string IMoveClusterRerouteCommand.FromNode { get; set; }
-
-		IndexName IMoveClusterRerouteCommand.Index { get; set; }
 		string IClusterRerouteCommand.Name => "move";
 
-		int? IMoveClusterRerouteCommand.Shard { get; set; }
+		IndexName IMoveClusterRerouteCommand.Index { get; set; }
+
+		int IMoveClusterRerouteCommand.Shard { get; set; }
+
+		string IMoveClusterRerouteCommand.FromNode { get; set; }
 
 		string IMoveClusterRerouteCommand.ToNode { get; set; }
 
-		public MoveClusterRerouteCommandDescriptor Index(IndexName index) => Assign(index, (a, v) => a.Index = v);
+		public MoveClusterRerouteCommandDescriptor Index(IndexName index) => Assign(a => a.Index = index);
 
-		public MoveClusterRerouteCommandDescriptor Index<T>() where T : class => Assign(typeof(T), (a, v) => a.Index = v);
+		public MoveClusterRerouteCommandDescriptor Index<T>() where T : class => Assign(a => a.Index = typeof(T));
 
-		public MoveClusterRerouteCommandDescriptor Shard(int? shard) => Assign(shard, (a, v) => a.Shard = v);
+		public MoveClusterRerouteCommandDescriptor Shard(int shard) => Assign(a => a.Shard = shard);
 
-		public MoveClusterRerouteCommandDescriptor FromNode(string fromNode) => Assign(fromNode, (a, v) => a.FromNode = v);
+		public MoveClusterRerouteCommandDescriptor FromNode(string fromNode) => Assign(a => a.FromNode = fromNode);
 
-		public MoveClusterRerouteCommandDescriptor ToNode(string toNode) => Assign(toNode, (a, v) => a.ToNode = v);
+		public MoveClusterRerouteCommandDescriptor ToNode(string toNode) => Assign(a => a.ToNode = toNode);
 	}
 }

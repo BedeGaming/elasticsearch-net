@@ -1,13 +1,10 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(GlobalAggregation))]
+
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<GlobalAggregation>))]
 	public interface IGlobalAggregation : IBucketAggregation { }
 
 	public class GlobalAggregation : BucketAggregationBase, IGlobalAggregation
@@ -19,7 +16,7 @@ namespace Nest
 		internal override void WrapInContainer(AggregationContainer c) => c.Global = this;
 	}
 
-	public class GlobalAggregationDescriptor<T>
+	public class GlobalAggregationDescriptor<T> 
 		: BucketAggregationDescriptorBase<GlobalAggregationDescriptor<T>, IGlobalAggregation, T>
 			, IGlobalAggregation
 		where T : class { }

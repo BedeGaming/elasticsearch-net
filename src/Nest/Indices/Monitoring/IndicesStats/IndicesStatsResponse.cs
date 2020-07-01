@@ -1,26 +1,28 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-
-	[DataContract]
-	public class IndicesStatsResponse : ResponseBase
+	public interface IIndicesStatsResponse : IResponse
 	{
-		[DataMember(Name ="indices")]
-		[JsonFormatter(typeof(VerbatimInterfaceReadOnlyDictionaryKeysFormatter<string, IndicesStats>))]
-		public IReadOnlyDictionary<string, IndicesStats> Indices { get; internal set; } = EmptyReadOnly<string, IndicesStats>.Dictionary;
+		ShardsMetaData Shards { get; }
+		IndicesStats Stats { get; set; }
+		Dictionary<string, IndicesStats> Indices { get; set; }
+	}
 
-		[DataMember(Name ="_shards")]
-		public ShardStatistics Shards { get; internal set; }
+	[JsonObject]
+	public class IndicesStatsResponse : ResponseBase, IIndicesStatsResponse
+	{
 
-		[DataMember(Name ="_all")]
-		public IndicesStats Stats { get; internal set; }
+		[JsonProperty(PropertyName = "_shards")]
+		public ShardsMetaData Shards { get; internal set; }
+
+		[JsonProperty(PropertyName = "_all")]
+		public IndicesStats Stats { get; set; }
+
+		[JsonProperty(PropertyName = "indices")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		public Dictionary<string, IndicesStats> Indices { get; set; }
+
 	}
 }

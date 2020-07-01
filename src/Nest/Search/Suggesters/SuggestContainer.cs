@@ -1,25 +1,22 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using Elasticsearch.Net.Utf8Json;
+using System.Linq;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(VerbatimDictionaryKeysFormatter<SuggestContainer, ISuggestContainer, string, ISuggestBucket>))]
+	[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter<SuggestContainer, string, ISuggestBucket>))]
 	public interface ISuggestContainer : IIsADictionary<string, ISuggestBucket> { }
 
 	public class SuggestContainer : IsADictionaryBase<string, ISuggestBucket>, ISuggestContainer
 	{
-		public SuggestContainer() { }
-
+		public SuggestContainer() : base() { }
 		public SuggestContainer(IDictionary<string, ISuggestBucket> container) : base(container) { }
+		public SuggestContainer(Dictionary<string, ISuggestBucket> container)
+			: base(container.Select(kv => kv).ToDictionary(kv => kv.Key, kv => kv.Value))
+		{ }
 
-		public SuggestContainer(Dictionary<string, ISuggestBucket> container) : base(container) { }
-
-		public void Add(string name, ISuggestBucket script) => BackingDictionary.Add(name, script);
+		public void Add(string name, ISuggestBucket script) => this.BackingDictionary.Add(name, script);
 	}
 
 	public class SuggestContainerDescriptor<T>
@@ -31,37 +28,31 @@ namespace Nest
 		private SuggestContainerDescriptor<T> AssignToBucket<TSuggester>(string name, TSuggester suggester, Action<SuggestBucket, TSuggester> assign)
 			where TSuggester : ISuggester
 		{
-			var bucket = new SuggestBucket();
+			var bucket = new SuggestBucket { Text = suggester.Text };
 			assign(bucket, suggester);
 			return Assign(name, bucket);
 		}
 
-		/// <inheritdoc cref="ITermSuggester"/>
-		public SuggestContainerDescriptor<T> Term(string name, Func<TermSuggesterDescriptor<T>, ITermSuggester> suggest) =>
-			AssignToBucket(name, suggest?.Invoke(new TermSuggesterDescriptor<T>()), (b, s) =>
-			{
-				b.Term = s;
-				b.Text = s.Text;
-			});
-
-		/// <inheritdoc cref="IPhraseSuggester"/>
-		public SuggestContainerDescriptor<T> Phrase(string name, Func<PhraseSuggesterDescriptor<T>, IPhraseSuggester> suggest) =>
-			AssignToBucket(name, suggest?.Invoke(new PhraseSuggesterDescriptor<T>()), (b, s) =>
-			{
-				b.Phrase = s;
-				b.Text = s.Text;
-			});
+		/// <summary>
+		/// The term suggester suggests terms based on edit distance. The provided suggest text is analyzed before terms are suggested. 
+		/// The suggested terms are provided per analyzed suggest text token. The term suggester doesn’t take the query into account that is part of request.
+		/// </summary>
+		public SuggestContainerDescriptor<T> Term(string name, Func<TermSuggesterDescriptor<T>, ITermSuggester> suggest) => 
+			AssignToBucket(name, suggest?.Invoke(new TermSuggesterDescriptor<T>()), (b, s) => b.Term = s);  
 
 		/// <summary>
-		/// The completion suggester is a so-called prefix suggester.
+		/// The phrase suggester adds additional logic on top of the term suggester to select entire corrected phrases 
+		/// instead of individual tokens weighted based on ngram-langugage models. 
+		/// </summary>
+		public SuggestContainerDescriptor<T> Phrase(string name, Func<PhraseSuggesterDescriptor<T>, IPhraseSuggester> suggest) => 
+			AssignToBucket(name, suggest?.Invoke(new PhraseSuggesterDescriptor<T>()), (b, s) => b.Phrase = s);  
+
+		/// <summary>
+		/// The completion suggester is a so-called prefix suggester. 
 		/// It does not do spell correction like the term or phrase suggesters but allows basic auto-complete functionality.
 		/// </summary>
-		public SuggestContainerDescriptor<T> Completion(string name, Func<CompletionSuggesterDescriptor<T>, ICompletionSuggester> suggest) =>
-			AssignToBucket(name, suggest?.Invoke(new CompletionSuggesterDescriptor<T>()), (b, s) =>
-			{
-				b.Completion = s;
-				b.Prefix = s.Prefix;
-				b.Regex = s.Regex;
-			});
+		public SuggestContainerDescriptor<T> Completion(string name, Func<CompletionSuggesterDescriptor<T>, ICompletionSuggester> suggest) => 
+			AssignToBucket(name, suggest?.Invoke(new CompletionSuggesterDescriptor<T>()), (b, s) => b.Completion = s);  
+
 	}
 }

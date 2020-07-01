@@ -1,22 +1,15 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using Elasticsearch.Net;
 
-﻿namespace Nest
+namespace Nest
 {
-	[MapsApi("delete.json")]
-	public partial interface IDeleteRequest { }
+	public partial interface IDeleteRequest : IRequest<DeleteRequestParameters> { }
 
-	// ReSharper disable once UnusedMember.Global
-	// ReSharper disable once UnusedTypeParameter
-	public partial interface IDeleteRequest<TDocument> where TDocument : class { }
+	public interface IDeleteRequest<T> : IDeleteRequest where T : class { }
 
-	// ReSharper disable once UnusedMember.Global
 	public partial class DeleteRequest { }
 
-	// ReSharper disable once UnusedTypeParameter
-	public partial class DeleteRequest<TDocument> where TDocument : class { }
+	public partial class DeleteRequest<T> where T : class { }
 
-	// ReSharper disable once UnusedTypeParameter
-	public partial class DeleteDescriptor<TDocument> where TDocument : class { }
+	[DescriptorFor("Delete")]
+	public partial class DeleteDescriptor<T> where T : class { }
 }

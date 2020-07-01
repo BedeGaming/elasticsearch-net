@@ -1,36 +1,62 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(FieldNameQueryFormatter<PrefixQuery, IPrefixQuery>))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[JsonConverter(typeof (FieldNameQueryJsonConverter<PrefixQuery>))]
 	public interface IPrefixQuery : ITermQuery
 	{
-		[DataMember(Name ="rewrite")]
-		MultiTermQueryRewrite Rewrite { get; set; }
+		[JsonIgnore]
+		[Obsolete("Use MultiTermQueryRewrite")]
+		RewriteMultiTerm? Rewrite { get; set; }
+
+		[JsonProperty("rewrite")]
+		MultiTermQueryRewrite MultiTermQueryRewrite { get; set; }
 	}
 
-	[DataContract]
 	public class PrefixQuery : FieldNameQueryBase, IPrefixQuery
 	{
-		public MultiTermQueryRewrite Rewrite { get; set; }
-		public object Value { get; set; }
 		protected override bool Conditionless => TermQuery.IsConditionless(this);
+		public object Value { get; set; }
+
+		[Obsolete("Use MultiTermQueryRewrite")]
+		public RewriteMultiTerm? Rewrite
+		{
+			get { return MultiTermQueryRewrite?.Rewrite; }
+			set { MultiTermQueryRewrite = value == null ? null : new MultiTermQueryRewrite(value.Value); }
+		}
+
+		public MultiTermQueryRewrite MultiTermQueryRewrite { get; set; }
 
 		internal override void InternalWrapInContainer(IQueryContainer c) => c.Prefix = this;
 	}
 
-	public class PrefixQueryDescriptor<T>
-		: TermQueryDescriptorBase<PrefixQueryDescriptor<T>, IPrefixQuery, T>,
-			IPrefixQuery where T : class
+	public class PrefixQueryDescriptor<T> : TermQueryDescriptorBase<PrefixQueryDescriptor<T>, T>,
+		IPrefixQuery where T : class
 	{
-		MultiTermQueryRewrite IPrefixQuery.Rewrite { get; set; }
+		protected new IPrefixQuery Self => this;
 
-		public PrefixQueryDescriptor<T> Rewrite(MultiTermQueryRewrite rewrite) => Assign(rewrite, (a, v) => a.Rewrite = v);
+		RewriteMultiTerm? IPrefixQuery.Rewrite
+		{
+			get { return Self.MultiTermQueryRewrite?.Rewrite; }
+			set { Self.MultiTermQueryRewrite = value == null ? null : new MultiTermQueryRewrite(value.Value); }
+		}
+
+		MultiTermQueryRewrite IPrefixQuery.MultiTermQueryRewrite { get; set; }
+
+		[Obsolete("Use Rewrite(MultiTermQueryRewrite rewrite)")]
+		public PrefixQueryDescriptor<T> Rewrite(RewriteMultiTerm? rewrite)
+		{
+			Self.Rewrite = rewrite;
+			return this;
+		}
+
+		public PrefixQueryDescriptor<T> Rewrite(MultiTermQueryRewrite rewrite)
+		{
+			Self.MultiTermQueryRewrite = rewrite;
+			return this;
+		}
 	}
 }

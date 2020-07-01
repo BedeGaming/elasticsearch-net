@@ -1,113 +1,87 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	public class SnapshotStatusResponse : ResponseBase
+	public interface ISnapshotStatusResponse : IResponse
 	{
-		[DataMember(Name ="snapshots")]
-		public IReadOnlyCollection<SnapshotStatus> Snapshots { get; internal set; } = EmptyReadOnly<SnapshotStatus>.Collection;
+		[JsonProperty("snapshots")]
+		IEnumerable<SnapshotStatus> Snapshots { get; set; }
+	}
+
+	[JsonObject]
+	public class SnapshotStatusResponse : ResponseBase, ISnapshotStatusResponse
+	{
+
+		[JsonProperty("snapshots")]
+		public IEnumerable<SnapshotStatus> Snapshots { get; set; }
+
 	}
 
 	public class SnapshotStatus
 	{
-		[DataMember(Name ="include_global_state")]
-		public bool? IncludeGlobalState { get; internal set; }
-
-		[DataMember(Name ="indices")]
-		public IReadOnlyDictionary<string, SnapshotIndexStats> Indices { get; internal set; } = EmptyReadOnly<string, SnapshotIndexStats>.Dictionary;
-
-		[DataMember(Name ="repository")]
-		public string Repository { get; internal set; }
-
-		[DataMember(Name ="shards_stats")]
-		public SnapshotShardsStats ShardsStats { get; internal set; }
-
-		[DataMember(Name ="snapshot")]
+		[JsonProperty("snapshot")]
 		public string Snapshot { get; internal set; }
-
-		[DataMember(Name ="state")]
+		[JsonProperty("repository")]
+		public string Repository { get; internal set; }
+		[JsonProperty("state")]
 		public string State { get; internal set; }
-
-		[DataMember(Name ="stats")]
+		[JsonProperty("shards_stats")]
+		public SnapshotShardsStats ShardsStats { get; internal set; }
+		[JsonProperty("stats")]
 		public SnapshotStats Stats { get; internal set; }
-
-		[DataMember(Name ="uuid")]
-		public string UUID { get; internal set; }
+		[JsonProperty("indices")]
+		public IDictionary<string, SnapshotIndexStats> Indices { get; internal set; } 
 	}
-
+	
 	public class SnapshotIndexStats
 	{
-		[DataMember(Name ="shards")]
-		public IReadOnlyDictionary<string, SnapshotShardsStats> Shards { get; internal set; } = EmptyReadOnly<string, SnapshotShardsStats>.Dictionary;
-
-		[DataMember(Name ="shards_stats")]
+		[JsonProperty("shards_stats")]
 		public SnapshotShardsStats ShardsStats { get; internal set; }
-
-		[DataMember(Name ="stats")]
+		[JsonProperty("stats")]
 		public SnapshotStats Stats { get; internal set; }
+		[JsonProperty("shards")]
+		public IDictionary<string, SnapshotShardsStats> Shards { get; internal set; } 
 	}
 
 	public class SnapshotIndexShardStats
 	{
-		[DataMember(Name ="node")]
-		public string Node { get; internal set; }
-
-		[DataMember(Name ="stage")]
+		[JsonProperty("stage")]
 		public string Stage { get; internal set; }
-
-		[DataMember(Name ="stats")]
+		[JsonProperty("node")]
+		public string Node { get; internal set; }
+		[JsonProperty("stats")]
 		public SnapshotStats Stats { get; internal set; }
 	}
 
 	public class SnapshotShardsStats
 	{
-		[DataMember(Name ="done")]
-		public long Done { get; internal set; }
-
-		[DataMember(Name ="failed")]
-		public long Failed { get; internal set; }
-
-		[DataMember(Name ="finalizing")]
-		public long Finalizing { get; internal set; }
-
-		[DataMember(Name ="initializing")]
+		[JsonProperty("initializing")]
 		public long Initializing { get; internal set; }
-
-		[DataMember(Name ="started")]
+		[JsonProperty("started")]
 		public long Started { get; internal set; }
-
-		[DataMember(Name ="total")]
+		[JsonProperty("finalizing")]
+		public long Finalizing { get; internal set; }
+		[JsonProperty("done")]
+		public long Done { get; internal set; }
+		[JsonProperty("failed")]
+		public long Failed { get; internal set; }
+		[JsonProperty("total")]
 		public long Total { get; internal set; }
 	}
-
 	public class SnapshotStats
 	{
-		[DataMember(Name ="incremental")]
-		public FileCountSnapshotStats Incremental { get; internal set; }
-
-		[DataMember(Name ="total")]
-		public FileCountSnapshotStats Total { get; internal set; }
-
-		[DataMember(Name ="start_time_in_millis")]
+		[JsonProperty("number_of_files")]
+		public long NumberOfFiles { get; internal set; }
+		[JsonProperty("processed_files")]
+		public long ProcessedFiles { get; internal set; }
+		[JsonProperty("total_size_in_bytes")]
+		public long TotalSizeInBytes { get; internal set; }
+		[JsonProperty("processed_size_in_bytes")]
+		public long ProcessedSizeInBytes { get; internal set; }
+		[JsonProperty("start_time_in_millis")]
 		public long StartTimeInMilliseconds { get; internal set; }
-
-		[DataMember(Name ="time_in_millis")]
+		[JsonProperty("time_in_millis")]
 		public long TimeInMilliseconds { get; internal set; }
-	}
-
-	public class FileCountSnapshotStats
-	{
-		[DataMember(Name ="file_count")]
-		public int FileCount { get; internal set; }
-
-		[DataMember(Name ="size_in_bytes")]
-		public long SizeInBytes { get; internal set; }
 	}
 }

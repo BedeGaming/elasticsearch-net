@@ -1,53 +1,46 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
 	public partial interface IElasticClient
 	{
-		/// <inheritdoc />
-		VerifyRepositoryResponse VerifyRepository(Name repository, Func<VerifyRepositoryDescriptor, IVerifyRepositoryRequest> selector = null);
+		/// <inheritdoc/>
+		IVerifyRepositoryResponse VerifyRepository(Name repository, Func<VerifyRepositoryDescriptor, IVerifyRepositoryRequest> selector = null);
 
-		/// <inheritdoc />
-		VerifyRepositoryResponse VerifyRepository(IVerifyRepositoryRequest request);
+		/// <inheritdoc/>
+		IVerifyRepositoryResponse VerifyRepository(IVerifyRepositoryRequest request);
 
-		/// <inheritdoc />
-		Task<VerifyRepositoryResponse> VerifyRepositoryAsync(Name repository,
-			Func<VerifyRepositoryDescriptor, IVerifyRepositoryRequest> selector = null,
-			CancellationToken cancellationToken = default
-		);
+		/// <inheritdoc/>
+		Task<IVerifyRepositoryResponse> VerifyRepositoryAsync(Name repository, Func<VerifyRepositoryDescriptor, IVerifyRepositoryRequest> selector = null);
 
-		/// <inheritdoc />
-		Task<VerifyRepositoryResponse> VerifyRepositoryAsync(IVerifyRepositoryRequest request,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IVerifyRepositoryResponse> VerifyRepositoryAsync(IVerifyRepositoryRequest request);
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public VerifyRepositoryResponse VerifyRepository(Name repository, Func<VerifyRepositoryDescriptor, IVerifyRepositoryRequest> selector = null
-		) =>
-			VerifyRepository(selector.InvokeOrDefault(new VerifyRepositoryDescriptor(repository)));
+		/// <inheritdoc/>
+		public IVerifyRepositoryResponse VerifyRepository(Name repository, Func<VerifyRepositoryDescriptor, IVerifyRepositoryRequest> selector = null) =>
+			this.VerifyRepository(selector.InvokeOrDefault(new VerifyRepositoryDescriptor(repository)));
 
-		/// <inheritdoc />
-		public VerifyRepositoryResponse VerifyRepository(IVerifyRepositoryRequest request) =>
-			DoRequest<IVerifyRepositoryRequest, VerifyRepositoryResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IVerifyRepositoryResponse VerifyRepository(IVerifyRepositoryRequest request) => 
+			this.Dispatcher.Dispatch<IVerifyRepositoryRequest, VerifyRepositoryRequestParameters, VerifyRepositoryResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.SnapshotVerifyRepositoryDispatch<VerifyRepositoryResponse>(p)
+			);
 
-		/// <inheritdoc />
-		public Task<VerifyRepositoryResponse> VerifyRepositoryAsync(
-			Name repository,
-			Func<VerifyRepositoryDescriptor, IVerifyRepositoryRequest> selector = null,
-			CancellationToken cancellationToken = default
-		) => VerifyRepositoryAsync(selector.InvokeOrDefault(new VerifyRepositoryDescriptor(repository)), cancellationToken);
+		/// <inheritdoc/>
+		public Task<IVerifyRepositoryResponse> VerifyRepositoryAsync(Name repository, Func<VerifyRepositoryDescriptor, IVerifyRepositoryRequest> selector = null) => 
+			this.VerifyRepositoryAsync(selector.InvokeOrDefault(new VerifyRepositoryDescriptor(repository)));
 
-		/// <inheritdoc />
-		public Task<VerifyRepositoryResponse> VerifyRepositoryAsync(IVerifyRepositoryRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IVerifyRepositoryRequest, VerifyRepositoryResponse>(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IVerifyRepositoryResponse> VerifyRepositoryAsync(IVerifyRepositoryRequest request) => 
+			this.Dispatcher.DispatchAsync<IVerifyRepositoryRequest, VerifyRepositoryRequestParameters, VerifyRepositoryResponse, IVerifyRepositoryResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.SnapshotVerifyRepositoryDispatchAsync<VerifyRepositoryResponse>(p)
+			);
 	}
 }

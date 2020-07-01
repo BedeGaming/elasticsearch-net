@@ -1,52 +1,54 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class SearchShardsResponse : ResponseBase
+	[JsonObject(MemberSerialization.OptIn)]
+	public interface ISearchShardsResponse : IResponse
 	{
-		[DataMember(Name = "nodes")]
-		public IReadOnlyDictionary<string, SearchNode> Nodes { get; internal set; } = EmptyReadOnly<string, SearchNode>.Dictionary;
+		[JsonProperty("shards")]
+		IEnumerable<IEnumerable<SearchShard>> Shards { get; }
 
-		[DataMember(Name = "shards")]
-		public IReadOnlyCollection<IReadOnlyCollection<SearchShard>> Shards { get; internal set; } =
-			EmptyReadOnly<IReadOnlyCollection<SearchShard>>.Collection;
+		[JsonProperty("nodes")]
+		IDictionary<string, SearchNode> Nodes { get; }
 	}
 
-	[DataContract]
+	public class SearchShardsResponse : ResponseBase, ISearchShardsResponse
+	{
+		public IEnumerable<IEnumerable<SearchShard>> Shards { get; internal set; }
+
+		public IDictionary<string, SearchNode> Nodes { get; internal set; }
+	}
+
+	[JsonObject(MemberSerialization.OptIn)]
 	public class SearchNode
 	{
-		[DataMember(Name = "name")]
-		public string Name { get; internal set; }
+		[JsonProperty("name")]
+		public string Name { get; set; }
 
-		[DataMember(Name = "transport_address")]
-		public string TransportAddress { get; internal set; }
+		[JsonProperty("transport_address")]
+		public string TransportAddress { get; set; }
 	}
 
-	[DataContract]
+	[JsonObject(MemberSerialization.OptIn)]
 	public class SearchShard
 	{
-		[DataMember(Name = "index")]
-		public string Index { get; internal set; }
+		[JsonProperty("state")]
+		public string State { get; set; }
 
-		[DataMember(Name = "node")]
-		public string Node { get; internal set; }
+		[JsonProperty("primary")]
+		public bool Primary { get; set; }
 
-		[DataMember(Name = "primary")]
-		public bool Primary { get; internal set; }
+		[JsonProperty("node")]
+		public string Node { get; set; }
 
-		[DataMember(Name = "relocating_node")]
-		public string RelocatingNode { get; internal set; }
+		[JsonProperty("relocating_node")]
+		public string RelocatingNode { get; set; }
 
-		[DataMember(Name = "shard")]
-		public int Shard { get; internal set; }
+		[JsonProperty("shard")]
+		public int Shard { get; set; }
 
-		[DataMember(Name = "state")]
-		public string State { get; internal set; }
+		[JsonProperty("index")]
+		public string Index { get; set; }
 	}
 }

@@ -1,9 +1,4 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -13,45 +8,43 @@ namespace Nest
 	public interface ILengthTokenFilter : ITokenFilter
 	{
 		/// <summary>
-		/// The maximum number. Defaults to Integer.MAX_VALUE.
+		/// The minimum number. Defaults to 0. 
 		/// </summary>
-		[DataMember(Name ="max")]
-		[JsonFormatter(typeof(NullableStringIntFormatter))]
-		int? Max { get; set; }
+		[JsonProperty("min")]
+		int? Min { get; set; }
 
 		/// <summary>
-		/// The minimum number. Defaults to 0.
+		/// The maximum number. Defaults to Integer.MAX_VALUE.
 		/// </summary>
-		[DataMember(Name ="min")]
-		[JsonFormatter(typeof(NullableStringIntFormatter))]
-		int? Min { get; set; }
+		[JsonProperty("max")]
+		int? Max { get; set; }
 	}
-
-	/// <inheritdoc />
+	/// <inheritdoc/>
 	public class LengthTokenFilter : TokenFilterBase, ILengthTokenFilter
 	{
 		public LengthTokenFilter() : base("length") { }
 
-		/// <inheritdoc />
-		public int? Max { get; set; }
-
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public int? Min { get; set; }
-	}
 
-	/// <inheritdoc />
-	public class LengthTokenFilterDescriptor
+		/// <inheritdoc/>
+		public int? Max { get; set; }
+	}
+	///<inheritdoc/>
+	public class LengthTokenFilterDescriptor 
 		: TokenFilterDescriptorBase<LengthTokenFilterDescriptor, ILengthTokenFilter>, ILengthTokenFilter
 	{
 		protected override string Type => "length";
-		int? ILengthTokenFilter.Max { get; set; }
 
 		int? ILengthTokenFilter.Min { get; set; }
+		int? ILengthTokenFilter.Max { get; set; }
 
-		/// <inheritdoc />
-		public LengthTokenFilterDescriptor Min(int? minimum) => Assign(minimum, (a, v) => a.Min = v);
+		///<inheritdoc/>
+		public LengthTokenFilterDescriptor Min(int? minimum) => Assign(a => a.Min = minimum);
 
-		/// <inheritdoc />
-		public LengthTokenFilterDescriptor Max(int? maximum) => Assign(maximum, (a, v) => a.Max = v);
+		///<inheritdoc/>
+		public LengthTokenFilterDescriptor Max(int? maximum) => Assign(a => a.Max = maximum);
+
 	}
+
 }

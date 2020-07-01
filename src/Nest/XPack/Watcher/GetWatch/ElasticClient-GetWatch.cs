@@ -1,10 +1,7 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
@@ -13,40 +10,40 @@ namespace Nest
 		/// <summary>
 		/// Retrieves a watch by its id
 		/// </summary>
-		GetWatchResponse GetWatch(Id watchId, Func<GetWatchDescriptor, IGetWatchRequest> selector = null);
+		IGetWatchResponse GetWatch(Id watchId, Func<GetWatchDescriptor, IGetWatchRequest> selector = null);
 
-		/// <inheritdoc />
-		GetWatchResponse GetWatch(IGetWatchRequest request);
+		/// <inheritdoc/>
+		IGetWatchResponse GetWatch(IGetWatchRequest request);
 
-		/// <inheritdoc />
-		Task<GetWatchResponse> GetWatchAsync(Id watchId, Func<GetWatchDescriptor, IGetWatchRequest> selector = null,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IGetWatchResponse> GetWatchAsync(Id watchId, Func<GetWatchDescriptor, IGetWatchRequest> selector = null);
 
-		/// <inheritdoc />
-		Task<GetWatchResponse> GetWatchAsync(IGetWatchRequest request, CancellationToken ct = default);
+		/// <inheritdoc/>
+		Task<IGetWatchResponse> GetWatchAsync(IGetWatchRequest request);
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public GetWatchResponse GetWatch(Id watchId, Func<GetWatchDescriptor, IGetWatchRequest> selector = null) =>
-			GetWatch(selector.InvokeOrDefault(new GetWatchDescriptor(watchId)));
+		/// <inheritdoc/>
+		public IGetWatchResponse GetWatch(Id watchId, Func<GetWatchDescriptor, IGetWatchRequest> selector = null) =>
+			this.GetWatch(selector.InvokeOrDefault(new GetWatchDescriptor(watchId)));
 
-		/// <inheritdoc />
-		public GetWatchResponse GetWatch(IGetWatchRequest request) =>
-			DoRequest<IGetWatchRequest, GetWatchResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IGetWatchResponse GetWatch(IGetWatchRequest request) =>
+			this.Dispatcher.Dispatch<IGetWatchRequest, GetWatchRequestParameters, GetWatchResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.WatcherGetWatchDispatch<GetWatchResponse>(p)
+			);
 
-		/// <inheritdoc />
-		public Task<GetWatchResponse> GetWatchAsync(
-			Id watchId,
-			Func<GetWatchDescriptor, IGetWatchRequest> selector = null,
-			CancellationToken ct = default
-		) => GetWatchAsync(selector.InvokeOrDefault(new GetWatchDescriptor(watchId)), ct);
+		/// <inheritdoc/>
+		public Task<IGetWatchResponse> GetWatchAsync(Id watchId, Func<GetWatchDescriptor, IGetWatchRequest> selector = null) =>
+			this.GetWatchAsync(selector.InvokeOrDefault(new GetWatchDescriptor(watchId)));
 
-		/// <inheritdoc />
-		public Task<GetWatchResponse> GetWatchAsync(IGetWatchRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IGetWatchRequest, GetWatchResponse>
-				(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IGetWatchResponse> GetWatchAsync(IGetWatchRequest request) =>
+			this.Dispatcher.DispatchAsync<IGetWatchRequest, GetWatchRequestParameters, GetWatchResponse, IGetWatchResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.WatcherGetWatchDispatchAsync<GetWatchResponse>(p)
+			);
 	}
 }

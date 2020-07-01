@@ -1,8 +1,5 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,79 +8,76 @@ using Elasticsearch.Net;
 
 namespace Nest
 {
-	public class BulkAllObservable<T> : IDisposable, IObservable<BulkAllResponse> where T : class
+	public class BulkAllObservable<T> : IDisposable, IObservable<IBulkAllResponse> where T : class
 	{
-		private readonly int _backOffRetries;
-		private readonly TimeSpan _backOffTime;
-		private readonly int _bulkSize;
+		private readonly IBulkAllRequest<T> _partionedBulkRequest;
+		private readonly IConnectionSettingsValues _connectionSettings;
 		private readonly IElasticClient _client;
-
-		private readonly CancellationToken _compositeCancelToken;
-		private readonly CancellationTokenSource _compositeCancelTokenSource;
-		private readonly Action<BulkResponseItemBase, T> _droppedDocumentCallBack;
+		private readonly TimeSpan _backOffTime;
+		private readonly int _backOffRetries;
+		private readonly int _bulkSize;
 		private readonly int _maxDegreeOfParallelism;
-		private readonly IBulkAllRequest<T> _partitionedBulkRequest;
-		private readonly Func<BulkResponseItemBase, T, bool> _retryPredicate;
 		private Action _incrementFailed = () => { };
 		private Action _incrementRetries = () => { };
-		private Action<BulkResponse> _bulkResponseCallback;
+
+		private readonly CancellationToken _cancelToken;
+		private readonly CancellationToken _compositeCancelToken;
+		private readonly CancellationTokenSource _compositeCancelTokenSource;
+
+		private Func<IBulkResponse, bool> HandleErrors { get; set; }
 
 		public BulkAllObservable(
 			IElasticClient client,
-			IBulkAllRequest<T> partitionedBulkRequest,
-			CancellationToken cancellationToken = default
-		)
+			IConnectionSettingsValues connectionSettings,
+			IBulkAllRequest<T> partionedBulkRequest,
+			CancellationToken cancellationToken = default(CancellationToken)
+			)
 		{
-			_client = client;
-			_partitionedBulkRequest = partitionedBulkRequest;
-			_backOffRetries = _partitionedBulkRequest.BackOffRetries.GetValueOrDefault(CoordinatedRequestDefaults.BulkAllBackOffRetriesDefault);
-			_backOffTime = _partitionedBulkRequest?.BackOffTime?.ToTimeSpan() ?? CoordinatedRequestDefaults.BulkAllBackOffTimeDefault;
-			_bulkSize = _partitionedBulkRequest.Size ?? CoordinatedRequestDefaults.BulkAllSizeDefault;
-			_retryPredicate = _partitionedBulkRequest.RetryDocumentPredicate ?? RetryBulkActionPredicate;
-			_droppedDocumentCallBack = _partitionedBulkRequest.DroppedDocumentCallback ?? DroppedDocumentCallbackDefault;
-			_bulkResponseCallback = _partitionedBulkRequest.BulkResponseCallback;
-			
-			_maxDegreeOfParallelism =
-				_partitionedBulkRequest.MaxDegreeOfParallelism ?? CoordinatedRequestDefaults.BulkAllMaxDegreeOfParallelismDefault;
-			_compositeCancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-			_compositeCancelToken = _compositeCancelTokenSource.Token;
-		}
-
-		public void Dispose()
-		{
-			_compositeCancelTokenSource?.Cancel();
-			_compositeCancelTokenSource?.Dispose();
-		}
-
-		public IDisposable Subscribe(IObserver<BulkAllResponse> observer)
-		{
-			observer.ThrowIfNull(nameof(observer));
-			BulkAll(observer);
-			return this;
+			this._client = client;
+			this._connectionSettings = connectionSettings;
+			this._partionedBulkRequest = partionedBulkRequest;
+			this._backOffRetries = this._partionedBulkRequest.BackOffRetries.GetValueOrDefault(0);
+			this._backOffTime = (this._partionedBulkRequest?.BackOffTime?.ToTimeSpan() ?? TimeSpan.FromMinutes(1));
+			this._bulkSize = this._partionedBulkRequest.Size ?? 1000;
+			this._maxDegreeOfParallelism = this._partionedBulkRequest.MaxDegreeOfParallelism.HasValue
+				? this._partionedBulkRequest.MaxDegreeOfParallelism.Value
+				: 20;
+			this._cancelToken = cancellationToken;
+			this._compositeCancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(this._cancelToken);
+			this._compositeCancelToken = this._compositeCancelTokenSource.Token;
 		}
 
 		public IDisposable Subscribe(BulkAllObserver observer)
 		{
 			_incrementFailed = observer.IncrementTotalNumberOfFailedBuffers;
 			_incrementRetries = observer.IncrementTotalNumberOfRetries;
-			return Subscribe((IObserver<BulkAllResponse>)observer);
+			return this.Subscribe((IObserver<IBulkAllResponse>)observer);
 		}
 
-		private void BulkAll(IObserver<BulkAllResponse> observer)
+		public IDisposable Subscribe(IObserver<IBulkAllResponse> observer)
 		{
-			var documents = _partitionedBulkRequest.Documents;
-			var partitioned = new PartitionHelper<T>(documents, _bulkSize);
+			observer.ThrowIfNull(nameof(observer));
+			this.BulkAll(observer);
+			return this;
+		}
+
+		private ElasticsearchClientException Throw(string message, IApiCallDetails details) =>
+			new ElasticsearchClientException(PipelineFailure.BadResponse, message, details);
+
+		private void BulkAll(IObserver<IBulkAllResponse> observer)
+		{
+			var documents = this._partionedBulkRequest.Documents;
+			var partioned = new PartitionHelper<T>(documents, this._bulkSize, this._maxDegreeOfParallelism);
 #pragma warning disable 4014
-			partitioned.ForEachAsync(
+			partioned.ForEachAsync(
 #pragma warning restore 4014
-				(buffer, page) => BulkAsync(buffer, page, 0),
+				(buffer, page) => this.BulkAsync(buffer, page, 0),
 				(buffer, response) => observer.OnNext(response),
-				ex => OnCompleted(ex, observer),
-				_maxDegreeOfParallelism
+				ex => OnCompleted(ex, observer)
 			);
 		}
 
-		private void OnCompleted(Exception exception, IObserver<BulkAllResponse> observer)
+		private void OnCompleted(Exception exception, IObserver<IBulkAllResponse> observer)
 		{
 			if (exception != null)
 				observer.OnError(exception);
@@ -103,133 +97,140 @@ namespace Nest
 
 		private void RefreshOnCompleted()
 		{
-			if (!_partitionedBulkRequest.RefreshOnCompleted) return;
-
-			var indices = _partitionedBulkRequest.RefreshIndices ?? _partitionedBulkRequest.Index;
-			if (indices == null) return;
-
-			var refresh = _client.Indices.Refresh(indices);
+			if (!this._partionedBulkRequest.RefreshOnCompleted) return;
+			var refresh = this._client.Refresh(this._partionedBulkRequest.Index);
 			if (!refresh.IsValid) throw Throw($"Refreshing after all documents have indexed failed", refresh.ApiCall);
 		}
 
-		private async Task<BulkAllResponse> BulkAsync(IList<T> buffer, long page, int backOffRetries)
+		private async Task<IBulkAllResponse> BulkAsync(IList<T> buffer, long page, int backOffRetries)
 		{
-			_compositeCancelToken.ThrowIfCancellationRequested();
+			this._compositeCancelToken.ThrowIfCancellationRequested();
 
-			var request = _partitionedBulkRequest;
-			var response = await _client.BulkAsync(s =>
+			var r = this._partionedBulkRequest;
+			var response = await this._client.BulkAsync(s =>
+			{
+				s.Index(r.Index).Type(r.Type);
+				if (r.BufferToBulk != null) r.BufferToBulk(s, buffer);
+				else s.IndexMany(buffer);
+				if (r.Refresh.HasValue) s.Refresh(r.Refresh.Value);
+				if (!string.IsNullOrEmpty(r.Routing)) s.Routing(r.Routing);
+				if (r.Consistency.HasValue) s.Consistency(r.Consistency.Value);
+
+
+				return s;
+			}).ConfigureAwait(false);
+
+			this._compositeCancelToken.ThrowIfCancellationRequested();
+			if (!response.IsValid && backOffRetries < this._backOffRetries)
+			{
+				this._incrementRetries();
+				//wait before or after fishing out retriable docs?
+				await Task.Delay(this._backOffTime, this._compositeCancelToken).ConfigureAwait(false);
+				var retryDocuments = response.Items.Zip(buffer, (i, d) => new { i, d })
+					.Where(x => x.i.Status == 429)
+					.Select(x => x.d)
+					.ToList();
+
+				return await this.BulkAsync(retryDocuments, page, ++backOffRetries).ConfigureAwait(false);
+			}
+			else if (!response.IsValid)
+			{
+				this._incrementFailed();
+				throw Throw($"Bulk indexing failed and after retrying {backOffRetries} times", response.ApiCall);
+			}
+			return new BulkAllResponse { Retries = backOffRetries, Page = page };
+		}
+
+		private sealed class PartitionHelper<TDocument> : IEnumerable<IList<TDocument>>
+		{
+			readonly IEnumerable<TDocument> _items;
+			readonly int _partitionSize;
+			readonly int _semaphoreSize;
+			bool _hasMoreItems;
+
+			internal PartitionHelper(IEnumerable<TDocument> i, int ps, int semaphoreSize)
+			{
+				_items = i;
+				_semaphoreSize = semaphoreSize;
+				_partitionSize = ps;
+			}
+
+			IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+			public IEnumerator<IList<TDocument>> GetEnumerator()
+			{
+				using (var enumerator = _items.GetEnumerator())
 				{
-					s.Index(request.Index);
-					s.Timeout(request.Timeout);
-					if (request.BufferToBulk != null) request.BufferToBulk(s, buffer);
-					else s.IndexMany(buffer);
-					if (!string.IsNullOrEmpty(request.Pipeline)) s.Pipeline(request.Pipeline);
-					if (request.Routing != null) s.Routing(request.Routing);
-					if (request.WaitForActiveShards.HasValue) s.WaitForActiveShards(request.WaitForActiveShards.ToString());
-
-					return s;
-				}, _compositeCancelToken)
-				.ConfigureAwait(false);
-
-			_compositeCancelToken.ThrowIfCancellationRequested();
-			_bulkResponseCallback?.Invoke(response);
-
-			if (!response.ApiCall.Success)
-				return await HandleBulkRequest(buffer, page, backOffRetries, response).ConfigureAwait(false);
-
-			var retryableDocuments = new List<T>();
-			var droppedDocuments = new List<Tuple<BulkResponseItemBase, T>>();
-
-			foreach (var documentWithResponse in response.Items.Zip(buffer, Tuple.Create))
-			{
-				if (documentWithResponse.Item1.IsValid) continue;
-
-				if (_retryPredicate(documentWithResponse.Item1, documentWithResponse.Item2))
-					retryableDocuments.Add(documentWithResponse.Item2);
-				else
-					droppedDocuments.Add(documentWithResponse);
+					_hasMoreItems = enumerator.MoveNext();
+					while (_hasMoreItems)
+						yield return GetNextBatch(enumerator).ToList();
+				}
 			}
 
-			HandleDroppedDocuments(droppedDocuments, response);
-
-			if (retryableDocuments.Count > 0 && backOffRetries < _backOffRetries)
-				return await RetryDocuments(page, ++backOffRetries, retryableDocuments).ConfigureAwait(false);
-
-			if (retryableDocuments.Count > 0)
-				throw ThrowOnBadBulk(response, $"Bulk indexing failed and after retrying {backOffRetries} times");
-
-			request.BackPressure?.Release();
-
-			return new BulkAllResponse { Retries = backOffRetries, Page = page, Items = response.Items };
-		}
-
-		private void HandleDroppedDocuments(List<Tuple<BulkResponseItemBase, T>> droppedDocuments, BulkResponse response)
-		{
-			if (droppedDocuments.Count <= 0) return;
-
-			foreach (var dropped in droppedDocuments) _droppedDocumentCallBack(dropped.Item1, dropped.Item2);
-			if (!_partitionedBulkRequest.ContinueAfterDroppedDocuments)
-				throw ThrowOnBadBulk(response, $"{nameof(BulkAll)} halted after receiving failures that can not be retried from _bulk");
-		}
-
-		private async Task<BulkAllResponse> HandleBulkRequest(IList<T> buffer, long page, int backOffRetries, BulkResponse response)
-		{
-			var clientException = response.ApiCall.OriginalException as ElasticsearchClientException;
-			var failureReason = clientException?.FailureReason; 
-			var reason = failureReason?.GetStringValue() ?? nameof(PipelineFailure.BadRequest);
-			switch (failureReason)
+			IEnumerable<TDocument> GetNextBatch(IEnumerator<TDocument> enumerator)
 			{
-				case PipelineFailure.MaxRetriesReached:
-					if (response.ApiCall.AuditTrail.Last().Event == AuditEvent.FailedOverAllNodes)
-						throw ThrowOnBadBulk(response, $"{nameof(BulkAll)} halted after attempted bulk failed over all the active nodes");
-
-					ThrowOnExhaustedRetries();
-					return await RetryDocuments(page, ++backOffRetries, buffer).ConfigureAwait(false);
-				case PipelineFailure.CouldNotStartSniffOnStartup:
-				case PipelineFailure.BadAuthentication:
-				case PipelineFailure.NoNodesAttempted:
-				case PipelineFailure.SniffFailure:
-				case PipelineFailure.Unexpected:
-					throw ThrowOnBadBulk(response, $"{nameof(BulkAll)} halted after {nameof(PipelineFailure)}.{reason} from _bulk");
-				case PipelineFailure.BadResponse:
-				case PipelineFailure.PingFailure:
-				case PipelineFailure.MaxTimeoutReached:
-				case PipelineFailure.BadRequest:
-				default:
-					ThrowOnExhaustedRetries();
-					return await RetryDocuments(page, ++backOffRetries, buffer).ConfigureAwait(false);
+				for (int i = 0; i < _partitionSize; ++i)
+				{
+					yield return enumerator.Current;
+					_hasMoreItems = enumerator.MoveNext();
+					if (!_hasMoreItems) yield break;
+				}
 			}
 
-			void ThrowOnExhaustedRetries()
-			{
-				if (_partitionedBulkRequest.ContinueAfterDroppedDocuments || backOffRetries < _backOffRetries) return;
 
-				throw ThrowOnBadBulk(response,
-					$"{nameof(BulkAll)} halted after {nameof(PipelineFailure)}.{reason} from _bulk and exhausting retries ({backOffRetries})"
-				);
+			public async Task ForEachAsync<TResult>(
+				Func<IList<TDocument>, long, Task<TResult>> taskSelector,
+				Action<IList<TDocument>, TResult> resultProcessor,
+				Action<Exception> done
+			)
+			{
+				var semaphore = new SemaphoreSlim(initialCount: _semaphoreSize, maxCount: _semaphoreSize);
+				long page = 0;
+
+				try
+				{
+					var tasks = new List<Task>();
+					foreach (var item in this)
+					{
+						tasks.Add(ProcessAsync(item, taskSelector, resultProcessor, semaphore, page++));
+						if (tasks.Count <= _semaphoreSize)
+							continue;
+
+						var task = await Task.WhenAny(tasks).ConfigureAwait(false);
+						tasks.Remove(task);
+					}
+
+					await Task.WhenAll(tasks).ConfigureAwait(false);
+					done(null);
+				}
+				catch (Exception e)
+				{
+					done(e);
+					throw;
+				}
+			}
+
+			private async Task ProcessAsync<TSource, TResult>(
+				TSource item,
+				Func<TSource, long, Task<TResult>> taskSelector,
+				Action<TSource, TResult> resultProcessor,
+				SemaphoreSlim semaphoreSlim,
+				long page)
+			{
+				if (semaphoreSlim != null) await semaphoreSlim.WaitAsync().ConfigureAwait(false);
+				try
+				{
+					var result = await taskSelector(item, page).ConfigureAwait(false);
+					resultProcessor(item, result);
+				}
+				finally { if (semaphoreSlim != null) semaphoreSlim.Release(); }
 			}
 		}
 
-		private async Task<BulkAllResponse> RetryDocuments(long page, int backOffRetries, IList<T> retryDocuments)
+		public bool IsDisposed { get; private set; }
+		public void Dispose()
 		{
-			_incrementRetries();
-			await Task.Delay(_backOffTime, _compositeCancelToken).ConfigureAwait(false);
-			return await BulkAsync(retryDocuments, page, backOffRetries).ConfigureAwait(false);
+			this.IsDisposed = true;
+			this._compositeCancelTokenSource?.Cancel();
 		}
-
-		private Exception ThrowOnBadBulk(IElasticsearchResponse response, string message)
-		{
-			_incrementFailed();
-			_partitionedBulkRequest.BackPressure?.Release();
-			return Throw(message, response.ApiCall);
-		}
-
-		private static ElasticsearchClientException Throw(string message, IApiCallDetails details) =>
-			new ElasticsearchClientException(PipelineFailure.BadResponse, message, details);
-
-
-		private static bool RetryBulkActionPredicate(BulkResponseItemBase bulkResponseItem, T d) => bulkResponseItem.Status == 429;
-
-		private static void DroppedDocumentCallbackDefault(BulkResponseItemBase bulkResponseItem, T d) { }
 	}
 }

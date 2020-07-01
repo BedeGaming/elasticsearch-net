@@ -1,20 +1,24 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class PutRoleResponse : ResponseBase
+	public interface IPutRoleResponse : IResponse
 	{
-		[DataMember(Name ="role")]
+		[JsonProperty("role")]
+		PutRoleStatus Role { get; }
+	}
+
+	public class PutRoleResponse : ResponseBase, IPutRoleResponse
+	{
 		public PutRoleStatus Role { get; internal set; }
 	}
 
 	public class PutRoleStatus
 	{
-		[DataMember(Name ="created")]
+		[JsonProperty("created")]
 		public bool Created { get; internal set; }
 	}
 }

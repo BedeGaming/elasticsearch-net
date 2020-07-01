@@ -1,31 +1,84 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
-namespace Nest
+namespace Elasticsearch.Net
 {
 	internal static class DotNetCoreTypeExtensions
 	{
-		internal static bool TryGetGenericDictionaryArguments(this Type type, out Type[] genericArguments)
+		internal static bool IsGeneric(this Type type)
 		{
-			var genericDictionary = type.GetInterfaces()
-				.FirstOrDefault(t =>
-					t.IsGenericType && (
-						t.GetGenericTypeDefinition() == typeof(IDictionary<,>) ||
-						t.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)));
+#if DOTNETCORE
+			return type.GetTypeInfo().IsGenericType;
+#else
+		return type.IsGenericType;
+#endif
+		}
 
-			if (genericDictionary == null)
-			{
-				genericArguments = new Type[0];
-				return false;
-			}
+		internal static bool IsValue(this Type type)
+		{
+#if DOTNETCORE
+			return type.GetTypeInfo().IsValueType;
+#else
+		return type.IsValueType;
+#endif
+		}
 
-			genericArguments = genericDictionary.GetGenericArguments();
-			return true;
+		internal static TypeCode GetTypeCode(this Type type)
+		{
+#if !DOTNETCORE
+			return Type.GetTypeCode(type);
+#else
+			if (type == null)
+				return TypeCode.Empty;
+			else if (type == typeof(bool))
+				return TypeCode.Boolean;
+			else if (type == typeof(char))
+				return TypeCode.Char;
+			else if (type == typeof(sbyte))
+				return TypeCode.SByte;
+			else if (type == typeof(byte))
+				return TypeCode.Byte;
+			else if (type == typeof(short))
+				return TypeCode.Int16;
+			else if (type == typeof(ushort))
+				return TypeCode.UInt16;
+			else if (type == typeof(int))
+				return TypeCode.Int32;
+			else if (type == typeof(uint))
+				return TypeCode.UInt32;
+			else if (type == typeof(long))
+				return TypeCode.Int64;
+			else if (type == typeof(ulong))
+				return TypeCode.UInt64;
+			else if (type == typeof(float))
+				return TypeCode.Single;
+			else if (type == typeof(double))
+				return TypeCode.Double;
+			else if (type == typeof(decimal))
+				return TypeCode.Decimal;
+			else if (type == typeof(System.DateTime))
+				return TypeCode.DateTime;
+			else if (type == typeof(string))
+				return TypeCode.String;
+			else if (type.GetTypeInfo().IsEnum)
+				return GetTypeCode(Enum.GetUnderlyingType(type));
+			else
+				return TypeCode.Object;
+#endif
+		}
+
+		internal static IEnumerable<TAttribute> GetAttributes<TAttribute>(this Type t)
+			where TAttribute : Attribute
+		{
+#if !DOTNETCORE
+			var attributes = Attribute.GetCustomAttributes(t, typeof(TAttribute), true);
+#else
+			var attributes =  t.GetTypeInfo().GetCustomAttributes(typeof(TAttribute), true);
+#endif
+			return attributes.Cast<TAttribute>();
 		}
 	}
 }

@@ -1,10 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace Nest
 {
@@ -16,43 +12,40 @@ namespace Nest
 		/// An acknowledged watch action remains in the acknowledged (acked) state until the watch’s condition
 		/// evaluates to <c>false</c>.
 		/// </summary>
-		AcknowledgeWatchResponse AcknowledgeWatch(Id id, Func<AcknowledgeWatchDescriptor, IAcknowledgeWatchRequest> selector = null);
+		IAcknowledgeWatchResponse AcknowledgeWatch(Id id, Func<AcknowledgeWatchDescriptor, IAcknowledgeWatchRequest> selector = null);
 
-		/// <inheritdoc />
-		AcknowledgeWatchResponse AcknowledgeWatch(IAcknowledgeWatchRequest request);
+		/// <inheritdoc/>
+		IAcknowledgeWatchResponse AcknowledgeWatch(IAcknowledgeWatchRequest request);
 
-		/// <inheritdoc />
-		Task<AcknowledgeWatchResponse> AcknowledgeWatchAsync(Id id, Func<AcknowledgeWatchDescriptor, IAcknowledgeWatchRequest> selector = null,
-			CancellationToken cancellationToken = default
-		);
+		/// <inheritdoc/>
+		Task<IAcknowledgeWatchResponse> AcknowledgeWatchAsync(Id id, Func<AcknowledgeWatchDescriptor, IAcknowledgeWatchRequest> selector = null);
 
-		/// <inheritdoc />
-		Task<AcknowledgeWatchResponse> AcknowledgeWatchAsync(IAcknowledgeWatchRequest request,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IAcknowledgeWatchResponse> AcknowledgeWatchAsync(IAcknowledgeWatchRequest request);
 	}
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public AcknowledgeWatchResponse AcknowledgeWatch(Id id, Func<AcknowledgeWatchDescriptor, IAcknowledgeWatchRequest> selector = null) =>
-			AcknowledgeWatch(selector.InvokeOrDefault(new AcknowledgeWatchDescriptor(id)));
+		/// <inheritdoc/>
+		public IAcknowledgeWatchResponse AcknowledgeWatch(Id id, Func<AcknowledgeWatchDescriptor, IAcknowledgeWatchRequest> selector = null) =>
+			this.AcknowledgeWatch(selector.InvokeOrDefault(new AcknowledgeWatchDescriptor(id)));
 
-		/// <inheritdoc />
-		public AcknowledgeWatchResponse AcknowledgeWatch(IAcknowledgeWatchRequest request) =>
-			DoRequest<IAcknowledgeWatchRequest, AcknowledgeWatchResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IAcknowledgeWatchResponse AcknowledgeWatch(IAcknowledgeWatchRequest request) =>
+			this.Dispatcher.Dispatch<IAcknowledgeWatchRequest, AcknowledgeWatchRequestParameters, AcknowledgeWatchResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.WatcherAckWatchDispatch<AcknowledgeWatchResponse>(p)
+			);
 
-		/// <inheritdoc />
-		public Task<AcknowledgeWatchResponse> AcknowledgeWatchAsync(
-			Id id,
-			Func<AcknowledgeWatchDescriptor, IAcknowledgeWatchRequest> selector = null,
-			CancellationToken cancellationToken = default
-		) =>
-			AcknowledgeWatchAsync(selector.InvokeOrDefault(new AcknowledgeWatchDescriptor(id)), cancellationToken);
+		/// <inheritdoc/>
+		public Task<IAcknowledgeWatchResponse> AcknowledgeWatchAsync(Id id, Func<AcknowledgeWatchDescriptor, IAcknowledgeWatchRequest> selector = null) =>
+			this.AcknowledgeWatchAsync(selector.InvokeOrDefault(new AcknowledgeWatchDescriptor(id)));
 
-		/// <inheritdoc />
-		public Task<AcknowledgeWatchResponse> AcknowledgeWatchAsync(IAcknowledgeWatchRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IAcknowledgeWatchRequest, AcknowledgeWatchResponse>
-				(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IAcknowledgeWatchResponse> AcknowledgeWatchAsync(IAcknowledgeWatchRequest request) =>
+			this.Dispatcher.DispatchAsync<IAcknowledgeWatchRequest, AcknowledgeWatchRequestParameters, AcknowledgeWatchResponse, IAcknowledgeWatchResponse>(
+				request,
+				(p, d) => this.LowLevelDispatch.WatcherAckWatchDispatchAsync<AcknowledgeWatchResponse>(p)
+			);
 	}
 }

@@ -1,21 +1,22 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class NodesStatsResponse : NodesResponseBase
+	public interface INodesStatsResponse : IResponse
 	{
-		[DataMember(Name = "cluster_name")]
+		[JsonProperty(PropertyName = "cluster_name")]
+		string ClusterName { get; }
+
+		[JsonProperty(PropertyName = "nodes")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		Dictionary<string, NodeStats> Nodes { get; }
+	}
+
+	public class NodesStatsResponse : ResponseBase, INodesStatsResponse
+	{
 		public string ClusterName { get; internal set; }
 
-		[DataMember(Name = "nodes")]
-		[JsonFormatter(typeof(VerbatimInterfaceReadOnlyDictionaryKeysFormatter<string, NodeStats>))]
-		public IReadOnlyDictionary<string, NodeStats> Nodes { get; internal set; } = EmptyReadOnly<string, NodeStats>.Dictionary;
+		public Dictionary<string, NodeStats> Nodes { get; set; }
 	}
 }

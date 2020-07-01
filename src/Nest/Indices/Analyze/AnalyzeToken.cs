@@ -1,30 +1,28 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
+	[JsonObject]
 	public class AnalyzeToken
 	{
-		[DataMember(Name ="end_offset")]
-		public long EndOffset { get; internal set; }
-
-		[DataMember(Name ="position")]
-		public long Position { get; internal set; }
-
-		[DataMember(Name ="position_length")]
-		public long? PositionLength { get; internal set; }
-
-		[DataMember(Name ="start_offset")]
-		public long StartOffset { get; internal set; }
-
-		[DataMember(Name ="token")]
+		[JsonProperty("token")]
 		public string Token { get; internal set; }
 
-		[DataMember(Name ="type")]
+		[JsonProperty("type")]
 		public string Type { get; internal set; }
+
+		[JsonProperty("start_offset")]
+		public int StartOffset { get; internal set; }
+
+        [Obsolete("Use EndOffset")]
+		[JsonIgnore]
+	    public int EndPostion => EndOffset;
+
+		[JsonProperty("end_offset")]
+		public int EndOffset { get; internal set; }
+
+		[JsonProperty("position")]
+		public int Position { get; internal set; }
 	}
 }

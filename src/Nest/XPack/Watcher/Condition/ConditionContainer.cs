@@ -1,37 +1,20 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Nest
 {
 	/// <summary>
 	/// Conditions for a watch
 	/// </summary>
-	[InterfaceDataContract]
-	[ReadAs(typeof(ConditionContainer))]
+	[JsonObject]
+	[JsonConverter(typeof(ReserializeJsonConverter<ConditionContainer, IConditionContainer>))]
 	public interface IConditionContainer
 	{
 		/// <summary>
 		/// Forces the watch actions to be executed unless they are throttled.
 		/// </summary>
-		[DataMember(Name = "always")]
+		[JsonProperty("always")]
 		IAlwaysCondition Always { get; set; }
-
-		/// <summary>
-		/// Compares an array of values in the execution context to a given value.
-		/// </summary>
-		[DataMember(Name = "array_compare")]
-		IArrayCompareCondition ArrayCompare { get; set; }
-
-		/// <summary>
-		/// Performs a simple comparison against a value in the watch payload.
-		/// </summary>
-		[DataMember(Name = "compare")]
-		ICompareCondition Compare { get; set; }
 
 		/// <summary>
 		/// Watch actions are never executed when the watch is triggered.
@@ -41,45 +24,63 @@ namespace Nest
 		/// <remarks>
 		/// This condition is generally used for testing.
 		/// </remarks>
-		[DataMember(Name = "never")]
+		[JsonProperty("never")]
 		INeverCondition Never { get; set; }
 
 		/// <summary>
+		/// Performs a simple comparison against a value in the watch payload.
+		/// </summary>
+		[JsonProperty("compare")]
+		ICompareCondition Compare { get; set; }
+
+		/// <summary>
+		/// Compares an array of values in the execution context to a given value.
+		/// </summary>
+		[JsonProperty("array_compare")]
+		IArrayCompareCondition ArrayCompare { get; set; }
+
+		/// <summary>
 		/// A watch condition that evaluates a script.
+		/// The default scripting language is groovy.
 		/// You can use any of the scripting languages supported by Elasticsearch as long as the
 		/// language supports evaluating expressions to Boolean values.
 		/// Note that the mustache and expression languages are too limited to be used by this condition.
 		/// </summary>
-		[DataMember(Name = "script")]
+		/// <remarks>
+		/// For Groovy, you must explicitly enable dynamic scripts in elasticsearch.yml
+		/// to use inline or stored scripts.
+		/// To enable groovy scripting for watches only,
+		/// you can set script.engine.groovy.inline.xpack_watch: true.
+		/// </remarks>
+		[JsonProperty("script")]
 		IScriptCondition Script { get; set; }
 	}
 
 	/// <inheritdoc />
-	[DataContract]
 	public class ConditionContainer : IConditionContainer, IDescriptor
 	{
-		internal ConditionContainer() { }
-
-		public ConditionContainer(ConditionBase condition)
-		{
-			condition.ThrowIfNull(nameof(condition));
-			condition.WrapInContainer(this);
-		}
-
 		/// <inheritdoc />
 		IAlwaysCondition IConditionContainer.Always { get; set; }
-
-		/// <inheritdoc />
-		IArrayCompareCondition IConditionContainer.ArrayCompare { get; set; }
-
-		/// <inheritdoc />
-		ICompareCondition IConditionContainer.Compare { get; set; }
 
 		/// <inheritdoc />
 		INeverCondition IConditionContainer.Never { get; set; }
 
 		/// <inheritdoc />
 		IScriptCondition IConditionContainer.Script { get; set; }
+
+		/// <inheritdoc />
+		ICompareCondition IConditionContainer.Compare { get; set; }
+
+		/// <inheritdoc />
+		IArrayCompareCondition IConditionContainer.ArrayCompare { get; set; }
+
+		internal ConditionContainer() {}
+
+		public ConditionContainer(ConditionBase condition)
+		{
+			condition.ThrowIfNull(nameof(condition));
+			condition.WrapInContainer(this);
+		}
 
 		public static implicit operator ConditionContainer(ConditionBase condition) => condition == null
 			? null
@@ -89,24 +90,24 @@ namespace Nest
 	/// <inheritdoc />
 	public class ConditionDescriptor : ConditionContainer
 	{
-		private ConditionDescriptor Assign<TValue>(TValue value, Action<IConditionContainer, TValue> assigner) => Fluent.Assign(this, value, assigner);
+		private ConditionDescriptor Assign(Action<IConditionContainer> assigner) => Fluent.Assign(this, assigner);
 
 		/// <inheritdoc />
-		public ConditionDescriptor Always() => Assign(new AlwaysCondition(), (a,v) => a.Always = v);
+		public ConditionDescriptor Always() => Assign(a => a.Always = new AlwaysCondition());
 
 		/// <inheritdoc />
-		public ConditionDescriptor Never() => Assign(new NeverCondition(), (a, v) => a.Never = v);
+		public ConditionDescriptor Never() => Assign(a => a.Never = new NeverCondition());
 
 		/// <inheritdoc />
 		public ConditionDescriptor Compare(Func<CompareConditionDescriptor, ICompareCondition> selector) =>
-			Assign(selector, (a, v) => a.Compare = v?.Invoke(new CompareConditionDescriptor()));
+			Assign(a => a.Compare = selector?.Invoke(new CompareConditionDescriptor()));
 
 		/// <inheritdoc />
 		public ConditionDescriptor ArrayCompare(Func<ArrayCompareConditionDescriptor, IArrayCompareCondition> selector) =>
-			Assign(selector,(a, v) => a.ArrayCompare = v?.Invoke(new ArrayCompareConditionDescriptor()));
+			Assign(a => a.ArrayCompare = selector?.Invoke(new ArrayCompareConditionDescriptor()));
 
 		/// <inheritdoc />
 		public ConditionDescriptor Script(Func<ScriptConditionDescriptor, IScriptCondition> selector) =>
-			Assign(selector, (a, v) => a.Script = v?.Invoke(new ScriptConditionDescriptor()));
+			Assign(a => a.Script = selector?.Invoke(new ScriptConditionDescriptor()));
 	}
 }

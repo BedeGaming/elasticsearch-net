@@ -1,97 +1,97 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(PropertyNameFormatter))]
-	[DebuggerDisplay("{DebugDisplay,nq}")]
+	[ContractJsonConverter(typeof(PropertyNameJsonConverter))]
 	public class PropertyName : IEquatable<PropertyName>, IUrlParameter
 	{
-		private readonly object _comparisonValue;
-		private readonly Type _type;
+		private object _comparisonValue;
+		private Type _type;
 
-		public PropertyName(string name)
+		public string Name { get; set; }
+		public Expression Expression { get; set; }
+		public PropertyInfo Property { get; set; }
+		public bool CacheableExpression { get; private set; }
+
+		public static implicit operator PropertyName(string name)
 		{
-			Name = name;
-			_comparisonValue = name;
+			return name == null ? null : new PropertyName
+			{
+				Name = name,
+				_comparisonValue = name
+			};
 		}
 
-		public PropertyName(Expression expression)
+		public static implicit operator PropertyName(Expression expression)
 		{
-			Expression = expression;
-			_comparisonValue = expression.ComparisonValueFromExpression(out var type, out var cachable);
-			CacheableExpression = cachable;
-			_type = type;
+			if (expression == null) return null;
+
+			Type type;
+			return new PropertyName
+			{
+				Expression = expression,
+				CacheableExpression = !new HasVariableExpressionVisitor(expression).Found,
+				_comparisonValue = expression.ComparisonValueFromExpression(out type),
+				_type = type
+			};
 		}
 
-		public PropertyName(PropertyInfo property)
+		public static implicit operator PropertyName(PropertyInfo property)
 		{
-			Property = property;
-			_comparisonValue = property;
-			_type = property.DeclaringType;
+			return property == null ? null : new PropertyName
+			{
+				Property = property,
+				_comparisonValue = property
+			};
 		}
-
-		public bool CacheableExpression { get; }
-		public Expression Expression { get; }
-
-		public string Name { get; }
-		public PropertyInfo Property { get; }
-
-		internal string DebugDisplay =>
-			$"{Expression?.ToString() ?? PropertyDebug ?? Name}{(_type == null ? "" : " typeof: " + _type.Name)}";
-
-		public override string ToString() => DebugDisplay;
-
-		private string PropertyDebug => Property == null ? null : $"PropertyInfo: {Property.Name}";
-		private static int TypeHashCode { get; } = typeof(PropertyName).GetHashCode();
-
-		public bool Equals(PropertyName other) => EqualsMarker(other);
-
-		string IUrlParameter.GetString(IConnectionConfigurationValues settings)
-		{
-			if (!(settings is IConnectionSettingsValues nestSettings))
-				throw new ArgumentNullException(nameof(settings),
-					$"Can not resolve {nameof(PropertyName)} if no {nameof(IConnectionSettingsValues)} is provided");
-
-			return nestSettings.Inferrer.PropertyName(this);
-		}
-
-		public static implicit operator PropertyName(string name) => name.IsNullOrEmpty() ? null : new PropertyName(name);
-
-		public static implicit operator PropertyName(Expression expression) => expression == null ? null : new PropertyName(expression);
-
-		public static implicit operator PropertyName(PropertyInfo property) => property == null ? null : new PropertyName(property);
 
 		public override int GetHashCode()
 		{
 			unchecked
 			{
-				var result = TypeHashCode;
-				result = (result * 397) ^ (_comparisonValue?.GetHashCode() ?? 0);
-				result = (result * 397) ^ (_type?.GetHashCode() ?? 0);
-				return result;
+				var hashCode = _comparisonValue?.GetHashCode() ?? 0;
+				hashCode = (hashCode * 397) ^ (_type?.GetHashCode() ?? 0);
+				return hashCode;
 			}
 		}
 
-		public override bool Equals(object obj) =>
-			obj is string s ? EqualsString(s) : obj is PropertyName r && EqualsMarker(r);
+		bool IEquatable<PropertyName>.Equals(PropertyName other)
+		{
+			return _type != null
+				? other != null && _type == other._type && _comparisonValue.Equals(other._comparisonValue)
+				: other != null && _comparisonValue.Equals(other._comparisonValue);
+		}
 
-		private bool EqualsString(string other) => !other.IsNullOrEmpty() && other == Name;
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			if (obj.GetType() != GetType()) return false;
+			return ((IEquatable<PropertyName>)this).Equals(obj as PropertyName);
+		}
 
-		public bool EqualsMarker(PropertyName other) => _type != null
-			? other != null && _type == other._type && _comparisonValue.Equals(other._comparisonValue)
-			: other != null && _comparisonValue.Equals(other._comparisonValue);
+		public static bool operator ==(PropertyName x, PropertyName y)
+		{
+			return Equals(x, y);
+		}
 
-		public static bool operator ==(PropertyName left, PropertyName right) => Equals(left, right);
+		public static bool operator !=(PropertyName x, PropertyName y)
+		{
+			return !(x == y);
+		}
 
-		public static bool operator !=(PropertyName left, PropertyName right) => !Equals(left, right);
+		string IUrlParameter.GetString(IConnectionConfigurationValues settings)
+		{
+			var nestSettings = settings as IConnectionSettingsValues;
+			if (nestSettings == null)
+				throw new Exception("Tried to pass field name on querystring but it could not be resolved because no nest settings are available");
+			var infer = new Inferrer(nestSettings);
+			return infer.PropertyName(this);
+		}
 	}
 }

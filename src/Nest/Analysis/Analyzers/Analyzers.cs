@@ -1,23 +1,20 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using Elasticsearch.Net.Utf8Json;
+using System.Linq;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(VerbatimDictionaryKeysFormatter<Analyzers, IAnalyzers, string, IAnalyzer>))]
+	[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter<Analyzers, string, IAnalyzer>))]
 	public interface IAnalyzers : IIsADictionary<string, IAnalyzer> { }
 
 	public class Analyzers : IsADictionaryBase<string, IAnalyzer>, IAnalyzers
 	{
-		public Analyzers() { }
-
+		public Analyzers() : base() { }
 		public Analyzers(IDictionary<string, IAnalyzer> container) : base(container) { }
-
-		public Analyzers(Dictionary<string, IAnalyzer> container) : base(container) { }
+		public Analyzers(Dictionary<string, IAnalyzer> container)
+			: base(container.ToDictionary(kv => kv.Key, kv => kv.Value))
+		{ }
 
 		public void Add(string name, IAnalyzer analyzer) => BackingDictionary.Add(name, analyzer);
 	}
@@ -29,31 +26,29 @@ namespace Nest
 		public AnalyzersDescriptor UserDefined(string name, IAnalyzer analyzer) => Assign(name, analyzer);
 
 		/// <summary>
-		/// An analyzer of type custom that allows to combine a Tokenizer with zero or more Token Filters,
-		/// and zero or more Char Filters.
-		/// <para>
-		/// The custom analyzer accepts a logical/registered name of the tokenizer to use, and a list of
-		/// logical/registered names of token filters.
-		/// </para>
+		/// An analyzer of type custom that allows to combine a Tokenizer with zero or more Token Filters, 
+		/// and zero or more Char Filters. 
+		/// <para>The custom analyzer accepts a logical/registered name of the tokenizer to use, and a list of 
+		/// logical/registered names of token filters.</para>
 		/// </summary>
 		public AnalyzersDescriptor Custom(string name, Func<CustomAnalyzerDescriptor, ICustomAnalyzer> selector) =>
 			Assign(name, selector?.Invoke(new CustomAnalyzerDescriptor()));
 
 		/// <summary>
-		/// An analyzer of type keyword that “tokenizes” an entire stream as a single token. This is useful for data like zip codes, ids and so on.
+		/// An analyzer of type keyword that “tokenizes” an entire stream as a single token. This is useful for data like zip codes, ids and so on. 
 		/// <para>Note, when using mapping definitions, it make more sense to simply mark the field as not_analyzed.</para>
 		/// </summary>
 		public AnalyzersDescriptor Keyword(string name, Func<KeywordAnalyzerDescriptor, IKeywordAnalyzer> selector = null) =>
 			Assign(name, selector.InvokeOrDefault(new KeywordAnalyzerDescriptor()));
 
 		/// <summary>
-		/// A set of analyzers aimed at analyzing specific language text.
+		/// A set of analyzers aimed at analyzing specific language text. 
 		/// </summary>
 		public AnalyzersDescriptor Language(string name, Func<LanguageAnalyzerDescriptor, ILanguageAnalyzer> selector) =>
 			Assign(name, selector?.Invoke(new LanguageAnalyzerDescriptor()));
 
 		/// <summary>
-		/// An analyzer of type pattern that can flexibly separate text into terms via a regular expression.
+		/// An analyzer of type pattern that can flexibly separate text into terms via a regular expression. 
 		/// </summary>
 		public AnalyzersDescriptor Pattern(string name, Func<PatternAnalyzerDescriptor, IPatternAnalyzer> selector) =>
 			Assign(name, selector?.Invoke(new PatternAnalyzerDescriptor()));
@@ -66,17 +61,13 @@ namespace Nest
 
 		/// <summary>
 		/// An analyzer of type snowball that uses the standard tokenizer, with standard filter, lowercase filter, stop filter, and snowball filter.
-		/// <para>
-		/// The Snowball Analyzer is a stemming analyzer from Lucene that is originally based on the snowball project from
-		/// snowball.tartarus.org.
-		/// </para>
+		/// <para> The Snowball Analyzer is a stemming analyzer from Lucene that is originally based on the snowball project from snowball.tartarus.org.</para>
 		/// </summary>
 		public AnalyzersDescriptor Snowball(string name, Func<SnowballAnalyzerDescriptor, ISnowballAnalyzer> selector) =>
 			Assign(name, selector?.Invoke(new SnowballAnalyzerDescriptor()));
 
 		/// <summary>
-		/// An analyzer of type standard that is built of using Standard Tokenizer, with Standard Token Filter, Lower Case Token Filter, and Stop Token
-		/// Filter.
+		/// An analyzer of type standard that is built of using Standard Tokenizer, with Standard Token Filter, Lower Case Token Filter, and Stop Token Filter.
 		/// </summary>
 		public AnalyzersDescriptor Standard(string name, Func<StandardAnalyzerDescriptor, IStandardAnalyzer> selector) =>
 			Assign(name, selector?.Invoke(new StandardAnalyzerDescriptor()));
@@ -94,25 +85,10 @@ namespace Nest
 			Assign(name, selector.InvokeOrDefault(new WhitespaceAnalyzerDescriptor()));
 
 		/// <summary>
-		/// An analyzer of type fingerprint that implements a fingerprinting algorithm which
-		/// is used by the OpenRefine project to assist in clustering.
-		/// </summary>
-		public AnalyzersDescriptor Fingerprint(string name, Func<FingerprintAnalyzerDescriptor, IFingerprintAnalyzer> selector = null) =>
-			Assign(name, selector.InvokeOrDefault(new FingerprintAnalyzerDescriptor()));
-
-		/// <summary>
 		/// An analyzer tailored for japanese that is bootstrapped with defaults.
 		/// Part of the `analysis-kuromoji` plugin: https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-kuromoji.html
 		/// </summary>
 		public AnalyzersDescriptor Kuromoji(string name, Func<KuromojiAnalyzerDescriptor, IKuromojiAnalyzer> selector = null) =>
 			Assign(name, selector.InvokeOrDefault(new KuromojiAnalyzerDescriptor()));
-
-		/// <inheritdoc cref="INoriAnalyzer" />
-		public AnalyzersDescriptor Nori(string name, Func<NoriAnalyzerDescriptor, INoriAnalyzer> selector) =>
-			Assign(name, selector?.Invoke(new NoriAnalyzerDescriptor()));
-
-		/// <inheritdoc cref="IIcuAnalyzer" />
-		public AnalyzersDescriptor Icu(string name, Func<IcuAnalyzerDescriptor, IIcuAnalyzer> selector) =>
-			Assign(name, selector?.Invoke(new IcuAnalyzerDescriptor()));
 	}
 }

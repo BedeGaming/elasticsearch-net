@@ -1,17 +1,12 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(GoogleNormalizedDistanceHeuristic))]
-	public interface IGoogleNormalizedDistanceHeuristic
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<GoogleNormalizedDistanceHeuristic>))]
+	public interface IGoogleNormalizedDistanceHeuristic 
 	{
-		[DataMember(Name ="background_is_superset")]
+		[JsonProperty("background_is_superset")]
 		bool? BackgroundIsSuperSet { get; set; }
 	}
 
@@ -20,12 +15,12 @@ namespace Nest
 		public bool? BackgroundIsSuperSet { get; set; }
 	}
 
-	public class GoogleNormalizedDistanceHeuristicDescriptor
+	public class GoogleNormalizedDistanceHeuristicDescriptor 
 		: DescriptorBase<GoogleNormalizedDistanceHeuristicDescriptor, IGoogleNormalizedDistanceHeuristic>, IGoogleNormalizedDistanceHeuristic
 	{
 		bool? IGoogleNormalizedDistanceHeuristic.BackgroundIsSuperSet { get; set; }
 
-		public GoogleNormalizedDistanceHeuristicDescriptor BackgroundIsSuperSet(bool? backroundIsSuperSet = true) =>
-			Assign(backroundIsSuperSet, (a, v) => a.BackgroundIsSuperSet = v);
+		public GoogleNormalizedDistanceHeuristicDescriptor BackgroundIsSuperSet(bool backroundIsSuperSet = true) =>
+			Assign(a => a.BackgroundIsSuperSet = backroundIsSuperSet);
 	}
 }

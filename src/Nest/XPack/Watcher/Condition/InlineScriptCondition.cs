@@ -1,29 +1,31 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
 	public interface IInlineScriptCondition : IScriptCondition
 	{
-		[DataMember(Name ="source")]
-		string Source { get; set; }
+		[JsonProperty("inline")]
+		string Inline { get; set; }
 	}
 
 	public class InlineScriptCondition : ScriptConditionBase, IInlineScriptCondition
 	{
-		public InlineScriptCondition(string script) => Source = script;
+		public InlineScriptCondition(string script)
+		{
+			this.Inline = script;
+		}
 
-		public string Source { get; set; }
+		public string Inline { get; set; }
 	}
 
-	public class InlineScriptConditionDescriptor
-		: ScriptConditionDescriptorBase<InlineScriptConditionDescriptor, IInlineScriptCondition>, IInlineScriptCondition
+	public class InlineScriptConditionDescriptor :
+		ScriptConditionDescriptorBase<InlineScriptConditionDescriptor, IInlineScriptCondition>, IInlineScriptCondition
 	{
-		public InlineScriptConditionDescriptor(string source) => Self.Source = source;
+		public InlineScriptConditionDescriptor(string script)
+		{
+			Self.Inline = script;
+		}
 
-		string IInlineScriptCondition.Source { get; set; }
+		string IInlineScriptCondition.Inline { get; set; }
 	}
 }

@@ -1,32 +1,22 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[JsonFormatter(typeof(AnalyzerFormatter))]
+	[ContractJsonConverter(typeof(AnalyzerJsonConverter))]
 	public interface IAnalyzer
 	{
-		[DataMember(Name = "type")]
-		string Type { get; }
-
-		[DataMember(Name = "version")]
+		[JsonProperty(PropertyName = "version")]
 		string Version { get; set; }
+		
+		[JsonProperty(PropertyName = "type")]
+		string Type { get; }
 	}
 
 	public abstract class AnalyzerBase : IAnalyzer
 	{
-		internal AnalyzerBase() { }
-
-		// ReSharper disable once VirtualMemberCallInConstructor
-		protected AnalyzerBase(string type) => Type = type;
-
-		public virtual string Type { get; protected set; }
-
 		public string Version { get; set; }
+		
+		public virtual string Type { get; protected set; }
 	}
 
 	public abstract class AnalyzerDescriptorBase<TAnalyzer, TAnalyzerInterface>
@@ -34,10 +24,11 @@ namespace Nest
 		where TAnalyzer : AnalyzerDescriptorBase<TAnalyzer, TAnalyzerInterface>, TAnalyzerInterface
 		where TAnalyzerInterface : class, IAnalyzer
 	{
-		protected abstract string Type { get; }
-		string IAnalyzer.Type => Type;
 		string IAnalyzer.Version { get; set; }
+		string IAnalyzer.Type => this.Type;
+		protected abstract string Type { get; }
 
-		public TAnalyzer Version(string version) => Assign(version, (a, v) => a.Version = v);
+		public TAnalyzer Version(string version) => Assign(a => a.Version = version);
 	}
+		
 }

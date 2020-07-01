@@ -1,17 +1,11 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Nest
 {
-	public class CreateIndexResponse : AcknowledgedResponseBase
-	{
-		[DataMember(Name = "shards_acknowledged")]
-		public bool ShardsAcknowledged { get; set; }
-
-		[DataMember(Name = "index")]
-		public string Index { get; set; }
-	}
+	public interface ICreateIndexResponse : IAcknowledgedResponse { }
+	public class CreateIndexResponse : AcknowledgedResponseBase, ICreateIndexResponse { }
 }

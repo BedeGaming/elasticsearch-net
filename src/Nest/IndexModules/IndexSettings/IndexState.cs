@@ -1,29 +1,38 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[ReadAs(typeof(IndexState))]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<IndexState>))]
 	public interface IIndexState
 	{
-		[DataMember(Name ="aliases")]
+		[JsonProperty("settings")]
+		IIndexSettings Settings { get; set; }
+
+		[JsonProperty("aliases")]
 		IAliases Aliases { get; set; }
 
-		[DataMember(Name = "mappings")]
-		ITypeMapping Mappings { get; set; }
+		[JsonProperty("warmers")]
+		IWarmers Warmers { get; set; }
 
-		[DataMember(Name ="settings")]
-		IIndexSettings Settings { get; set; }
+		[JsonProperty("mappings")]
+		IMappings Mappings { get; set; }
+
+		[JsonIgnore]
+		[Obsolete("Use Similarity within Settings. Removed in NEST 6.x")]
+		ISimilarities Similarity { get; set; }
 	}
-
 	public class IndexState : IIndexState
 	{
+		public IIndexSettings Settings { get; set; }
+
+		public IMappings Mappings { get; set; }
+
 		public IAliases Aliases { get; set; }
 
-		public ITypeMapping Mappings { get; set; }
-		public IIndexSettings Settings { get; set; }
+		public IWarmers Warmers { get; set; }
+
+		[Obsolete("Use Similarity within Settings. Removed in NEST 6.x")]
+		public ISimilarities Similarity { get; set; }
 	}
 }

@@ -1,24 +1,27 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using Elasticsearch.Net.Utf8Json;
-using Elasticsearch.Net.Utf8Json.Internal;
-
+﻿using System;
+using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(CompareConditionFormatter))]
+	[JsonObject]
+	[JsonConverter(typeof(CompareConditionConverter))]
 	public interface ICompareCondition : ICondition
 	{
-		string Comparison { get; }
 		string Path { get; set; }
+		string Comparison { get; }
 		object Value { get; set; }
 	}
 
 	public abstract class CompareConditionBase : ConditionBase, ICompareCondition
 	{
+		private ICompareCondition Self => this;
+
+		string ICompareCondition.Path { get; set; }
+		object ICompareCondition.Value { get; set; }
+		string ICompareCondition.Comparison => this.Comparison;
+
 		protected CompareConditionBase(string path, object value)
 		{
 			Self.Path = path;
@@ -26,11 +29,6 @@ namespace Nest
 		}
 
 		protected abstract string Comparison { get; }
-		string ICompareCondition.Comparison => Comparison;
-
-		string ICompareCondition.Path { get; set; }
-		private ICompareCondition Self => this;
-		object ICompareCondition.Value { get; set; }
 
 		internal override void WrapInContainer(IConditionContainer container) => container.Compare = this;
 	}
@@ -58,120 +56,95 @@ namespace Nest
 
 	public class EqualCondition : CompareConditionBase
 	{
-		public EqualCondition(string path, object value) : base(path, value) { }
-
 		protected override string Comparison => "eq";
+
+		public EqualCondition(string path, object value) : base(path, value) { }
 	}
 
 	public class NotEqualCondition : CompareConditionBase
 	{
-		public NotEqualCondition(string path, object value) : base(path, value) { }
-
 		protected override string Comparison => "not_eq";
+
+		public NotEqualCondition(string path, object value) : base(path, value) { }
 	}
 
 	public class GreaterThanCondition : CompareConditionBase
 	{
-		public GreaterThanCondition(string path, object value) : base(path, value) { }
-
 		protected override string Comparison => "gt";
+
+		public GreaterThanCondition(string path, object value) : base(path, value) { }
 	}
 
 	public class GreaterThanOrEqualCondition : CompareConditionBase
 	{
-		public GreaterThanOrEqualCondition(string path, object value) : base(path, value) { }
-
 		protected override string Comparison => "gte";
+
+		public GreaterThanOrEqualCondition(string path, object value) : base(path, value) { }
 	}
 
 	public class LowerThanCondition : CompareConditionBase
 	{
-		public LowerThanCondition(string path, object value) : base(path, value) { }
-
 		protected override string Comparison => "lt";
+
+		public LowerThanCondition(string path, object value) : base(path, value) { }
 	}
 
 	public class LowerThanOrEqualCondition : CompareConditionBase
 	{
-		public LowerThanOrEqualCondition(string path, object value) : base(path, value) { }
-
 		protected override string Comparison => "lte";
+
+		public LowerThanOrEqualCondition(string path, object value) : base(path, value) { }
 	}
 
-	internal class CompareConditionFormatter : IJsonFormatter<ICompareCondition>
+	internal class CompareConditionConverter : JsonConverter
 	{
-		private static readonly AutomataDictionary Comparisons = new AutomataDictionary
-		{
-			{ "eq", 0 },
-			{ "not_eq", 1 },
-			{ "gt", 2 },
-			{ "gte", 3 },
-			{ "lt", 4 },
-			{ "lte", 5 },
-		};
+		public override bool CanConvert(Type objectType) => true;
 
-		public ICompareCondition Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
-		{
-			if (reader.GetCurrentJsonToken() != JsonToken.BeginObject)
-				return null;
+		public override bool CanRead => true;
 
-			var count = 0;
-			ICompareCondition condition = null;
-			while (reader.ReadIsInObject(ref count))
+		public override bool CanWrite => true;
+
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+		{
+			if (reader.TokenType != JsonToken.StartObject) return null;
+
+			var compare = JObject.Load(reader);
+			if (compare.Count == 0) return null;
+
+			var pathProperty = compare.Children<JProperty>().First();
+			if (pathProperty.Count == 0) return null;
+			var path = pathProperty.Name;
+
+			var conditionProperty = pathProperty.Value.Children<JProperty>().First();
+			if (conditionProperty.Count == 0) return null;
+			var condition = conditionProperty.Name;
+			var value = serializer.Deserialize<object>(conditionProperty.Value.CreateReader());
+
+			switch (condition)
 			{
-				var path = reader.ReadPropertyName();
-				var innerCount = 0;
-				while (reader.ReadIsInObject(ref innerCount))
-				{
-					var comparison = reader.ReadPropertyNameSegmentRaw();
-					var formatter = formatterResolver.GetFormatter<object>();
-					var comparisonValue = formatter.Deserialize(ref reader, formatterResolver);
-
-					if (Comparisons.TryGetValue(comparison, out var value))
-					{
-						switch (value)
-						{
-							case 0:
-								condition = new EqualCondition(path, comparisonValue);
-								break;
-							case 1:
-								condition = new NotEqualCondition(path, value);
-								break;
-							case 2:
-								condition = new GreaterThanCondition(path, value);
-								break;
-							case 3:
-								condition = new GreaterThanOrEqualCondition(path, value);
-								break;
-							case 4:
-								condition = new LowerThanCondition(path, value);
-								break;
-							case 5:
-								condition = new LowerThanOrEqualCondition(path, value);
-								break;
-						}
-					}
-				}
+				case "eq": return new EqualCondition(path, value);
+				case "not_eq": return new NotEqualCondition(path, value);
+				case "gt": return new GreaterThanCondition(path, value);
+				case "gte": return new GreaterThanOrEqualCondition(path, value);
+				case "lt": return new LowerThanCondition(path, value);
+				case "lte": return new LowerThanOrEqualCondition(path, value);
+				default: return null;
 			}
-
-			return condition;
 		}
 
-		public void Serialize(ref JsonWriter writer, ICompareCondition value, IJsonFormatterResolver formatterResolver)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			if (value == null || value.Path.IsNullOrEmpty()) return;
+			var s = value as ICompareCondition;
+			if (s == null || s.Path.IsNullOrEmpty()) return;
 
-			writer.WriteBeginObject();
-			writer.WritePropertyName(value.Path);
-
-			writer.WriteBeginObject();
-			writer.WritePropertyName(value.Comparison);
-
-			var formatter = formatterResolver.GetFormatter<object>();
-			formatter.Serialize(ref writer, value.Value, formatterResolver);
-
+			writer.WriteStartObject();
+			writer.WritePropertyName(s.Path);
+			writer.WriteStartObject();
+			writer.WritePropertyName(s.Comparison);
+			writer.WriteValue(s.Value);
 			writer.WriteEndObject();
 			writer.WriteEndObject();
 		}
 	}
+
 }

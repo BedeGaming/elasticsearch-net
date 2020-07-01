@@ -1,7 +1,3 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,21 +8,9 @@ namespace Nest
 {
 	public class DslPrettyPrintVisitor : IQueryVisitor
 	{
-		private readonly Inferrer _infer;
 		private readonly StringBuilder _sb;
 		private string _final;
-
-		public DslPrettyPrintVisitor(IConnectionSettingsValues settings)
-		{
-			_sb = new StringBuilder();
-			_infer = settings.Inferrer;
-		}
-
-		public virtual int Depth { get; set; }
-		public bool IsConditionless { get; set; }
-		public bool IsStrict { get; set; }
-
-		public bool IsVerbatim { get; set; }
+		private readonly Inferrer _infer;
 
 		public string PrettyPrint
 		{
@@ -38,98 +22,88 @@ namespace Nest
 			}
 		}
 
+		public DslPrettyPrintVisitor(IConnectionSettingsValues settings)
+		{
+			this._sb = new StringBuilder();
+			this._infer = settings.Inferrer;
+		}
+
+		public virtual int Depth { get; set; }
 		public virtual VisitorScope Scope { get; set; }
+
+		public bool IsVerbatim { get; set; }
+		public bool IsConditionless { get; set; }
+		public bool IsStrict { get; set; }
 
 		public virtual void Visit(IQueryContainer baseQuery)
 		{
-			IsConditionless = baseQuery.IsConditionless;
-			IsStrict = baseQuery.IsStrict;
-			IsVerbatim = baseQuery.IsVerbatim;
+			this.IsConditionless = baseQuery.IsConditionless;
+			this.IsStrict = baseQuery.IsStrict;
+			this.IsVerbatim = baseQuery.IsVerbatim;
 		}
 
 		public virtual void Visit(IQuery query) { }
+
+		private void Write(string queryType, Dictionary<string, string> properties)
+		{
+			properties = properties ?? new Dictionary<string, string>();
+			var props = string.Join(", ", properties.Select(kv => $"{kv.Key}: {kv.Value}"));
+			var indent = new string('-',(Depth -1) * 2);
+			var scope = this.Scope.GetStringValue().ToLowerInvariant();
+			_sb.AppendFormat("{0}{1}: {2} ({3}){4}", indent, scope, queryType, props, Environment.NewLine);
+		}
+		private void Write(string queryType, Field field = null)
+		{
+			this.Write(queryType, field == null
+				? null
+				: new Dictionary<string, string> {{"field", this._infer.Field(field)}});
+		}
 
 		public virtual void Visit(IBoolQuery query) => Write("bool");
 
 		public virtual void Visit(IBoostingQuery query) => Write("boosting");
 
-#pragma warning disable 618
 		public virtual void Visit(ICommonTermsQuery query) => Write("common_terms", query.Field);
-#pragma warning restore 618
 
 		public virtual void Visit(IConstantScoreQuery query) => Write("constant_score");
 
 		public virtual void Visit(IDisMaxQuery query) => Write("dis_max");
 
-		public virtual void Visit(IDistanceFeatureQuery query) => Write("distance_feature");
+#pragma warning disable 618
+		public void Visit(ILimitQuery query) => Write("limit");
 
-		public virtual void Visit(ISpanContainingQuery query) => Write("span_containing");
+		public virtual void Visit(IFilteredQuery query) => Write("filtered");
 
-		public virtual void Visit(ISpanWithinQuery query) => Write("span_within");
+		public void Visit(INotQuery query)=> Write("not");
 
-		public virtual void Visit(IDateRangeQuery query) => Write("date_range");
+		public void Visit(IOrQuery query)=> Write("or");
 
-		public virtual void Visit(INumericRangeQuery query) => Write("numeric_range");
+		public void Visit(IAndQuery query)=> Write("and");
+#pragma warning restore 618
 
-		public virtual void Visit(ILongRangeQuery query) => Write("long_range");
+		public void Visit(IGeoIndexedShapeQuery query) => Write("geo_indexed_shape");
 
-		public virtual void Visit(ITermRangeQuery query) => Write("term_range");
+		public void Visit(ISpanContainingQuery query) => Write("span_containing");
+
+		public void Visit(ISpanWithinQuery query) => Write("span_within");
+
+		public void Visit(IDateRangeQuery query) => Write("date_range");
+
+		public void Visit(INumericRangeQuery query) => Write("numeric_range");
+
+		public void Visit(ITermRangeQuery query) => Write("term_range");
 
 		public virtual void Visit(IFunctionScoreQuery query) => Write("function_core");
 
 		public virtual void Visit(IFuzzyQuery query) => Write("fuzzy", query.Field);
 
-		public virtual void Visit(IFuzzyNumericQuery query) => Write("fuzzy_numeric", query.Field);
+		public void Visit(IFuzzyNumericQuery query) => Write("fuzzy_numeric", query.Field);
 
-		public virtual void Visit(IFuzzyDateQuery query) => Write("fuzzy_date", query.Field);
+		public void Visit(IFuzzyDateQuery query) => Write("fuzzy_date", query.Field);
 
-		public virtual void Visit(IFuzzyStringQuery query) => Write("fuzzy_string", query.Field);
+		public void Visit(IFuzzyStringQuery query) => Write("fuzzy_string", query.Field);
 
-		public virtual void Visit(IGeoShapeQuery query) => WriteShape(query.Shape, query.IndexedShape, query.Field, "geo_shape");
-
-		public virtual void Visit(IShapeQuery query) => WriteShape(query.Shape, query.IndexedShape, query.Field, "shape");
-
-		private void WriteShape(IGeoShape shape, IFieldLookup indexedField, Field field, string queryType)
-		{
-			// ReSharper disable UnusedVariable
-			switch (shape)
-			{
-				case null when indexedField != null:
-					Write("geo_indexed_shape");
-					break;
-				case ICircleGeoShape circleGeoShape:
-					Write("geo_shape_circle");
-					break;
-				case IEnvelopeGeoShape envelopeGeoShape:
-					Write("geo_shape_envelope");
-					break;
-				case IGeometryCollection geometryCollection:
-					Write("geo_shape_geometrycollection");
-					break;
-				case ILineStringGeoShape lineStringGeoShape:
-					Write("geo_shape_linestring");
-					break;
-				case IMultiLineStringGeoShape multiLineStringGeoShape:
-					Write("geo_shape_multi_linestring");
-					break;
-				case IMultiPointGeoShape multiPointGeoShape:
-					Write("geo_shape_multi_point");
-					break;
-				case IMultiPolygonGeoShape multiPolygonGeoShape:
-					Write("geo_shape_multi_polygon");
-					break;
-				case IPointGeoShape pointGeoShape:
-					Write("geo_shape_point");
-					break;
-				case IPolygonGeoShape polygonGeoShape:
-					Write("geo_shape_polygon");
-					break;
-				// ReSharper restore UnusedVariable
-				default:
-					Write(queryType, field);
-					break;
-			}
-		}
+		public virtual void Visit(IGeoShapeQuery query) => Write("geo_shape", query.Field);
 
 		public virtual void Visit(IHasChildQuery query) => Write("has_child");
 
@@ -137,19 +111,11 @@ namespace Nest
 
 		public virtual void Visit(IIdsQuery query) => Write("ids");
 
-		public virtual void Visit(IIntervalsQuery query) => Write("intervals");
+		public virtual void Visit(IIndicesQuery query) => Write("indices");
 
 		public virtual void Visit(IMatchQuery query) => Write("match", query.Field);
 
-		public virtual void Visit(IMatchPhraseQuery query) => Write("match_phrase", query.Field);
-
-		public virtual void Visit(IMatchPhrasePrefixQuery query) => Write("match_phrase_prefix", query.Field);
-
 		public virtual void Visit(IMatchAllQuery query) => Write("match_all");
-
-		public virtual void Visit(IMatchBoolPrefixQuery query) => Write("match_bool_prefix");
-
-		public virtual void Visit(IMatchNoneQuery query) => Write("match_none");
 
 		public virtual void Visit(IMoreLikeThisQuery query) => Write("more_like_this");
 
@@ -160,8 +126,6 @@ namespace Nest
 		public virtual void Visit(IPrefixQuery query) => Write("prefix");
 
 		public virtual void Visit(IQueryStringQuery query) => Write("query_string");
-
-		public virtual void Visit(IRankFeatureQuery query) => Write("rank_feature");
 
 		public virtual void Visit(IRangeQuery query) => Write("range");
 
@@ -187,47 +151,54 @@ namespace Nest
 
 		public virtual void Visit(ITermsQuery query) => Write("terms");
 
-		public virtual void Visit(IGeoPolygonQuery query) => Write("geo_polygon");
+		public virtual void Visit(ITypeQuery filter) => Write("type");
 
-		public virtual void Visit(IGeoDistanceQuery query) => Write("geo_distance");
+#pragma warning disable 618
+		public virtual void Visit(IMissingQuery filter) => Write("missing");
+#pragma warning restore 618
 
-		public virtual void Visit(ISpanMultiTermQuery query) => Write("span_multi_term");
+		public virtual void Visit(IGeoPolygonQuery filter) => Write("geo_polygon");
 
-		public virtual void Visit(ISpanSubQuery query) => Write("span_sub");
+		public virtual void Visit(IGeoDistanceRangeQuery filter) => Write("geo_distance_range");
 
-		public virtual void Visit(ISpanQuery query) => Write("span");
+		public virtual void Visit(IGeoDistanceQuery filter) => Write("geo_distance");
 
-		public virtual void Visit(IGeoBoundingBoxQuery query) => Write("geo_bounding_box");
+		public virtual void Visit(IGeoHashCellQuery filter) => Write("geohash_cell");
 
-		public virtual void Visit(IExistsQuery query) => Write("exists");
+		public void Visit(ITemplateQuery query) => Write("template");
 
-		public virtual void Visit(IScriptQuery query) => Write("script");
+		public void Visit(ISpanMultiTermQuery query) => Write("span_multi_term");
 
-		public virtual void Visit(IScriptScoreQuery query) => Write("script_score");
+		public void Visit(IGeoShapeMultiPointQuery query)=> Write("geo_multi_point");
 
-		public virtual void Visit(IRawQuery query) => Write("raw");
+		public void Visit(IGeoShapeMultiPolygonQuery query)=> Write("geo_shape_multi_polygon");
 
-		public virtual void Visit(IPercolateQuery query) => Write("percolate");
+		public void Visit(IGeoShapePolygonQuery query)=> Write("geo_shape_polygon");
 
-		public virtual void Visit(IParentIdQuery query) => Write("parent_id");
+		public void Visit(IGeoShapePointQuery query)=> Write("geo_shape_point");
 
-		public virtual void Visit(ITermsSetQuery query) => Write("terms_set");
+		public void Visit(IGeoShapeMultiLineStringQuery query)=> Write("geo_shape_multi_line");
 
-		public virtual void Visit(IPinnedQuery query) => Write("pinned");
+		public void Visit(IGeoShapeLineStringQuery query)=> Write("geo_shape_line");
 
-		private void Write(string queryType, Dictionary<string, string> properties)
-		{
-			properties = properties ?? new Dictionary<string, string>();
-			var props = string.Join(", ", properties.Select(kv => $"{kv.Key}: {kv.Value}"));
-			var indent = new string('-', (Depth - 1) * 2);
-			var scope = Scope.GetStringValue().ToLowerInvariant();
-			_sb.AppendFormat("{0}{1}: {2} ({3}){4}", indent, scope, queryType, props, Environment.NewLine);
-		}
+		public void Visit(IGeoShapeEnvelopeQuery query)=> Write("geo_shape_envelope");
 
-		private void Write(string queryType, Field field = null) => Write(queryType, field == null
-			? null
-			: new Dictionary<string, string> { { "field", _infer.Field(field) } });
+		public virtual void Visit(IGeoShapeGeometryCollectionQuery query)=> Write("geo_shape_geometrycollection");
 
-		public virtual void Visit(IConditionlessQuery query) => Write("conditonless_query");
+		public void Visit(ISpanSubQuery query)=> Write("span_sub");
+
+		public void Visit(IGeoShapeCircleQuery query)=> Write("geo_shape");
+
+		public void Visit(IConditionlessQuery query)=> Write("conditonless_query");
+
+		public void Visit(ISpanQuery query)=> Write("span");
+
+		public virtual void Visit(IGeoBoundingBoxQuery filter) => Write("geo_bounding_box");
+
+		public virtual void Visit(IExistsQuery filter) => Write("exists");
+
+		public void Visit(IScriptQuery filter) => Write("script");
+
+		public void Visit(IRawQuery filter) => Write("script");
 	}
 }

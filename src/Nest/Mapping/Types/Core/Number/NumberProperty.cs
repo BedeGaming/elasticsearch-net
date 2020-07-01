@@ -1,98 +1,98 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 using System;
-using System.Diagnostics;
-using System.Runtime.Serialization;
 using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	/// <summary>
-	/// A numeric mapping that defaults to <c>float</c>.
-	/// </summary>
-	[InterfaceDataContract]
-	public interface INumberProperty : IDocValuesProperty
+	[JsonObject(MemberSerialization.OptIn)]
+	public interface INumberProperty : IProperty
 	{
-		[DataMember(Name = "boost")]
+		[JsonProperty("index")]
+		NonStringIndexOption? Index { get; set; }
+
+		[JsonProperty("boost")]
 		double? Boost { get; set; }
 
-		[DataMember(Name = "coerce")]
-		bool? Coerce { get; set; }
-
-		[DataMember(Name = "fielddata")]
-		INumericFielddata Fielddata { get; set; }
-
-		[DataMember(Name = "ignore_malformed")]
-		bool? IgnoreMalformed { get; set; }
-
-		[DataMember(Name = "index")]
-		bool? Index { get; set; }
-
-		[DataMember(Name = "null_value")]
+		[JsonProperty("null_value")]
 		double? NullValue { get; set; }
 
-		[DataMember(Name = "scaling_factor")]
-		double? ScalingFactor { get; set; }
+		[JsonProperty("include_in_all")]
+		bool? IncludeInAll { get; set; }
+
+		[JsonProperty("precision_step")]
+		[Obsolete("Removed in 5.0.0")]
+		int? PrecisionStep { get; set; }
+
+		[JsonProperty("ignore_malformed")]
+		bool? IgnoreMalformed { get; set; }
+
+		[JsonProperty("coerce")]
+		bool? Coerce { get; set; }
+
+		[JsonProperty("fielddata")]
+		INumericFielddata Fielddata { get; set; }
 	}
 
-	[DebuggerDisplay("{DebugDisplay}")]
-	public class NumberProperty : DocValuesPropertyBase, INumberProperty
+	public class NumberProperty : PropertyBase, INumberProperty
 	{
-		public NumberProperty() : base(FieldType.Float) { }
+		public NumberProperty() : base(NumberType.Double.GetStringValue()) { }
+		public NumberProperty(NumberType type) : base(type.GetStringValue()) { }
+		protected NumberProperty(string type) : base(type) { }
 
-		public NumberProperty(NumberType type) : base(type.ToFieldType()) { }
-
+		public NonStringIndexOption? Index { get; set; }
 		public double? Boost { get; set; }
+		public double? NullValue { get; set; }
+		public bool? IncludeInAll { get; set; }
+		[Obsolete("Removed in 5.0.0")]
+		public int? PrecisionStep { get; set; }
+		public bool? IgnoreMalformed { get; set; }
 		public bool? Coerce { get; set; }
 		public INumericFielddata Fielddata { get; set; }
-		public bool? IgnoreMalformed { get; set; }
-
-		public bool? Index { get; set; }
-		public double? NullValue { get; set; }
-		public double? ScalingFactor { get; set; }
 	}
 
-	[DebuggerDisplay("{DebugDisplay}")]
 	public abstract class NumberPropertyDescriptorBase<TDescriptor, TInterface, T>
-		: DocValuesPropertyDescriptorBase<TDescriptor, TInterface, T>, INumberProperty
+		: PropertyDescriptorBase<TDescriptor, TInterface, T>, INumberProperty
 		where TDescriptor : NumberPropertyDescriptorBase<TDescriptor, TInterface, T>, TInterface
 		where TInterface : class, INumberProperty
 		where T : class
 	{
-		protected NumberPropertyDescriptorBase() : base(FieldType.Float) { }
+		public NumberPropertyDescriptorBase() : base("double") { }
 
-		protected NumberPropertyDescriptorBase(FieldType type) : base(type) { }
+		protected NumberPropertyDescriptorBase(string type) : base(type) { }
 
+		NonStringIndexOption? INumberProperty.Index { get; set; }
 		double? INumberProperty.Boost { get; set; }
+		double? INumberProperty.NullValue { get; set; }
+		bool? INumberProperty.IncludeInAll { get; set; }
+		int? INumberProperty.PrecisionStep { get; set; }
+		bool? INumberProperty.IgnoreMalformed { get; set; }
 		bool? INumberProperty.Coerce { get; set; }
 		INumericFielddata INumberProperty.Fielddata { get; set; }
-		bool? INumberProperty.IgnoreMalformed { get; set; }
 
-		bool? INumberProperty.Index { get; set; }
-		double? INumberProperty.NullValue { get; set; }
-		double? INumberProperty.ScalingFactor { get; set; }
+		public TDescriptor Type(NumberType type) => Assign(a => a.Type = type.GetStringValue());
 
-		public TDescriptor Type(NumberType? type) => Assign(type?.GetStringValue(), (a, v) => a.Type = v);
+		public TDescriptor Index(NonStringIndexOption index = NonStringIndexOption.NotAnalyzed) => Assign(a => a.Index = index);
 
-		public TDescriptor Index(bool? index = true) => Assign(index, (a, v) => a.Index = v);
+		public TDescriptor Boost(double boost) => Assign(a => a.Boost = boost);
 
-		public TDescriptor Boost(double? boost) => Assign(boost, (a, v) => a.Boost = v);
+		public TDescriptor NullValue(double nullValue) => Assign(a => a.NullValue = nullValue);
 
-		public TDescriptor NullValue(double? nullValue) => Assign(nullValue, (a, v) => a.NullValue = v);
+		public TDescriptor IncludeInAll(bool includeInAll = true) => Assign(a => a.IncludeInAll = includeInAll);
 
-		public TDescriptor IgnoreMalformed(bool? ignoreMalformed = true) => Assign(ignoreMalformed, (a, v) => a.IgnoreMalformed = v);
+		[Obsolete("Removed in 5.0.0")]
+		public TDescriptor PrecisionStep(int precisionStep) => Assign(a => a.PrecisionStep = precisionStep);
 
-		public TDescriptor Coerce(bool? coerce = true) => Assign(coerce, (a, v) => a.Coerce = v);
+		public TDescriptor IgnoreMalformed(bool ignoreMalformed = true) => Assign(a => a.IgnoreMalformed = ignoreMalformed);
+
+		public TDescriptor Coerce(bool coerce = true) => Assign(a => a.Coerce = coerce);
 
 		public TDescriptor Fielddata(Func<NumericFielddataDescriptor, INumericFielddata> selector) =>
-			Assign(selector(new NumericFielddataDescriptor()), (a, v) => a.Fielddata = v);
-
-		public TDescriptor ScalingFactor(double? scalingFactor) => Assign(scalingFactor, (a, v) => a.ScalingFactor = v);
+			Assign(a => a.Fielddata = selector(new NumericFielddataDescriptor()));
 	}
 
-	public class NumberPropertyDescriptor<T> : NumberPropertyDescriptorBase<NumberPropertyDescriptor<T>, INumberProperty, T>
-		where T : class { }
+	public class NumberPropertyDescriptor<T>
+		: NumberPropertyDescriptorBase<NumberPropertyDescriptor<T>, INumberProperty, T>, INumberProperty
+		where T : class
+	{
+	}
 }

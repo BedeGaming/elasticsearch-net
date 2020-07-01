@@ -1,11 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -13,64 +8,98 @@ namespace Nest
 	/// Checks each suggestion against the specified query to prune suggestions
 	/// for which no matching docs exist in the index.
 	/// </summary>
-	[InterfaceDataContract]
-	[ReadAs(typeof(PhraseSuggestCollate))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<PhraseSuggestCollate>))]
 	public interface IPhraseSuggestCollate
 	{
 		/// <summary>
-		/// The parameters for the query. the suggestion value will be added to the variables you specify.
+		/// The collate query to run.
 		/// </summary>
-		[DataMember(Name = "params")]
-		IDictionary<string, object> Params { get; set; }
+		/// <remarks>
+		/// Query parameters should be specified using <see cref="Params"/>
+		/// </remarks>
+		[JsonProperty("query")]
+		IScript Query { get; set; }
 
 		/// <summary>
 		/// Controls if all phrase suggestions will be returned. When set to <c>true</c>, the suggestions will have
 		/// an additional option collate_match, which will be <c>true</c> if matching documents for the phrase was found,
-		/// <c>false</c> otherwise. The default value for <see cref="Prune" /> is <c>false</c>.
+		/// <c>false</c> otherwise. The default value for <see cref="Prune"/> is <c>false</c>.
 		/// </summary>
-		[DataMember(Name = "prune")]
+		[JsonProperty("prune")]
 		bool? Prune { get; set; }
 
 		/// <summary>
-		/// The collate query to run.
+		/// The parameters for the query. the suggestion value will be added to the variables you specify.
 		/// </summary>
-		[DataMember(Name = "query")]
-		IPhraseSuggestCollateQuery Query { get; set; }
+		[JsonProperty("params")]
+		IDictionary<string, object> Params { get; set; }
 	}
 
 	/// <inheritdoc />
 	public class PhraseSuggestCollate : IPhraseSuggestCollate
 	{
+		private IScript _query;
+
 		/// <inheritdoc />
-		public IDictionary<string, object> Params { get; set; }
+		public IScript Query
+		{
+			get => _query;
+			set
+			{
+				_query = value;
+				if (_query != null) Params = _query.Params;
+			}
+		}
 
 		/// <inheritdoc />
 		public bool? Prune { get; set; }
 
 		/// <inheritdoc />
-		public IPhraseSuggestCollateQuery Query { get; set; }
+		public IDictionary<string, object> Params { get; set; }
 	}
 
-	/// <inheritdoc cref="IPhraseSuggestCollate" />
 	public class PhraseSuggestCollateDescriptor<T> : DescriptorBase<PhraseSuggestCollateDescriptor<T>, IPhraseSuggestCollate>, IPhraseSuggestCollate
 		where T : class
 	{
+		IScript IPhraseSuggestCollate.Query { get; set; }
 		IDictionary<string, object> IPhraseSuggestCollate.Params { get; set; }
 		bool? IPhraseSuggestCollate.Prune { get; set; }
-		IPhraseSuggestCollateQuery IPhraseSuggestCollate.Query { get; set; }
+		/// <summary>
+		/// The collate query to run.
+		/// </summary>
+		/// <remarks>
+		/// Query parameters should be specified using <see cref="Params(IDictionary&lt;string, object&gt;)"/> or
+		/// Params(Func&lt;FluentDictionary&lt;string, object&gt;, FluentDictionary&lt;string, object&gt;&gt;)
+		/// </remarks>
+		public PhraseSuggestCollateDescriptor<T> Query(string script) => Assign(a => a.Query = (InlineScript)script);
 
-		/// <inheritdoc cref="IPhraseSuggestCollate.Query" />
-		public PhraseSuggestCollateDescriptor<T> Query(Func<PhraseSuggestCollateQueryDescriptor, IPhraseSuggestCollateQuery> selector) =>
-			Assign(selector, (a, v) => a.Query = v?.Invoke(new PhraseSuggestCollateQueryDescriptor()));
+		/// <summary>
+		/// The collate query to run.
+		/// </summary>
+		/// <remarks>
+		/// Query parameters should be specified using <see cref="Params(IDictionary&lt;string, object&gt;)"/> or
+		/// Params(Func&lt;FluentDictionary&lt;string, object&gt;, FluentDictionary&lt;string, object&gt;&gt;)
+		/// </remarks>
+		public PhraseSuggestCollateDescriptor<T> Query(Func<ScriptDescriptor, IScript> scriptSelector) =>
+			Assign(a => a.Query = scriptSelector?.Invoke(new ScriptDescriptor()));
 
-		/// <inheritdoc cref="IPhraseSuggestCollate.Prune" />
-		public PhraseSuggestCollateDescriptor<T> Prune(bool? prune = true) => Assign(prune, (a, v) => a.Prune = v);
+		/// <summary>
+		/// Controls if all phrase suggestions will be returned. When set to <c>true</c>, the suggestions will have
+		/// an additional option collate_match, which will be <c>true</c> if matching documents for the phrase was found,
+		/// <c>false</c> otherwise. The default value for <see cref="Prune"/> is <c>false</c>.
+		/// </summary>
+		public PhraseSuggestCollateDescriptor<T> Prune(bool? prune = true) => Assign(a => a.Prune = prune);
 
-		/// <inheritdoc cref="IPhraseSuggestCollate.Params" />
-		public PhraseSuggestCollateDescriptor<T> Params(IDictionary<string, object> paramsDictionary) => Assign(paramsDictionary, (a, v) => a.Params = v);
+		/// <summary>
+		/// The parameters for the query. the suggestion value will be added to the variables you specify.
+		/// </summary>
+		public PhraseSuggestCollateDescriptor<T> Params(IDictionary<string, object> paramsDictionary) => Assign(a => a.Params = paramsDictionary);
 
-		/// <inheritdoc cref="IPhraseSuggestCollate.Params" />
+		/// <summary>
+		/// The parameters for the query. the suggestion value will be added to the variables you specify.
+		/// </summary>
 		public PhraseSuggestCollateDescriptor<T> Params(Func<FluentDictionary<string, object>, FluentDictionary<string, object>> paramsDictionary) =>
-			Assign(paramsDictionary(new FluentDictionary<string, object>()), (a, v) => a.Params = v);
+			Assign(a => a.Params = paramsDictionary(new FluentDictionary<string, object>()));
 	}
 }

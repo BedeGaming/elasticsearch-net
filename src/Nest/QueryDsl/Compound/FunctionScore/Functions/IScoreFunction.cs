@@ -1,26 +1,20 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(ScoreFunctionJsonFormatter))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(ScoreFunctionJsonConverter))]
 	public interface IScoreFunction
 	{
-		[DataMember(Name ="filter")]
+		[JsonProperty("filter")]
 		QueryContainer Filter { get; set; }
 
-		[DataMember(Name ="weight")]
+		[JsonProperty("weight")]
 		double? Weight { get; set; }
 	}
 
 	public class FunctionScoreFunction : FunctionScoreFunctionBase { }
-
 	public abstract class FunctionScoreFunctionBase : IScoreFunction
 	{
 		public QueryContainer Filter { get; set; }
@@ -28,9 +22,10 @@ namespace Nest
 	}
 
 	public class FunctionScoreFunctionDescriptor<T> : FunctionScoreFunctionDescriptorBase<FunctionScoreFunctionDescriptor<T>, IScoreFunction, T>
-		where T : class { }
+		where T : class { } 
 
-	public abstract class FunctionScoreFunctionDescriptorBase<TDescriptor, TInterface, T> : DescriptorBase<TDescriptor, TInterface>, IScoreFunction
+	public abstract class FunctionScoreFunctionDescriptorBase<TDescriptor, TInterface, T> : 
+		DescriptorBase<TDescriptor, TInterface>, IScoreFunction
 		where TDescriptor : FunctionScoreFunctionDescriptorBase<TDescriptor, TInterface, T>, TInterface, IScoreFunction
 		where TInterface : class, IScoreFunction
 		where T : class
@@ -40,8 +35,8 @@ namespace Nest
 		double? IScoreFunction.Weight { get; set; }
 
 		public TDescriptor Filter(Func<QueryContainerDescriptor<T>, QueryContainer> filterSelector) =>
-			Assign(filterSelector, (a, v) => a.Filter = v?.Invoke(new QueryContainerDescriptor<T>()));
+			Assign(a => a.Filter = filterSelector?.Invoke(new QueryContainerDescriptor<T>()));
 
-		public TDescriptor Weight(double? weight) => Assign(weight, (a, v) => a.Weight = v);
+		public TDescriptor Weight(double? weight) => Assign(a => a.Weight = weight);
 	}
 }

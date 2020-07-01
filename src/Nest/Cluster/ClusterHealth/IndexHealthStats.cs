@@ -1,43 +1,32 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
+	[JsonObject]
 	public class IndexHealthStats
 	{
-		[DataMember(Name = "active_primary_shards")]
-		public int ActivePrimaryShards { get; internal set; }
+		[JsonProperty(PropertyName = "status")]
+		public string Status { get; set; }
 
-		[DataMember(Name = "active_shards")]
-		public int ActiveShards { get; internal set; }
+		[JsonProperty(PropertyName = "number_of_shards")]
+		public int NumberOfShards { get; set; }
+		[JsonProperty(PropertyName = "number_of_replicas")]
+		public int NumberOfReplicas { get; set; }
 
-		[DataMember(Name = "initializing_shards")]
-		public int InitializingShards { get; internal set; }
+		[JsonProperty(PropertyName = "active_primary_shards")]
+		public int ActivePrimaryShards { get; set; }
+		[JsonProperty(PropertyName = "active_shards")]
+		public int ActiveShards { get; set; }
+		[JsonProperty(PropertyName = "relocating_shards")]
+		public int RelocatingShards { get; set; }
+		[JsonProperty(PropertyName = "initializing_shards")]
+		public int InitializingShards { get; set; }
+		[JsonProperty(PropertyName = "unassigned_shards")]
+		public int UnassignedShards { get; set; }
 
-		[DataMember(Name = "number_of_replicas")]
-		public int NumberOfReplicas { get; internal set; }
-
-		[DataMember(Name = "number_of_shards")]
-		public int NumberOfShards { get; internal set; }
-
-		[DataMember(Name = "relocating_shards")]
-		public int RelocatingShards { get; internal set; }
-
-		[DataMember(Name = "shards")]
-		[JsonFormatter(typeof(VerbatimInterfaceReadOnlyDictionaryKeysFormatter<string, ShardHealthStats>))]
-		public IReadOnlyDictionary<string, ShardHealthStats> Shards { get; internal set; } = EmptyReadOnly<string, ShardHealthStats>.Dictionary;
-
-		[DataMember(Name = "status")]
-		public Health Status { get; internal set; }
-
-		[DataMember(Name = "unassigned_shards")]
-		public int UnassignedShards { get; internal set; }
+		[JsonProperty(PropertyName = "shards")]
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]
+		public Dictionary<string, ShardHealthStats> Shards { get; set; }
 	}
 }

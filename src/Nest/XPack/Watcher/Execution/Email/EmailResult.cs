@@ -1,43 +1,39 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Nest
 {
 	public class EmailResult
 	{
-		[DataMember(Name = "bcc")]
-		public IEnumerable<string> Bcc { get; set; }
-
-		[DataMember(Name = "body")]
-		public EmailBody Body { get; set; }
-
-		[DataMember(Name = "cc")]
-		public IEnumerable<string> Cc { get; set; }
-
-		[DataMember(Name = "from")]
-		public string From { get; set; }
-
-		[DataMember(Name = "id")]
+		[JsonProperty("id")]
 		public string Id { get; set; }
 
-		[DataMember(Name = "priority")]
-		public EmailPriority? Priority { get; set; }
-
-		[DataMember(Name = "reply_to")]
-		public IEnumerable<string> ReplyTo { get; set; }
-
-		[DataMember(Name = "sent_date")]
+		[JsonProperty("sent_date")]
 		public DateTime? SentDate { get; set; }
 
-		[DataMember(Name = "subject")]
+		[JsonProperty("from")]
+		public string From { get; set; }
+
+		[JsonProperty("to")]
+		public IEnumerable<string> To { get; set; }
+
+		[JsonProperty("cc")]
+		public IEnumerable<string> Cc { get; set; }
+
+		[JsonProperty("bcc")]
+		public IEnumerable<string> Bcc { get; set; }
+
+		[JsonProperty("reply_to")]
+		public IEnumerable<string> ReplyTo { get; set; }
+
+		[JsonProperty("subject")]
 		public string Subject { get; set; }
 
-		[DataMember(Name = "to")]
-		public IEnumerable<string> To { get; set; }
+		[JsonProperty("body")]
+		public EmailBody Body { get; set; }
+
+		[JsonProperty("priority")]
+		public EmailPriority? Priority { get; set; }
 	}
 }

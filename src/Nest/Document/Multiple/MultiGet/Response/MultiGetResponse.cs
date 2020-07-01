@@ -1,83 +1,98 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	[JsonFormatter(typeof(MultiGetResponseFormatter))]
-	public class MultiGetResponse : ResponseBase
+	public interface IMultiGetResponse : IResponse
 	{
-		public IReadOnlyCollection<IMultiGetHit<object>> Hits => InternalHits.ToList().AsReadOnly();
-		public override bool IsValid => base.IsValid && !InternalHits.HasAny(d => d.Error != null);
+		IEnumerable<IMultiGetHit<object>> Documents { get; }
+		MultiGetHit<T> Get<T>(string id) where T : class;
+		MultiGetHit<T> Get<T>(long id) where T : class;
+		T Source<T>(string id) where T : class;
+		T Source<T>(long id) where T : class;
+		FieldValues GetFieldValues<T>(string id) where T : class;
+		FieldValues GetFieldSelection<T>(long id) where T : class;
+		IEnumerable<T> SourceMany<T>(IEnumerable<string> ids) where T : class;
+		IEnumerable<T> SourceMany<T>(IEnumerable<long> ids) where T : class;
+		IEnumerable<IMultiGetHit<T>> GetMany<T>(IEnumerable<string> ids) where T : class;
+		IEnumerable<IMultiGetHit<T>> GetMany<T>(IEnumerable<long> ids) where T : class;
+	}
 
-		internal ICollection<IMultiGetHit<object>> InternalHits { get; set; } = new List<IMultiGetHit<object>>();
-
-		public MultiGetHit<T> Get<T>(string id) where T : class => Hits.OfType<MultiGetHit<T>>().FirstOrDefault(m => m.Id == id);
-
-		public MultiGetHit<T> Get<T>(long id) where T : class => Get<T>(id.ToString(CultureInfo.InvariantCulture));
-
-		public FieldValues GetFieldSelection<T>(long id) where T : class => GetFieldValues<T>(id.ToString(CultureInfo.InvariantCulture));
-
-		public FieldValues GetFieldValues<T>(string id) where T : class
+	[JsonObject]
+	//TODO validate this, ported over from ElasticContractResolver but it seems out of place
+	[ContractJsonConverter(typeof(MultiGetHitJsonConverter))]
+	public class MultiGetResponse : ResponseBase, IMultiGetResponse
+	{
+		public override bool IsValid => base.IsValid && !this._Documents.HasAny(d => d.Error != null);
+		
+		public MultiGetResponse()
 		{
-			var multiHit = Get<T>(id);
-			return multiHit?.Fields ?? FieldValues.Empty;
+			this._Documents = new List<IMultiGetHit<object>>();
 		}
 
-		/// <summary>
-		/// Retrieves the hits for each distinct id.
-		/// </summary>
-		/// <param name="ids">The ids to retrieve source for</param>
-		/// <typeparam name="T">The document type for the hits to return</typeparam>
-		/// <returns>An IEnumerable{T} of hits</returns>
-		public IEnumerable<IMultiGetHit<T>> GetMany<T>(IEnumerable<string> ids) where T : class
-		{
-			HashSet<string> seenIndices = null;
-			foreach (var id in ids.Distinct())
-			{
-				if (seenIndices == null)
-					seenIndices = new HashSet<string>();
-				else
-					seenIndices.Clear();
+		internal ICollection<IMultiGetHit<object>> _Documents { get; set; }
 
-				foreach (var doc in Hits.OfType<IMultiGetHit<T>>())
-				{
-					if (string.Equals(doc.Id, id) && seenIndices.Add(doc.Index))
-						yield return doc;
-				}
-			}
+		public IEnumerable<IMultiGetHit<object>> Documents => this._Documents.ToList();
+
+		public MultiGetHit<T> Get<T>(string id) where T : class
+		{
+			return this.Documents.OfType<MultiGetHit<T>>().FirstOrDefault(m => m.Id == id);
 		}
 
-		public IEnumerable<IMultiGetHit<T>> GetMany<T>(IEnumerable<long> ids) where T : class =>
-			GetMany<T>(ids.Select(i => i.ToString(CultureInfo.InvariantCulture)));
+		public MultiGetHit<T> Get<T>(long id) where T : class
+		{
+			return this.Get<T>(id.ToString(CultureInfo.InvariantCulture));
+		}
 
 		public T Source<T>(string id) where T : class
 		{
-			var multiHit = Get<T>(id);
+			var multiHit = this.Get<T>(id);
 			return multiHit?.Source;
 		}
 
-		public T Source<T>(long id) where T : class => Source<T>(id.ToString(CultureInfo.InvariantCulture));
+		public T Source<T>(long id) where T : class
+		{
+			return this.Source<T>(id.ToString(CultureInfo.InvariantCulture));
+		}
 
-		/// <summary>
-		/// Retrieves the source, if available, for each distinct id.
-		/// </summary>
-		/// <param name="ids">The ids to retrieve source for</param>
-		/// <typeparam name="T">The document type for the hits to return</typeparam>
-		/// <returns>An IEnumerable{T} of sources</returns>
-		public IEnumerable<T> SourceMany<T>(IEnumerable<string> ids) where T : class =>
-			from hit in GetMany<T>(ids)
-			where hit.Found
-			select hit.Source;
+		public IEnumerable<T> SourceMany<T>(IEnumerable<string> ids) where T : class
+		{
+			var docs = this.Documents.OfType<IMultiGetHit<T>>();
+			return from d in docs
+				join id in ids on d.Id equals id
+				where d.Found
+				select d.Source;
+		}
 
-		public IEnumerable<T> SourceMany<T>(IEnumerable<long> ids) where T : class =>
-			SourceMany<T>(ids.Select(i => i.ToString(CultureInfo.InvariantCulture)));
+		public IEnumerable<T> SourceMany<T>(IEnumerable<long> ids) where T : class
+		{
+			return this.SourceMany<T>(ids.Select(i=>i.ToString(CultureInfo.InvariantCulture)));
+		}
+
+		public IEnumerable<IMultiGetHit<T>> GetMany<T>(IEnumerable<string> ids) where T : class
+		{
+			var docs = this.Documents.OfType<IMultiGetHit<T>>();
+			return from d in docs
+				join id in ids on d.Id equals id
+				select d;
+		}
+
+		public IEnumerable<IMultiGetHit<T>> GetMany<T>(IEnumerable<long> ids) where T : class
+		{
+			return this.GetMany<T>(ids.Select(i=>i.ToString(CultureInfo.InvariantCulture)));
+		}
+
+		public FieldValues GetFieldValues<T>(string id) where T : class
+		{
+			var multiHit = this.Get<T>(id);
+			return multiHit?.Fields;
+		}
+
+		public FieldValues GetFieldSelection<T>(long id) where T : class
+		{
+			return this.GetFieldValues<T>(id.ToString(CultureInfo.InvariantCulture));
+		}
 	}
 }

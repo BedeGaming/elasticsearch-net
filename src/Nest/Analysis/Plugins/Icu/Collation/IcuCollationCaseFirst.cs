@@ -1,23 +1,17 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Runtime.Serialization;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Nest
 {
 	/// <summary>
-	/// Controls which case is sorted first when case is not ignored for
-	/// strength tertiary. The default depends on the collation.
+	/// Sets the alternate handling for strength quaternary to be either shifted or non-ignorable.
+	/// Which boils down to ignoring punctuation and whitespace.
 	/// </summary>
-	/// <remarks>
-	/// Requires analysis-icu plugin to be installed
-	/// </remarks>
-	[StringEnum]
+	[JsonConverter(typeof(StringEnumConverter))]
 	public enum IcuCollationCaseFirst
 	{
-		[EnumMember(Value = "lower")] Lower,
-		[EnumMember(Value = "upper")] Upper
+		[EnumMember(Value="lower")] Lower,
+		[EnumMember(Value="upper")] Upper
 	}
 }

@@ -1,44 +1,38 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(FielddataFrequencyFilter))]
+	[JsonObject(MemberSerialization.OptIn)]
 	public interface IFielddataFrequencyFilter
 	{
-		[DataMember(Name ="max")]
-		double? Max { get; set; }
-
-		[DataMember(Name ="min")]
+		[JsonProperty("min")]
 		double? Min { get; set; }
 
-		[DataMember(Name ="min_segment_size")]
+		[JsonProperty("max")]
+		double? Max { get; set; }
+
+		[JsonProperty("min_segment_size")]
 		int? MinSegmentSize { get; set; }
 	}
 
 	public class FielddataFrequencyFilter : IFielddataFrequencyFilter
 	{
-		public double? Max { get; set; }
 		public double? Min { get; set; }
+		public double? Max { get; set; }
 		public int? MinSegmentSize { get; set; }
 	}
 
 	public class FielddataFrequencyFilterDescriptor
 		: DescriptorBase<FielddataFrequencyFilterDescriptor, IFielddataFrequencyFilter>, IFielddataFrequencyFilter
 	{
-		double? IFielddataFrequencyFilter.Max { get; set; }
 		double? IFielddataFrequencyFilter.Min { get; set; }
+		double? IFielddataFrequencyFilter.Max { get; set; }
 		int? IFielddataFrequencyFilter.MinSegmentSize { get; set; }
 
-		public FielddataFrequencyFilterDescriptor Min(double? min) => Assign(min, (a, v) => a.Min = v);
+		public FielddataFrequencyFilterDescriptor Min(double min) => Assign(a => a.Min = min);
 
-		public FielddataFrequencyFilterDescriptor Max(double? max) => Assign(max, (a, v) => a.Max = v);
+		public FielddataFrequencyFilterDescriptor Max(double max) => Assign(a => a.Max = max);
 
-		public FielddataFrequencyFilterDescriptor MinSegmentSize(int? minSegmentSize) => Assign(minSegmentSize, (a, v) => a.MinSegmentSize = v);
+		public FielddataFrequencyFilterDescriptor MinSegmentSize(int minSegmentSize) => Assign(a => a.MinSegmentSize = minSegmentSize);
 	}
 }

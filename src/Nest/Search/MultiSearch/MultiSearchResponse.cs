@@ -1,62 +1,57 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
-	[JsonFormatter(typeof(MultiSearchResponseFormatter))]
-	public class MultiSearchResponse : ResponseBase
+	[JsonObject]
+	[ContractJsonConverter(typeof(MultiSearchResponseJsonConverter))]
+	public class MultiSearchResponse : ResponseBase, IMultiSearchResponse
 	{
-		public MultiSearchResponse() => Responses = new Dictionary<string, IResponse>();
-
-		public long Took { get; set; }
-
-		public IEnumerable<IResponse> AllResponses => _allResponses<IResponse>();
-
-		public override bool IsValid => base.IsValid && AllResponses.All(b => b.IsValid);
-
-		public int TotalResponses => Responses.HasAny() ? Responses.Count() : 0;
-
-		[JsonFormatter(typeof(VerbatimDictionaryInterfaceKeysFormatter<string, IResponse>))]
-		internal IDictionary<string, IResponse> Responses { get; set; }
-
-		public IEnumerable<IResponse> GetInvalidResponses() => _allResponses<IResponse>().Where(r => !r.IsValid);
-
-		public ISearchResponse<T> GetResponse<T>(string name) where T : class
+		public MultiSearchResponse()
 		{
-			if (!Responses.TryGetValue(name, out var response))
-				return null;
-
-			if (response is IElasticsearchResponse elasticSearchResponse)
-				elasticSearchResponse.ApiCall = ApiCall;
-
-			return response as ISearchResponse<T>;
+			this.Responses = new Dictionary<string, object>();
 		}
 
-		public IEnumerable<ISearchResponse<T>> GetResponses<T>() where T : class => _allResponses<SearchResponse<T>>();
+		public override bool IsValid => base.IsValid && this.AllResponses.All(b => b.IsValid);
 
 		protected override void DebugIsValid(StringBuilder sb)
 		{
 			sb.AppendLine($"# Invalid searches (inspect individual response.DebugInformation for more detail):");
-			foreach (var i in AllResponses.Select((item, i) => new { item, i }).Where(i => !i.item.IsValid))
+			foreach(var i in AllResponses.Select((item, i) => new { item, i}).Where(i=>!i.item.IsValid))
 				sb.AppendLine($"  search[{i.i}]: {i.item}");
 		}
 
-		private IEnumerable<T> _allResponses<T>() where T : class, IResponse, IElasticsearchResponse
+		[JsonConverter(typeof(VerbatimDictionaryKeysJsonConverter))]	
+		internal IDictionary<string, object> Responses { get; set; }
+
+		public int TotalResponses => this.Responses.HasAny() ? this.Responses.Count() : 0;
+
+		private IEnumerable<T> _allResponses<T>() where T : class, IResponse, IBodyWithApiCallDetails
 		{
-			foreach (var r in Responses.Values.OfType<T>())
+			foreach (var r in this.Responses.Values.OfType<T>())
 			{
-				r.ApiCall = ApiCall;
+				r.CallDetails = this.ApiCall;
 				yield return r;
 			}
+		}
+
+		public IEnumerable<IResponse> AllResponses => this._allResponses<IResponse>();
+
+		public IEnumerable<IResponse> GetInvalidResponses() => this._allResponses<IResponse>().Where(r => !r.IsValid);
+
+		public IEnumerable<SearchResponse<T>> GetResponses<T>() where T : class => this._allResponses<SearchResponse<T>>();
+
+		public SearchResponse<T> GetResponse<T>(string name) where T : class
+		{
+			object response;
+			this.Responses.TryGetValue(name, out response);
+			var r = response as IBodyWithApiCallDetails;
+			if (r != null)
+				r.CallDetails = this.ApiCall;
+			return response as SearchResponse<T>;
 		}
 	}
 }

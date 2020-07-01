@@ -1,45 +1,64 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public interface IGetResponse<out TDocument> : IResponse where TDocument : class
+	public interface IGetResponse<T> : IResponse where T : class
 	{
-		TDocument Source { get; }
+		[JsonProperty("_index")]
+		string Index { get; }
+
+		[JsonProperty("_type")]
+		string Type { get; }
+
+		[JsonProperty("_id")]
+		string Id { get; }
+
+		[JsonProperty("_version")]
+		long Version { get; }
+
+		[JsonProperty("found")]
+		bool Found { get; }
+
+		[JsonProperty("_source")]
+		T Source { get; }
+
+		[JsonProperty("fields")]
+		FieldValues Fields { get; }
+
+		[JsonProperty("_parent")]
+		string Parent { get; }
+
+		[JsonProperty("_routing")]
+		string Routing { get; }
+
+		[JsonProperty("_timestamp")]
+		long? Timestamp { get; }
+
+		[JsonProperty("_ttl")]
+		long? Ttl { get; }
 	}
 
-	public class GetResponse<TDocument> : ResponseBase, IGetResponse<TDocument> where TDocument : class
+	[JsonObject(MemberSerialization.OptIn)]
+	public class GetResponse<T> : ResponseBase, IGetResponse<T> where T : class
 	{
-		[DataMember(Name = "fields")]
-		public FieldValues Fields { get; internal set; }
+		public string Index { get; private set; }
+		public string Type { get; private set; }
+		public string Id { get; private set; }
+		public long Version { get; private set; }
+		public bool Found { get; private set; }
+		public T Source { get; private set; }
+		public FieldValues Fields { get; private set; }
+		public string Parent { get; private set; }
+		public string Routing { get; private set; }
+		public long? Timestamp { get; private set; }
+		public long? Ttl { get; private set; }
 
-		[DataMember(Name = "found")]
-		public bool Found { get; internal set; }
-
-		[DataMember(Name = "_id")]
-		public string Id { get; internal set; }
-
-		[DataMember(Name = "_index")]
-		public string Index { get; internal set; }
-
-		[DataMember(Name = "_primary_term")]
-		public long? PrimaryTerm { get; internal set; }
-
-		[DataMember(Name = "_routing")]
-		public string Routing { get; internal set; }
-
-		[DataMember(Name = "_seq_no")]
-		public long? SequenceNumber { get; internal set; }
-
-		[DataMember(Name = "_source")]
-		[JsonFormatter(typeof(SourceFormatter<>))]
-		public TDocument Source { get; internal set; }
-
-		[DataMember(Name = "_version")]
-		public long Version { get; internal set; }
+#pragma warning disable 809 // Obsolete member overrides non-obsolete member
+		[Obsolete(@"WARNING: IsValid behavior has changed to align with 1.x and 5.x onwards.
+		It now returns true for 404 responses (document not found), where previously it returned
+		false.  Please use .Found to check whether the document was actually found.")]
+		public override bool IsValid => base.IsValid;
+#pragma warning restore 809
 	}
 }

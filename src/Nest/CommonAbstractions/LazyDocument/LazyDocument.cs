@@ -1,101 +1,44 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Nest
 {
-	/// <summary>
-	/// A lazily deserialized document
-	/// </summary>
-	[JsonFormatter(typeof(LazyDocumentInterfaceFormatter))]
+	[JsonConverter(typeof(LazyDocumentJsonConverter))]
 	public interface ILazyDocument
 	{
 		/// <summary>
-		/// Creates an instance of <typeparamref name="T" /> from this
-		/// <see cref="ILazyDocument" /> instance
+		/// Creates an instance of <typeparamref name="T"/> from this
+		/// <see cref="ILazyDocument"/> instance
 		/// </summary>
 		/// <typeparam name="T">The type</typeparam>
-		T As<T>();
+		T As<T>() where T : class;
 
 		/// <summary>
-		/// Creates an instance of <paramref name="objectType" /> from this
-		/// <see cref="ILazyDocument" /> instance
+		/// Creates an instance of <paramref name="objectType"/> from this
+		/// <see cref="ILazyDocument"/> instance
 		/// </summary>
 		/// <param name="objectType">The type</param>
 		object As(Type objectType);
-
-		/// <summary>
-		/// Creates an instance of <typeparamref name="T" /> from this
-		/// <see cref="ILazyDocument" /> instance
-		/// </summary>
-		/// <typeparam name="T">The type</typeparam>
-		Task<T> AsAsync<T>(CancellationToken ct = default);
-		
-		/// <summary>
-		/// Creates an instance of <paramref name="objectType" /> from this
-		/// <see cref="ILazyDocument" /> instance
-		/// </summary>
-		/// <param name="objectType">The type</param>
-		Task<object> AsAsync(Type objectType, CancellationToken ct = default);
 	}
 
-	/// <inheritdoc />
-	[JsonFormatter(typeof(LazyDocumentFormatter))]
 	public class LazyDocument : ILazyDocument
 	{
-		private readonly IElasticsearchSerializer _sourceSerializer;
-		private readonly IElasticsearchSerializer _requestResponseSerializer;
-		private readonly IMemoryStreamFactory _memoryStreamFactory;
-
-		internal LazyDocument(byte[] bytes, IJsonFormatterResolver formatterResolver)
-		{
-			Bytes = bytes;
-			var settings = formatterResolver.GetConnectionSettings();
-			_sourceSerializer = settings.SourceSerializer;
-			_requestResponseSerializer = settings.RequestResponseSerializer;
-			_memoryStreamFactory = settings.MemoryStreamFactory;
-		}
-
-		internal byte[] Bytes { get; }
-
-		internal T AsUsingRequestResponseSerializer<T>()
-		{
-			using (var ms = _memoryStreamFactory.Create(Bytes))
-				return _requestResponseSerializer.Deserialize<T>(ms);
-		}
+		internal JToken _Value { get; set; }
+		internal JsonSerializer _Serializer { get; set; }
 
 		/// <inheritdoc />
-		public T As<T>()
+		public T As<T>() where T : class
 		{
-			using (var ms = _memoryStreamFactory.Create(Bytes))
-				return _sourceSerializer.Deserialize<T>(ms);
+			var jToken = this._Value;
+			return jToken?.ToObject<T>(_Serializer);
 		}
 
 		/// <inheritdoc />
 		public object As(Type objectType)
 		{
-			using (var ms = _memoryStreamFactory.Create(Bytes))
-				return _sourceSerializer.Deserialize(objectType, ms);
-		}
-
-		/// <inheritdoc />
-		public Task<T> AsAsync<T>(CancellationToken ct = default)
-		{
-			using (var ms = _memoryStreamFactory.Create(Bytes))
-				return _sourceSerializer.DeserializeAsync<T>(ms, ct);
-		}
-
-		/// <inheritdoc />
-		public Task<object> AsAsync(Type objectType, CancellationToken ct = default)
-		{
-			using (var ms = _memoryStreamFactory.Create(Bytes))
-				return _sourceSerializer.DeserializeAsync(objectType, ms, ct);
+			var jToken = this._Value;
+			return jToken?.ToObject(objectType, _Serializer);
 		}
 	}
 }

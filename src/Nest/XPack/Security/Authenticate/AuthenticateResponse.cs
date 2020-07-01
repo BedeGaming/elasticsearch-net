@@ -1,45 +1,40 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	public class RealmInfo
+	public interface IAuthenticateResponse : IResponse
 	{
-		[DataMember(Name = "name")]
-		public string Name { get; internal set; }
+		[JsonProperty("username")]
+		string Username { get; }
 
-		[DataMember(Name = "type")]
-		public string Type { get; internal set; }
+		[JsonProperty("roles")]
+		IEnumerable<string> Roles { get; }
+
+		[JsonProperty("full_name")]
+		string FullName { get; }
+
+		[JsonProperty("email")]
+		string Email { get; }
+
+		[JsonProperty("metadata")]
+		IDictionary<string, object> Metadata { get; }
+
 	}
 
-	public class AuthenticateResponse : ResponseBase
+	public class AuthenticateResponse : ResponseBase, IAuthenticateResponse
 	{
-		[DataMember(Name = "email")]
-		public string Email { get; internal set; }
-
-		[DataMember(Name = "full_name")]
-		public string FullName { get; internal set; }
-
-		[DataMember(Name = "metadata")]
-		public IReadOnlyDictionary<string, object> Metadata { get; internal set; }
-			= EmptyReadOnly<string, object>.Dictionary;
-
-		[DataMember(Name = "roles")]
-		public IReadOnlyCollection<string> Roles { get; internal set; }
-			= EmptyReadOnly<string>.Collection;
-
-		[DataMember(Name = "username")]
 		public string Username { get; internal set; }
 
-		[DataMember(Name = "authentication_realm")]
-		public RealmInfo AuthenticationRealm { get; internal set; }
+		public IEnumerable<string> Roles { get; internal set;  }
 
-		[DataMember(Name = "lookup_realm")]
-		public RealmInfo LookupRealm { get; internal set; }
+		public string FullName { get; internal set;  }
+
+		public string Email { get; internal set;  }
+
+		public IDictionary<string, object> Metadata { get; internal set;  }
+
 	}
 }

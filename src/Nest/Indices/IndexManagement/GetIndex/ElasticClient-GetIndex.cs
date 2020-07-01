@@ -1,10 +1,6 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 
@@ -14,42 +10,54 @@ namespace Nest
 
 	public partial interface IElasticClient
 	{
-		/// <inheritdoc />
-		GetIndexResponse GetIndex(Indices indices, Func<GetIndexDescriptor, IGetIndexRequest> selector = null);
+		/// <inheritdoc/>
+		IGetIndexResponse GetIndex(Indices indices, Func<GetIndexDescriptor, IGetIndexRequest> selector = null);
 
-		/// <inheritdoc />
-		GetIndexResponse GetIndex(IGetIndexRequest request);
+		/// <inheritdoc/>
+		IGetIndexResponse GetIndex(IGetIndexRequest request);
 
-		/// <inheritdoc />
-		Task<GetIndexResponse> GetIndexAsync(Indices indices, Func<GetIndexDescriptor, IGetIndexRequest> selector = null,
-			CancellationToken ct = default
-		);
+		/// <inheritdoc/>
+		Task<IGetIndexResponse> GetIndexAsync(Indices indices, Func<GetIndexDescriptor, IGetIndexRequest> selector = null);
 
-		/// <inheritdoc />
-		Task<GetIndexResponse> GetIndexAsync(IGetIndexRequest request, CancellationToken ct = default);
+		/// <inheritdoc/>
+		Task<IGetIndexResponse> GetIndexAsync(IGetIndexRequest request);
 	}
 
 
 	public partial class ElasticClient
 	{
-		/// <inheritdoc />
-		public GetIndexResponse GetIndex(Indices indices, Func<GetIndexDescriptor, IGetIndexRequest> selector = null) =>
-			GetIndex(selector.InvokeOrDefault(new GetIndexDescriptor(indices)));
+		/// <inheritdoc/>
+		public IGetIndexResponse GetIndex(Indices indices, Func<GetIndexDescriptor, IGetIndexRequest> selector = null) =>
+			this.GetIndex(selector.InvokeOrDefault(new GetIndexDescriptor(indices)));
 
-		/// <inheritdoc />
-		public GetIndexResponse GetIndex(IGetIndexRequest request) =>
-			DoRequest<IGetIndexRequest, GetIndexResponse>(request, request.RequestParameters);
+		/// <inheritdoc/>
+		public IGetIndexResponse GetIndex(IGetIndexRequest request) => 
+			this.Dispatcher.Dispatch<IGetIndexRequest, GetIndexRequestParameters, GetIndexResponse>(
+				request,
+				new GetIndexResponseConverter(this.DeserializeGetIndexResponse),
+				(p, d) => this.LowLevelDispatch.IndicesGetDispatch<GetIndexResponse>(p)
+			);
 
-		/// <inheritdoc />
-		public Task<GetIndexResponse> GetIndexAsync(
-			Indices indices,
-			Func<GetIndexDescriptor, IGetIndexRequest> selector = null,
-			CancellationToken ct = default
-		) =>
-			GetIndexAsync(selector.InvokeOrDefault(new GetIndexDescriptor(indices)), ct);
+		/// <inheritdoc/>
+		public Task<IGetIndexResponse> GetIndexAsync(Indices indices, Func<GetIndexDescriptor, IGetIndexRequest> selector = null) =>
+			this.GetIndexAsync(selector.InvokeOrDefault(new GetIndexDescriptor(indices)));
 
-		/// <inheritdoc />
-		public Task<GetIndexResponse> GetIndexAsync(IGetIndexRequest request, CancellationToken ct = default) =>
-			DoRequestAsync<IGetIndexRequest, GetIndexResponse>(request, request.RequestParameters, ct);
+		/// <inheritdoc/>
+		public Task<IGetIndexResponse> GetIndexAsync(IGetIndexRequest request) => 
+			this.Dispatcher.DispatchAsync<IGetIndexRequest, GetIndexRequestParameters, GetIndexResponse, IGetIndexResponse>(
+				request,
+				new GetIndexResponseConverter(this.DeserializeGetIndexResponse),
+				(p, d) => this.LowLevelDispatch.IndicesGetDispatchAsync<GetIndexResponse>(p)
+			);
+
+		//TODO DictionaryResponse
+		private GetIndexResponse DeserializeGetIndexResponse(IApiCallDetails response, Stream stream)
+		{
+			return new GetIndexResponse
+			{
+				Indices = this.Serializer.Deserialize<Dictionary<string, IndexState>>(stream)
+			};
+		}
+
 	}
 }

@@ -1,39 +1,56 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using Elasticsearch.Net;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
 	[AttributeUsage(AttributeTargets.Property)]
-	[DataContract]
-	public abstract class ElasticsearchPropertyAttributeBase : Attribute, IProperty, IPropertyMapping, IJsonProperty
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	public abstract class ElasticsearchPropertyAttributeBase : Attribute, IProperty, IPropertyMapping
 	{
-		protected ElasticsearchPropertyAttributeBase(FieldType type) => Self.Type = type.GetStringValue();
-
-		public bool? AllowPrivate { get; set; } = true;
-
-		public bool Ignore { get; set; }
-
-		public string Name { get; set; }
-
-		public int Order { get; } = -2;
-
-		IDictionary<string, object> IProperty.LocalMetadata { get; set; }
-
-		IDictionary<string, string> IProperty.Meta { get; set; }
+		private IProperty Self => this;
 
 		PropertyName IProperty.Name { get; set; }
-		private IProperty Self => this;
-		string IProperty.Type { get; set; }
+		TypeName IProperty.Type { get; set; }
+		string IProperty.IndexName { get; set; }
+		bool? IProperty.Store { get; set; }
+		bool? IProperty.DocValues { get; set; }
+		IProperties IProperty.Fields { get; set; }
 
-		public static ElasticsearchPropertyAttributeBase From(MemberInfo memberInfo) =>
-			memberInfo.GetCustomAttribute<ElasticsearchPropertyAttributeBase>(true);
+#pragma warning disable CS0618 // Type or member is obsolete
+		SimilarityOption? IProperty.Similarity { get { return Self.CustomSimilarity?.ToEnum<SimilarityOption>(); } set { Self.CustomSimilarity = value.GetStringValue(); } }
+#pragma warning restore CS0618 // Type or member is obsolete
+		string IProperty.CustomSimilarity { get; set; }
+		Fields IProperty.CopyTo { get; set; }
+
+		public string Name { get; set; }
+		public bool Ignore { get; set; }
+		public bool DocValues { get { return Self.DocValues.GetValueOrDefault(); } set { Self.DocValues = value; } }
+		[Obsolete("Removed in 2.0.0. Use CopyTo instead.")]
+		public string IndexName { get { return Self.IndexName; } set { Self.IndexName = value; } }
+		public SimilarityOption Similarity { get { return Self.Similarity.GetValueOrDefault(); } set { Self.Similarity = value; } }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+		[Obsolete("This is a temporary binary backwards compatible fix to allow named similarities in 2.0.0. Removed in 5.0.0")]
+		public string CustomSimilarity { get { return Self.CustomSimilarity; } set { Self.CustomSimilarity = value; } }
+#pragma warning restore CS0618 // Type or member is obsolete
+		public bool Store { get { return Self.Store.GetValueOrDefault(); } set { Self.Store = value; } }
+
+		protected ElasticsearchPropertyAttributeBase(string typeName)
+		{
+			Self.Type = typeName;
+		}
+
+		protected ElasticsearchPropertyAttributeBase(Type type)
+		{
+			Self.Type = type;
+		}
+
+		public static ElasticsearchPropertyAttributeBase From(MemberInfo memberInfo)
+		{
+			return memberInfo.GetCustomAttribute<ElasticsearchPropertyAttributeBase>(true);
+		}
 	}
 }

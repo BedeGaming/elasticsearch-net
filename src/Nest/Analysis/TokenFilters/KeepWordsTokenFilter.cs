@@ -1,10 +1,5 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
@@ -16,58 +11,59 @@ namespace Nest
 		/// <summary>
 		/// A list of words to keep.
 		/// </summary>
-		[DataMember(Name ="keep_words")]
+		[JsonProperty("keep_words")]
 		IEnumerable<string> KeepWords { get; set; }
-
-		/// <summary>
-		/// A boolean indicating whether to lower case the words.
-		/// </summary>
-		[DataMember(Name ="keep_words_case")]
-		[JsonFormatter(typeof(NullableStringBooleanFormatter))]
-		bool? KeepWordsCase { get; set; }
 
 		/// <summary>
 		/// A path to a words file.
 		/// </summary>
-		[DataMember(Name ="keep_words_path")]
+		[JsonProperty("keep_words_path")]
 		string KeepWordsPath { get; set; }
-	}
 
-	/// <inheritdoc />
+		/// <summary>
+		/// A boolean indicating whether to lower case the words.
+		/// </summary>
+		[JsonProperty("keep_words_case")]
+		bool? KeepWordsCase { get; set; }
+
+	}
+	/// <inheritdoc/>
 	public class KeepWordsTokenFilter : TokenFilterBase, IKeepWordsTokenFilter
 	{
 		public KeepWordsTokenFilter() : base("keep") { }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public IEnumerable<string> KeepWords { get; set; }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
+		public string KeepWordsPath { get; set; }
+
+		/// <inheritdoc/>
 		public bool? KeepWordsCase { get; set; }
 
-		/// <inheritdoc />
-		public string KeepWordsPath { get; set; }
 	}
-
-	/// <inheritdoc />
-	public class KeepWordsTokenFilterDescriptor
+	///<inheritdoc/>
+	public class KeepWordsTokenFilterDescriptor 
 		: TokenFilterDescriptorBase<KeepWordsTokenFilterDescriptor, IKeepWordsTokenFilter>, IKeepWordsTokenFilter
 	{
 		protected override string Type => "keep";
-		IEnumerable<string> IKeepWordsTokenFilter.KeepWords { get; set; }
 
 		bool? IKeepWordsTokenFilter.KeepWordsCase { get; set; }
 		string IKeepWordsTokenFilter.KeepWordsPath { get; set; }
+		IEnumerable<string> IKeepWordsTokenFilter.KeepWords { get; set; }
 
-		/// <inheritdoc />
-		public KeepWordsTokenFilterDescriptor KeepWordsCase(bool? keepCase = true) => Assign(keepCase, (a, v) => a.KeepWordsCase = v);
+		///<inheritdoc/>
+		public KeepWordsTokenFilterDescriptor KeepWordsCase(bool? keepCase = true) => Assign(a => a.KeepWordsCase = keepCase);
 
-		/// <inheritdoc />
-		public KeepWordsTokenFilterDescriptor KeepWordsPath(string path) => Assign(path, (a, v) => a.KeepWordsPath = v);
+		///<inheritdoc/>
+		public KeepWordsTokenFilterDescriptor KeepWordsPath(string path) => Assign(a => a.KeepWordsPath = path);
 
-		/// <inheritdoc />
-		public KeepWordsTokenFilterDescriptor KeepWords(IEnumerable<string> keepWords) => Assign(keepWords, (a, v) => a.KeepWords = v);
+		///<inheritdoc/>
+		public KeepWordsTokenFilterDescriptor KeepWords(IEnumerable<string> keepWords) => Assign(a => a.KeepWords = keepWords);
 
-		/// <inheritdoc />
-		public KeepWordsTokenFilterDescriptor KeepWords(params string[] keepWords) => Assign(keepWords, (a, v) => a.KeepWords = v);
+		///<inheritdoc/>
+		public KeepWordsTokenFilterDescriptor KeepWords(params string[] keepWords) => Assign(a => a.KeepWords = keepWords);
+
 	}
+
 }

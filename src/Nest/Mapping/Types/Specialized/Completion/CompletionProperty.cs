@@ -1,80 +1,78 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	public interface ICompletionProperty : IDocValuesProperty
+	[JsonObject(MemberSerialization.OptIn)]
+	public interface ICompletionProperty : IProperty
 	{
-		[DataMember(Name ="analyzer")]
+		[JsonProperty("search_analyzer")]
+		string SearchAnalyzer { get; set; }
+
+		[JsonProperty("analyzer")]
 		string Analyzer { get; set; }
 
-		[DataMember(Name ="contexts")]
-		IList<ISuggestContext> Contexts { get; set; }
+		[JsonProperty("payloads")]
+		bool? Payloads { get; set; }
 
-		[DataMember(Name ="max_input_length")]
-		int? MaxInputLength { get; set; }
-
-		[DataMember(Name ="preserve_position_increments")]
-		bool? PreservePositionIncrements { get; set; }
-
-		[DataMember(Name ="preserve_separators")]
+		[JsonProperty("preserve_separators")]
 		bool? PreserveSeparators { get; set; }
 
-		[DataMember(Name ="search_analyzer")]
-		string SearchAnalyzer { get; set; }
+		[JsonProperty("preserve_position_increments")]
+		bool? PreservePositionIncrements { get; set; }
+
+		[JsonProperty("max_input_length")]
+		int? MaxInputLength { get; set; }
+
+		[JsonProperty("context")]
+		ISuggestContextMapping Context { get; set; }
 	}
 
-	[DataContract]
-	[DebuggerDisplay("{DebugDisplay}")]
-	public class CompletionProperty : DocValuesPropertyBase, ICompletionProperty
+	[JsonObject(MemberSerialization.OptIn)]
+	public class CompletionProperty : PropertyBase, ICompletionProperty
 	{
-		public CompletionProperty() : base(FieldType.Completion) { }
-
-		public string Analyzer { get; set; }
-		public IList<ISuggestContext> Contexts { get; set; }
-		public int? MaxInputLength { get; set; }
-		public bool? PreservePositionIncrements { get; set; }
-		public bool? PreserveSeparators { get; set; }
+		public CompletionProperty() : base("completion") { }
 
 		public string SearchAnalyzer { get; set; }
+		public string Analyzer { get; set; }
+		public bool? Payloads { get; set; }
+		public bool? PreserveSeparators { get; set; }
+		public bool? PreservePositionIncrements { get; set; }
+		public int? MaxInputLength { get; set; }
+		public ISuggestContextMapping Context { get; set; }
 	}
 
-	[DebuggerDisplay("{DebugDisplay}")]
 	public class CompletionPropertyDescriptor<T>
-		: DocValuesPropertyDescriptorBase<CompletionPropertyDescriptor<T>, ICompletionProperty, T>, ICompletionProperty
+		: PropertyDescriptorBase<CompletionPropertyDescriptor<T>, ICompletionProperty, T>, ICompletionProperty
 		where T : class
 	{
-		public CompletionPropertyDescriptor() : base(FieldType.Completion) { }
-
-		string ICompletionProperty.Analyzer { get; set; }
-		IList<ISuggestContext> ICompletionProperty.Contexts { get; set; }
-		int? ICompletionProperty.MaxInputLength { get; set; }
-		bool? ICompletionProperty.PreservePositionIncrements { get; set; }
-		bool? ICompletionProperty.PreserveSeparators { get; set; }
 		string ICompletionProperty.SearchAnalyzer { get; set; }
+		string ICompletionProperty.Analyzer { get; set; }
+		bool? ICompletionProperty.Payloads { get; set; }
+		bool? ICompletionProperty.PreserveSeparators { get; set; }
+		bool? ICompletionProperty.PreservePositionIncrements { get; set; }
+		int? ICompletionProperty.MaxInputLength { get; set; }
+		ISuggestContextMapping ICompletionProperty.Context { get; set; }
+
+		public CompletionPropertyDescriptor() : base("completion") { }
 
 		public CompletionPropertyDescriptor<T> SearchAnalyzer(string searchAnalyzer) =>
-			Assign(searchAnalyzer, (a, v) => a.SearchAnalyzer = v);
+			Assign(a => a.SearchAnalyzer = searchAnalyzer);
 
-		public CompletionPropertyDescriptor<T> Analyzer(string analyzer) => Assign(analyzer, (a, v) => a.Analyzer = v);
+		public CompletionPropertyDescriptor<T> Analyzer(string analyzer) => Assign(a => a.Analyzer = analyzer);
 
-		public CompletionPropertyDescriptor<T> PreserveSeparators(bool? preserveSeparators = true) =>
-			Assign(preserveSeparators, (a, v) => a.PreserveSeparators = v);
+		public CompletionPropertyDescriptor<T> Payloads(bool payloads = true) => Assign(a => a.Payloads = payloads);
 
-		public CompletionPropertyDescriptor<T> PreservePositionIncrements(bool? preservePositionIncrements = true) =>
-			Assign(preservePositionIncrements, (a, v) => a.PreservePositionIncrements = v);
+		public CompletionPropertyDescriptor<T> PreserveSeparators(bool preserveSeparators = true) =>
+			Assign(a => a.PreserveSeparators = preserveSeparators);
 
-		public CompletionPropertyDescriptor<T> MaxInputLength(int? maxInputLength) => Assign(maxInputLength, (a, v) => a.MaxInputLength = v);
+		public CompletionPropertyDescriptor<T> PreservePositionIncrements(bool preservePositionIncrements = true) =>
+			Assign(a => a.PreservePositionIncrements = preservePositionIncrements);
 
-		public CompletionPropertyDescriptor<T> Contexts(Func<SuggestContextsDescriptor<T>, IPromise<IList<ISuggestContext>>> contexts) =>
-			Assign(contexts, (a, v) => a.Contexts = v?.Invoke(new SuggestContextsDescriptor<T>()).Value);
+		public CompletionPropertyDescriptor<T> MaxInputLength(int maxInputLength) => Assign(a => a.MaxInputLength = maxInputLength);
+
+		public CompletionPropertyDescriptor<T> Context(Func<SuggestContextMappingDescriptor<T>, IPromise<ISuggestContextMapping>> selector) => 
+			Assign(a => a.Context = selector?.Invoke(new SuggestContextMappingDescriptor<T>())?.Value);
+
 	}
 }

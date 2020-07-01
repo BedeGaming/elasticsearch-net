@@ -1,7 +1,3 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 namespace Nest
 {
 	public abstract class ExponentialDecayFunctionBase<TOrigin, TScale> : DecayFunctionBase<TOrigin, TScale>
@@ -9,16 +5,14 @@ namespace Nest
 		protected override string DecayType => "exp";
 	}
 
-	public class ExponentialDecayFunctionDescriptor<TOrigin, TScale, T>
-		: DecayFunctionDescriptorBase<ExponentialDecayFunctionDescriptor<TOrigin, TScale, T>, TOrigin, TScale, T>
+	public class ExponentialDecayFunctionDescriptor<TOrigin, TScale, T> : DecayFunctionDescriptorBase<ExponentialDecayFunctionDescriptor<TOrigin, TScale, T>, TOrigin, TScale, T>
 		where T : class
 	{
 		protected override string DecayType => "exp";
 	}
 
 	public class ExponentialDecayFunction : ExponentialDecayFunctionBase<double?, double?> { }
-
 	public class ExponentialDateDecayFunction : ExponentialDecayFunctionBase<DateMath, Time> { }
-
 	public class ExponentialGeoDecayFunction : ExponentialDecayFunctionBase<GeoLocation, Distance> { }
+
 }

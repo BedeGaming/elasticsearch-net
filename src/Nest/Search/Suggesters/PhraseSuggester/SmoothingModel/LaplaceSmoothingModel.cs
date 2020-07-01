@@ -1,17 +1,13 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(LaplaceSmoothingModel))]
+	[JsonObject]
+	[JsonConverter(typeof(ReadAsTypeJsonConverter<LaplaceSmoothingModel>))]
 	public interface ILaplaceSmoothingModel : ISmoothingModel
 	{
-		[DataMember(Name ="alpha")]
+		[JsonProperty("alpha")]
 		double? Alpha { get; set; }
 	}
 
@@ -24,8 +20,8 @@ namespace Nest
 
 	public class LaplaceSmoothingModelDescriptor : DescriptorBase<LaplaceSmoothingModelDescriptor, ILaplaceSmoothingModel>, ILaplaceSmoothingModel
 	{
-		double? ILaplaceSmoothingModel.Alpha { get; set; }
+		double? ILaplaceSmoothingModel.Alpha{ get; set; }
 
-		public LaplaceSmoothingModelDescriptor Alpha(double? alpha) => Assign(alpha, (a, v) => a.Alpha = v);
+		public LaplaceSmoothingModelDescriptor Alpha(double? alpha) => Assign(a => a.Alpha = alpha);
 	}
 }

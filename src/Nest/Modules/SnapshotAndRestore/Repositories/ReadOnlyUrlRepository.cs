@@ -1,89 +1,70 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
-using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	/// <summary>
-	/// A snapshot repository that can be used as an alternative read-only way to access data created by the <see cref="IFileSystemRepository"/>.
-	/// The URL specified in the url parameter should point to the root of the shared filesystem repository.
-	/// </summary>
 	public interface IReadOnlyUrlRepository : IRepository<IReadOnlyUrlRepositorySettings> { }
 
-	/// <inheritdoc />
 	public class ReadOnlyUrlRepository : IReadOnlyUrlRepository
 	{
-		public ReadOnlyUrlRepository(ReadOnlyUrlRepositorySettings settings) => Settings = settings;
+		public ReadOnlyUrlRepository(ReadOnlyUrlRepositorySettings settings)
+		{
+			Settings = settings;
+		}
 
 		public IReadOnlyUrlRepositorySettings Settings { get; set; }
-		object IRepositoryWithSettings.DelegateSettings => Settings;
 		public string Type { get; } = "url";
 	}
 
-	/// <summary>
-	/// Snapshot repository settings for <see cref="IReadOnlyUrlRepository"/>
-	/// </summary>
 	public interface IReadOnlyUrlRepositorySettings : IRepositorySettings
 	{
-		/// <summary>
-		/// Throttles the number of streams (per node) preforming snapshot operation. Defaults to 5
-		/// </summary>
-		[DataMember(Name ="concurrent_streams")]
-		[JsonFormatter(typeof(NullableStringIntFormatter))]
-		int? ConcurrentStreams { get; set; }
-
-		/// <summary>
-		/// Location of the snapshots. Required
-		/// </summary>
-		[DataMember(Name ="location")]
+		[JsonProperty("location")]
 		string Location { get; set; }
+
+		[JsonProperty("concurrent_streams")]
+		int? ConcurrentStreams { get; set; }
 	}
 
-	/// <inheritdoc />
 	public class ReadOnlyUrlRepositorySettings : IReadOnlyUrlRepositorySettings
 	{
 		internal ReadOnlyUrlRepositorySettings() { }
 
-		public ReadOnlyUrlRepositorySettings(string location) => Location = location;
+		public ReadOnlyUrlRepositorySettings(string location)
+		{
+			this.Location = location;
+		}
 
-		/// <inheritdoc />
-		public int? ConcurrentStreams { get; set; }
-
-		/// <inheritdoc />
 		public string Location { get; set; }
+		public int? ConcurrentStreams { get; set; }
 	}
 
-	/// <inheritdoc cref="IReadOnlyUrlRepositorySettings"/>
 	public class ReadOnlyUrlRepositorySettingsDescriptor
 		: DescriptorBase<ReadOnlyUrlRepositorySettingsDescriptor, IReadOnlyUrlRepositorySettings>, IReadOnlyUrlRepositorySettings
 	{
 		int? IReadOnlyUrlRepositorySettings.ConcurrentStreams { get; set; }
-		string IReadOnlyUrlRepositorySettings.Location { get; set; }
+		string IReadOnlyUrlRepositorySettings.Location { get;set; }
 
-		/// <inheritdoc cref="IReadOnlyUrlRepositorySettings.Location"/>
-		public ReadOnlyUrlRepositorySettingsDescriptor Location(string location) => Assign(location, (a, v) => a.Location = v);
+		/// <summary>
+		/// Location of the snapshots. Mandatory.
+		/// </summary>
+		/// <param name="location"></param>
+		public ReadOnlyUrlRepositorySettingsDescriptor Location(string location) => Assign(a => a.Location = location);
 
-		/// <inheritdoc cref="IReadOnlyUrlRepositorySettings.ConcurrentStreams"/>
-		public ReadOnlyUrlRepositorySettingsDescriptor ConcurrentStreams(int? concurrentStreams) =>
-			Assign(concurrentStreams, (a, v) => a.ConcurrentStreams = v);
+		/// <summary>
+		/// Throttles the number of streams (per node) preforming snapshot operation. Defaults to 5
+		/// </summary>
+		/// <param name="concurrentStreams"></param>
+		public ReadOnlyUrlRepositorySettingsDescriptor ConcurrentStreams(int concurrentStreams) =>
+			Assign(a => a.ConcurrentStreams = concurrentStreams);
 	}
 
-	/// <inheritdoc cref="IReadOnlyUrlRepository"/>
 	public class ReadOnlyUrlRepositoryDescriptor
 		: DescriptorBase<ReadOnlyUrlRepositoryDescriptor, IReadOnlyUrlRepository>, IReadOnlyUrlRepository
 	{
+		string ISnapshotRepository.Type { get { return "url"; } }
 		IReadOnlyUrlRepositorySettings IRepository<IReadOnlyUrlRepositorySettings>.Settings { get; set; }
-		object IRepositoryWithSettings.DelegateSettings => Self.Settings;
-		string ISnapshotRepository.Type => "url";
 
-		/// <inheritdoc cref="IReadOnlyUrlRepositorySettings"/>
-		public ReadOnlyUrlRepositoryDescriptor Settings(string location,
-			Func<ReadOnlyUrlRepositorySettingsDescriptor, IReadOnlyUrlRepositorySettings> settingsSelector = null
-		) =>
-			Assign(settingsSelector.InvokeOrDefault(new ReadOnlyUrlRepositorySettingsDescriptor().Location(location)), (a, v) => a.Settings = v);
+		public ReadOnlyUrlRepositoryDescriptor Settings(string location, Func<ReadOnlyUrlRepositorySettingsDescriptor, IReadOnlyUrlRepositorySettings> settingsSelector = null) =>
+			Assign(a => a.Settings = settingsSelector.InvokeOrDefault(new ReadOnlyUrlRepositorySettingsDescriptor().Location(location)));
 	}
 }

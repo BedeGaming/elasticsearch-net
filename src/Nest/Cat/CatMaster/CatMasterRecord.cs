@@ -1,21 +1,17 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Nest
 {
-	[DataContract]
+	[JsonObject]
 	public class CatMasterRecord : ICatRecord
 	{
-		[DataMember(Name ="id")]
+		[JsonProperty("id")]
 		public string Id { get; set; }
 
-		[DataMember(Name ="ip")]
+		[JsonProperty("ip")]
 		public string Ip { get; set; }
 
-		[DataMember(Name ="node")]
+		[JsonProperty("node")]
 		public string Node { get; set; }
 	}
 }

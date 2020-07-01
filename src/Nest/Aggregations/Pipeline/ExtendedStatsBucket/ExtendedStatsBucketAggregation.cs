@@ -1,17 +1,13 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
-﻿using System.Runtime.Serialization;
-using Elasticsearch.Net.Utf8Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[ReadAs(typeof(ExtendedStatsBucketAggregation))]
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+	[ContractJsonConverter(typeof(AggregationJsonConverter<ExtendedStatsBucketAggregation>))]
 	public interface IExtendedStatsBucketAggregation : IPipelineAggregation
 	{
-		[DataMember(Name ="sigma")]
+		[JsonProperty("sigma")]
 		double? Sigma { get; set; }
 	}
 
@@ -21,7 +17,8 @@ namespace Nest
 		internal ExtendedStatsBucketAggregation() { }
 
 		public ExtendedStatsBucketAggregation(string name, SingleBucketsPath bucketsPath)
-			: base(name, bucketsPath) { }
+			: base(name, bucketsPath)
+		{ }
 
 		public double? Sigma { get; set; }
 
@@ -30,10 +27,12 @@ namespace Nest
 
 	public class ExtendedStatsBucketAggregationDescriptor
 		: PipelineAggregationDescriptorBase<ExtendedStatsBucketAggregationDescriptor, IExtendedStatsBucketAggregation, SingleBucketsPath>
-			, IExtendedStatsBucketAggregation
+		, IExtendedStatsBucketAggregation
 	{
+
 		double? IExtendedStatsBucketAggregation.Sigma { get; set; }
 
-		public ExtendedStatsBucketAggregationDescriptor Sigma(double? sigma) => Assign(sigma, (a, v) => a.Sigma = v);
+		public ExtendedStatsBucketAggregationDescriptor Sigma(double? sigma) => Assign(a => a.Sigma = sigma);
+
 	}
 }

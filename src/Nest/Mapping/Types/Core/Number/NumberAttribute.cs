@@ -1,63 +1,32 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
+﻿using System;
+using Elasticsearch.Net;
 
-﻿namespace Nest
+namespace Nest
 {
-	/// <summary>
-	/// Maps a property as a number type. If no type is specified,
-	/// the default type is float (single precision floating point).
-	/// </summary>
-	public class NumberAttribute : ElasticsearchDocValuesPropertyAttributeBase, INumberProperty
+	public class NumberAttribute : ElasticsearchPropertyAttributeBase, INumberProperty
 	{
-		public NumberAttribute() : base(FieldType.Float) { }
+		INumberProperty Self => this;
 
-		public NumberAttribute(NumberType type) : base(type.ToFieldType()) { }
-
-		public double Boost
-		{
-			get => Self.Boost.GetValueOrDefault();
-			set => Self.Boost = value;
-		}
-
-		public bool Coerce
-		{
-			get => Self.Coerce.GetValueOrDefault();
-			set => Self.Coerce = value;
-		}
-
-		public bool IgnoreMalformed
-		{
-			get => Self.IgnoreMalformed.GetValueOrDefault();
-			set => Self.IgnoreMalformed = value;
-		}
-
-		public bool Index
-		{
-			get => Self.Index.GetValueOrDefault();
-			set => Self.Index = value;
-		}
-
-		public double NullValue
-		{
-			get => Self.NullValue.GetValueOrDefault();
-			set => Self.NullValue = value;
-		}
-
-		public double ScalingFactor
-		{
-			get => Self.ScalingFactor.GetValueOrDefault();
-			set => Self.ScalingFactor = value;
-		}
-
+		NonStringIndexOption? INumberProperty.Index { get; set; }
 		double? INumberProperty.Boost { get; set; }
+		double? INumberProperty.NullValue { get; set; }
+		bool? INumberProperty.IncludeInAll { get; set; }
+		int? INumberProperty.PrecisionStep { get; set; }
+		bool? INumberProperty.IgnoreMalformed { get; set; }
 		bool? INumberProperty.Coerce { get; set; }
 		INumericFielddata INumberProperty.Fielddata { get; set; }
-		bool? INumberProperty.IgnoreMalformed { get; set; }
 
-		bool? INumberProperty.Index { get; set; }
-		double? INumberProperty.NullValue { get; set; }
-		double? INumberProperty.ScalingFactor { get; set; }
-		private INumberProperty Self => this;
+		public NonStringIndexOption Index { get { return Self.Index.GetValueOrDefault(); } set { Self.Index = value; } }
+		public double Boost { get { return Self.Boost.GetValueOrDefault(); } set { Self.Boost = value; } }
+		public double NullValue { get { return Self.NullValue.GetValueOrDefault(); } set { Self.NullValue = value; } }
+		public bool IncludeInAll { get { return Self.IncludeInAll.GetValueOrDefault(); } set { Self.IncludeInAll = value; } }
+		[Obsolete("Removed in 5.0.0")]
+		public int PrecisionStep { get { return Self.PrecisionStep.GetValueOrDefault(); } set { Self.PrecisionStep = value; } }
+		public bool IgnoreMalformed { get { return Self.IgnoreMalformed.GetValueOrDefault(); } set { Self.IgnoreMalformed = value; } }
+		public bool Coerce { get { return Self.Coerce.GetValueOrDefault(); } set { Self.Coerce = value; } }
+
+		public NumberAttribute(NumberType type) : base(type.GetStringValue()) { }
+		protected NumberAttribute(string type) : base(type) { }
+		public NumberAttribute() : base(NumberType.Double.GetStringValue()) { }
 	}
 }

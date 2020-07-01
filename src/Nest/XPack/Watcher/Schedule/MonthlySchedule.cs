@@ -1,33 +1,30 @@
-// Licensed to Elasticsearch B.V under one or more agreements.
-// Elasticsearch B.V licenses this file to you under the Apache 2.0 License.
-// See the LICENSE file in the project root for more information
-
 ﻿using System;
 using System.Collections;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using Elasticsearch.Net.Utf8Json;
 
 namespace Nest
 {
-	[InterfaceDataContract]
-	[JsonFormatter(typeof(ScheduleFormatter<IMonthlySchedule, MonthlySchedule, ITimeOfMonth>))]
-	public interface IMonthlySchedule : ISchedule, IEnumerable<ITimeOfMonth> { }
+	[JsonObject]
+	[JsonConverter(typeof(ScheduleJsonConverter<IMonthlySchedule, MonthlySchedule, ITimeOfMonth>))]
+	public interface IMonthlySchedule : ISchedule, IEnumerable<ITimeOfMonth> {}
 
 	public class MonthlySchedule : ScheduleBase, IMonthlySchedule
 	{
 		private List<ITimeOfMonth> _times;
 
-		public MonthlySchedule(IEnumerable<ITimeOfMonth> times) => _times = times?.ToList();
+		public MonthlySchedule(IEnumerable<ITimeOfMonth> times)
+		{
+			this._times = times?.ToList();
+		}
 
-		public MonthlySchedule(params ITimeOfMonth[] times) => _times = times?.ToList();
+		public MonthlySchedule(params ITimeOfMonth[] times)
+		{
+			this._times = times?.ToList();
+		}
 
-		public MonthlySchedule() { }
-
-		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-		public IEnumerator<ITimeOfMonth> GetEnumerator() =>
-			_times?.GetEnumerator() ?? Enumerable.Empty<ITimeOfMonth>().GetEnumerator();
+		public MonthlySchedule() {}
 
 		public void Add(ITimeOfMonth time)
 		{
@@ -35,17 +32,23 @@ namespace Nest
 			_times.Add(time);
 		}
 
+		public IEnumerator<ITimeOfMonth> GetEnumerator() =>
+			_times?.GetEnumerator() ?? Enumerable.Empty<ITimeOfMonth>().GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
 		internal override void WrapInContainer(IScheduleContainer container) => container.Monthly = this;
 
 		public static implicit operator MonthlySchedule(ITimeOfMonth[] timesOfMonth) =>
 			new MonthlySchedule(timesOfMonth);
 	}
 
-	public class MonthlyScheduleDescriptor : DescriptorPromiseBase<MonthlyScheduleDescriptor, MonthlySchedule>
+	public class MonthlyScheduleDescriptor :
+		DescriptorPromiseBase<MonthlyScheduleDescriptor, MonthlySchedule>
 	{
-		public MonthlyScheduleDescriptor() : base(new MonthlySchedule()) { }
-
 		public MonthlyScheduleDescriptor Add(Func<TimeOfMonthDescriptor, ITimeOfMonth> selector) =>
-			Assign(selector, (a, v) => a.Add(v.InvokeOrDefault(new TimeOfMonthDescriptor())));
+			Assign(a => a.Add(selector.InvokeOrDefault(new TimeOfMonthDescriptor())));
+
+		public MonthlyScheduleDescriptor() : base(new MonthlySchedule()) {}
 	}
 }
