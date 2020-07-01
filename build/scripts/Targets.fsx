@@ -65,7 +65,6 @@ Target "Version" <| fun _ ->
 Target "Release" <| fun _ -> 
     Release.NugetPack()   
     Versioning.ValidateArtifacts()
-    StrongName.ValidateDllsInNugetPackage()
 
 Target "Canary" <| fun _ -> 
     trace "Running canary build" 

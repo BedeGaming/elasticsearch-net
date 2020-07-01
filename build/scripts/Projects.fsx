@@ -53,7 +53,7 @@ module Projects =
             match this with
             | Project p ->
                 match p with
-                | Nest -> "Nest"
+                | Nest -> "Best"
                 | ElasticsearchNet -> "Elasticsearch.Net"
             | PrivateProject p ->
                 match p with
